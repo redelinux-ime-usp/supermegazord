@@ -1,3 +1,0 @@
-Usuários
-Criar conta GIT:shell:git/gitcriaconta.sh
-Voltar:return

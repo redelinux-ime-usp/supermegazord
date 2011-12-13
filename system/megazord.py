@@ -11,12 +11,19 @@
 import sys
 sys.path.append("D:\\stuff\\programming\\projects")
 
-import ConfigParser 
+import json 
 
 from supermegazord.base.menu import Menu
 
 class Megazord:
     def __init__(self):
-        self.menu_list = []
-        self.config = ConfigParser.ConfigParser()
-        self.config.read("D:\stuff\programming\projects\supermegazord\system\megazord.conf")
+        self.menu_dict = {}
+        
+        tmp = open("D:\stuff\programming\projects\supermegazord\system\megazord.conf", "r")
+        self.config = json.load(tmp)
+        tmp.close()
+
+        for menu in self.config["menus"]:
+            self.menu_dict[menu] = Menu(self.config["menus"][menu])
+
+        self.active_menu = self.menu_dict[self.config["start_menu"]]

@@ -9,27 +9,31 @@
 # Modificado em: 2011-12-13 por henriquelima
 
 class Menu:
-	def __init__(self, path):
-		source = open(path, 'r')
-		self.name = source.readline().replace('\n', '')
+	def __init__(self, data):
+		self.name = data["name"]
+		self.content = []
 		self.lines = []
 		self.func = []
 		self.data = []
-		for line in source:
-			line_data = line.replace('\n','').split(':', 2)
-			self.lines.append(line_data[0])
+		for line_data in data["content"]:
+			name = line_data[0]
+			func = None
+			arg = None
+			
 			if line_data[1] == "menu":
-				self.data.append(line_data[2])
-				#self.func.append(OpenMenu)
+				#func = OpenMenu
+				arg = line_data[2]
+				
 			elif line_data[1] == "return":
-				self.data.append(None)
-				#self.func.append(ReturnMenu)
+				#func = ReturnMenu
+				arg = None
+			
 			elif line_data[1] == "shell":
-				self.data.append(line_data[2])
-				#self.func.append(CallShell)
+				#func = CallShell
+				arg = line_data[2]
+				
 			elif line_data[1] == "module":
-				self.data.append(line_data[2])
-				#self.func.append(CallModule)
-
-	def AddLine(self, line):
-		self.lines.append(line)
+				#func = CallModule
+				arg = line_data[2]
+				
+			self.content.append((name, func, arg))
