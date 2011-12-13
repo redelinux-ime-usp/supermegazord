@@ -1,0 +1,6 @@
+Principal
+Atualização:menu:menu_atualiza.txt
+Usuários:menu:menu_usuario.txt
+Utilitários:menu:menu_utilitario.txt
+Segurança:menu:menu_seguranca.txt
+Sair:return
