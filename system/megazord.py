@@ -34,6 +34,9 @@ class Megazord:
         self.active_menu = None
         self.menu_history = []
 
+    def Running(self):
+        return self.active_menu != None
+
     def ExecuteLine(self, line):
         if line >= len(self.active_menu.content):
             return False
