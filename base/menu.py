@@ -8,16 +8,19 @@
 # Escrito em: 2011-12-13
 # Modificado em: 2011-12-13 por henriquelima
 
+class MenuItem:
+	def __init__(self, name, func, arg):
+		self.name = name
+		self.func = func
+		self.arg = arg
+
 class Menu:
 	def __init__(self, data):
 		self.name = data["name"]
 		self.content = []
-		self.lines = []
-		self.func = []
-		self.data = []
 		for line_data in data["content"]:
 			name = line_data[0]
-			func = None
+			func = line_data[1]
 			arg = None
 			
 			if line_data[1] == "menu":
@@ -36,4 +39,4 @@ class Menu:
 				#func = CallModule
 				arg = line_data[2]
 				
-			self.content.append((name, func, arg))
+			self.content.append(MenuItem(name, func, arg))

@@ -15,15 +15,37 @@ import json
 
 from supermegazord.base.menu import Menu
 
+# Evento de quit: active_menu == None
+
 class Megazord:
     def __init__(self):
-        self.menu_dict = {}
-        
         tmp = open("D:\stuff\programming\projects\supermegazord\system\megazord.conf", "r")
         self.config = json.load(tmp)
         tmp.close()
 
+        self.menus = {}
         for menu in self.config["menus"]:
-            self.menu_dict[menu] = Menu(self.config["menus"][menu])
+            self.menus[menu] = Menu(self.config["menus"][menu])
 
-        self.active_menu = self.menu_dict[self.config["start_menu"]]
+        self.active_menu = self.menus[self.config["start_menu"]]
+        self.menu_history = []
+
+    def Quit(self):
+        self.active_menu = None
+        self.menu_history = []
+
+    def ExecuteLine(self, line):
+        if line >= len(self.active_menu.content):
+            return False
+
+        command = self.active_menu.content[line]
+        if command.func == "menu" or command.func == "return":
+            next_menu = None
+            if command.func == "menu":
+                self.menu_history.append(self.active_menu)
+                next_menu = self.menus[command.arg]
+            elif len(self.menu_history) > 0:
+                next_menu = self.menu_history.pop()
+            self.active_menu = next_menu
+
+        return True
