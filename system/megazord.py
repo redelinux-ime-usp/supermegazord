@@ -11,7 +11,8 @@
 import sys
 sys.path.append("D:\\stuff\\programming\\projects")
 
-import json 
+import json
+import subprocess
 
 from supermegazord.base.menu import Menu
 
@@ -50,5 +51,10 @@ class Megazord:
             elif len(self.menu_history) > 0:
                 next_menu = self.menu_history.pop()
             self.active_menu = next_menu
+
+        elif command.func == "shell":
+            subprocess.call(command.arg, shell=True,
+                                         stdin=sys.stdin,
+					 stdout=sys.stdout)
 
         return True
