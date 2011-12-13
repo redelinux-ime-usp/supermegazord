@@ -40,7 +40,7 @@ while megazord.Running():
         PrintMenu(current_menu)
     elif command == "help":
         print "Commands: quit, menu, help"
-    else:
+    elif command != "":
         try:
             megazord.ExecuteLine(int(command))
         except:
