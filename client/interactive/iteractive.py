@@ -34,14 +34,17 @@ while megazord.Running():
         PrintMenu(current_menu)
     
     command = raw_input("> ")
-    if command == "quit" or command == "q":
+    if command == "quit" or command == "q" or command == "sair":
         megazord.Quit()
     elif command == "menu":
         PrintMenu(current_menu)
-    elif command == "help":
-        print "Commands: quit, menu, help"
+    elif command == "help" or command == "ajuda":
+        print "Comandos: q/quit/sair, menu, help/ajuda"
     elif command != "":
+        line = -1
         try:
-            megazord.ExecuteLine(int(command))
+            line = int(command)
         except:
             print "Comando desconhecido."
+        if line != -1:
+            megazord.ExecuteLine(line)

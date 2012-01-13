@@ -46,11 +46,18 @@ class Megazord:
         if command.func == "menu" or command.func == "return":
             next_menu = None
             if command.func == "menu":
-                self.menu_history.append(self.active_menu)
-                next_menu = self.menus[command.arg]
+                try:
+                    next_menu = self.menus[command.arg]
+                except:
+                    print "Erro Interno: Menu desconhecido."
+                if next_menu != None:
+                    self.menu_history.append(self.active_menu)
+                    
             elif len(self.menu_history) > 0:
                 next_menu = self.menu_history.pop()
-            self.active_menu = next_menu
+
+            if next_menu != None:
+                self.active_menu = next_menu
 
         elif command.func == "shell":
             subprocess.call(command.arg, shell=True,
