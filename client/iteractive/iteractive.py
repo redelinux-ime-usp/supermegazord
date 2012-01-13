@@ -9,7 +9,7 @@
 # Modificado em: 2011-12-13 por henriquelima
 
 import sys
-sys.path.append("D:\\stuff\\programming\\projects")
+sys.path.append("/root/")
 
 if __name__ != "__main__":
     print "Esse script é interativo e não um módulo."

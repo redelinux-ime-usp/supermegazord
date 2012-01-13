@@ -9,7 +9,7 @@
 # Modificado em: 2011-12-13 por henriquelima
 
 import sys
-sys.path.append("D:\\stuff\\programming\\projects")
+sys.path.append("/root/")
 
 import json
 import subprocess
@@ -20,7 +20,7 @@ from supermegazord.base.menu import Menu
 
 class Megazord:
     def __init__(self):
-        tmp = open("D:\stuff\programming\projects\supermegazord\system\megazord.conf", "r")
+        tmp = open("/root/supermegazord/system/megazord.conf", "r")
         self.config = json.load(tmp)
         tmp.close()
 
