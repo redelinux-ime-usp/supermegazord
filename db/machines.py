@@ -32,14 +32,14 @@ open_list("lista_258", "258")
 machines['clients'] = list(machines['all'])
 open_list("lista_servidores", "servers")
 
-machines['aquario'] = machines['122']
-machines['corredor'] = machines['125a']
-machines['admin'] = machines['125b']
-machines['herois'] = machines['126']
-machines['bcc'] = machines['258']
+machines['aquario']  = machines['122']
+machines['admin']    = machines['125a']
+machines['corredor'] = machines['125b']
+machines['herois']   = machines['126']
+machines['bcc']      = machines['258']
 
 def list(group):
 	return machines[group]
 
 def groups():
-	return d.keys()
+	return machines.keys()

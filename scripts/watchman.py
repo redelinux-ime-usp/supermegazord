@@ -36,7 +36,7 @@ class Group:
 		return 15
 
 	def NumColumns(self):
-		return (self.parent.Width()-1) / self.ColumnSize()
+		return max(min(len(self.members),(self.parent.Width()-1) / self.ColumnSize()), 1)
 
 	def Height(self):
 		return self.height
@@ -58,7 +58,7 @@ class Group:
 
 	def Draw(self):
 		screen = self.parent.Screen()
-		width = min(len(self.members), self.NumColumns()) * self.ColumnSize()
+		width = self.NumColumns() * self.ColumnSize()
 		for x in range(1, width):
 			if x % self.ColumnSize() == 0:
 				screen.addstr(self.offset, x, '╦')
@@ -157,7 +157,10 @@ def AddList(l, name, screen):
 def Init(screen):
 	from ..db import machines
 	AddList(machines.list('servers'), "Servidores", screen)
-	AddList(machines.list('clients'), "Clientes", screen)
+	AddList(machines.list('125a'), "125a", screen)
+	AddList(machines.list('125b'), "125b", screen)
+	AddList(machines.list('126'), "126", screen)
+	AddList(machines.list('258'), "258", screen)
 	global subtitle
 	subtitle = Subtitle(0, screen)
 	Reposition()
