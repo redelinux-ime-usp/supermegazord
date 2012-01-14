@@ -21,31 +21,47 @@ from supermegazord.system.megazord import Megazord
 import curses
 
 def PrintMenu(menu, screen):
-    w = 15
-    h = len(menu.content)
+    w = 20
+    h = len(menu.content) + 2
     color = 2
+    offset_x = 0
+    offset_y = 0
     
     for x in range(1, w - 1):
-        screen.addstr(0, x, '═', curses.color_pair(color))
-        screen.addstr(h-1, x, '═', curses.color_pair(color))
+        screen.addstr(offset_y +    0 , offset_x + x, '═')
+        screen.addstr(offset_y + (h-1), offset_x + x, '═')
         for y in range(1, h-1):
-            screen.addstr(y, x, ' ', curses.color_pair(color))
+            screen.addstr(offset_y + y, offset_x + x, ' ')
     for y in range(1, h-1):
-        screen.addstr(y, 0, '║', curses.color_pair(color))
-        screen.addstr(y, w-1, '║', curses.color_pair(color))
-    screen.addstr(0, 0, '╔', curses.color_pair(color))
-    screen.addstr(0, w-1, '╗', curses.color_pair(color))
-    screen.addstr(h-1, 0, '╚', curses.color_pair(color))
-    screen.addstr(h-1, w-1, '╝', curses.color_pair(color))
-    screen.addstr(0, 4, menu.name, curses.color_pair(color))
+        screen.addstr(offset_y + y, offset_x +   0  , '║')
+        screen.addstr(offset_y + y, offset_x + (w-1), '║')
+    screen.addstr(offset_y +   0  , offset_x +   0  , '╔')
+    screen.addstr(offset_y +   0  , offset_x + (w-1), '╗')
+    screen.addstr(offset_y + (h-1), offset_x +   0  , '╚')
+    screen.addstr(offset_y + (h-1), offset_x + (w-1), '╝')
+    screen.addstr(offset_y +   0  , offset_x +   4  , menu.name)
+
+    for i in range(0, len(menu.content)):
+        screen.addstr(offset_y + i + 1, offset_x + 2, menu.content[i].name)
+        
 
 megazord = Megazord()
 
+curses_quit = False
+
 def main(screen):
+    #screen.nodelay(True)
     global megazord
     PrintMenu(megazord.active_menu, screen)
-    while True:
-        screen.refresh()
+
+    global curses_quit
+    curses_quit = False
+    while megazord.Running() and not curses_quit:
+        c = screen.getch()
+        if c == ord('q'):
+            megazord.Quit()
+        else:
+            screen.refresh()
 
 while megazord.Running():
     curses.wrapper(main)

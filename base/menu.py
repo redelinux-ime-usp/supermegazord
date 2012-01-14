@@ -19,7 +19,7 @@ class Menu:
 		self.name = data["name"]
 		self.content = []
 		for line_data in data["content"]:
-			name = line_data[0]
+			name = line_data[0].encode("UTF-8")
 			func = line_data[1]
 			arg = None
 			
