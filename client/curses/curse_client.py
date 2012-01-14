@@ -19,6 +19,8 @@ if __name__ != "__main__":
 from supermegazord.system.megazord import Megazord
 megazord = Megazord()
 current_line = 0
+current_menu = megazord.active_menu
+exec_line_queued = False
 
 import curses
 # Curses global variables
@@ -46,6 +48,7 @@ def PrintMenu(menu, screen, offset_y = 0, offset_x = 0):
 
     global megazord, current_line
     for i in range(0, len(menu.content)):
+        # Santas variáveis globais batman
         if current_line == i and menu == megazord.active_menu:
             screen.addstr(offset_y + i + 1, offset_x + 2, menu.content[i].name, colors.YELLOW)
         else:
@@ -80,10 +83,19 @@ def main(screen):
         elif c == curses.KEY_UP or c == ord('1'):
             current_line = (current_line - 1) % megazord.active_menu.Size()
         elif c == ord('\n'):
-            megazord.ExecuteLine(current_line)
-            current_line = 0
+            #megazord.ExecuteLine(current_line)
+            #current_line = 0
+            global exec_line_queued
+            exec_line_queued = True
+            curses_quit = True
         else:
             screen.refresh()
 
 while megazord.Running():
+    if exec_line_queued:
+        megazord.ExecuteLine(current_line)
+        exec_line_queued = False
+        if current_menu != megazord.active_menu:
+            current_line = 0
+            current_menu = megazord.active_menu
     curses.wrapper(main)
