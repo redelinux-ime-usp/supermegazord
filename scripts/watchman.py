@@ -33,13 +33,13 @@ class Group:
 		self.members = []
 
 	def ColumnSize(self):
-		return 15
+		return 13
 
 	def NumColumns(self):
 		return max(min(len(self.members),(self.parent.Width()-1) / self.ColumnSize()), 1)
 
 	def Height(self):
-		return self.height
+		return self.height + 1
 
 	def Width(self):
 		return self.ColumnSize() * self.NumColumns()
@@ -60,14 +60,15 @@ class Group:
 		screen = self.parent.Screen()
 		width = self.NumColumns() * self.ColumnSize()
 		for x in range(1, width):
-			if x % self.ColumnSize() == 0:
-				screen.addstr(self.offset, x, '╦')
-				screen.addstr(self.offset + self.height + 1, x, '╩')
-			else:
+			#if x % self.ColumnSize() == 0:
+			#	screen.addstr(self.offset, x, '╦')
+			#	screen.addstr(self.offset + self.height + 1, x, '╩')
+			#else:
 				screen.addstr(self.offset, x, '═')
 				screen.addstr(self.offset + self.height + 1, x, '═')
 		for y in range(1, self.height + 1):
-			for x in range(0, self.NumColumns() + 1):
+		#	for x in range(0, self.NumColumns() + 1):
+			for x in [0, self.NumColumns()]:
 				screen.addstr(self.offset + y, x * self.ColumnSize(), '║')
 		screen.addstr(self.offset, 0, '╔')
 		screen.addstr(self.offset + self.height + 1, 0, '╚')
@@ -77,11 +78,13 @@ class Group:
 
 		index = 0
 		for member in self.members:
-			y = index / self.NumColumns() + 1
-			x = self.ColumnSize() * (index % self.NumColumns())
-			screen.addnstr(y + self.offset, x + 2, member.Name(), self.ColumnSize() -2, member.Color())
+			y = index / self.NumColumns() + 1 # A linha onde esse membro está
+			x = 1 + self.ColumnSize() * (index % self.NumColumns()) # 1 da borda esquerda
+
+			screen.addnstr(y + self.offset, x + 1, member.Name(), self.ColumnSize()-1, member.Color())
+			                                    # 1 caraceter é reservado para a possível '?'
 			if member.StatsAvaiable() == False:
-				screen.addstr(y + self.offset, x + 1, '?', colors.MAGENTA)
+				screen.addstr(y + self.offset, x, '?', colors.MAGENTA)
 			index += 1
 
 	def Screen(self):
@@ -135,8 +138,8 @@ def Reposition():
 	for group in groups:
 		group.Reposition()
 		group.offset = offset
-		offset += group.Height() + 3
-	subtitle.offset = offset -1
+		offset += group.Height() + 1
+	subtitle.offset = offset
 
 def Resize(screenobj):
 	Reposition()
