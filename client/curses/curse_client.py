@@ -23,6 +23,7 @@ current_line = 0
 import curses
 # Curses global variables
 curses_quit = False
+from supermegazord.base import colors
 
 def PrintMenu(menu, screen, offset_y = 0, offset_x = 0):
     w = 40
@@ -43,8 +44,12 @@ def PrintMenu(menu, screen, offset_y = 0, offset_x = 0):
     screen.addstr(offset_y + (h-1), offset_x + (w-1), '╝')
     screen.addstr(offset_y +   0  , offset_x +   4  , menu.name)
 
+    global megazord, current_line
     for i in range(0, len(menu.content)):
-        screen.addstr(offset_y + i + 1, offset_x + 2, menu.content[i].name)
+        if current_line == i and menu == megazord.active_menu:
+            screen.addstr(offset_y + i + 1, offset_x + 2, menu.content[i].name, colors.YELLOW)
+        else:
+            screen.addstr(offset_y + i + 1, offset_x + 2, menu.content[i].name)
         
 def PrintMenuList(screen):
     global megazord
@@ -60,6 +65,7 @@ def PrintMenuList(screen):
 def main(screen):
     #screen.nodelay(True)
     global megazord, current_line
+    colors.init()
 
     global curses_quit
     curses_quit = False
