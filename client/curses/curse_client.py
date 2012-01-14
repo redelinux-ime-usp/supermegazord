@@ -18,8 +18,8 @@ if __name__ != "__main__":
 # Megazord global variables
 from supermegazord.system.megazord import Megazord
 megazord = Megazord()
-current_line = 0
-current_menu = megazord.active_menu
+current_line = dict()
+current_line[megazord.active_menu] = 0
 exec_line_queued = False
 
 import curses
@@ -49,7 +49,7 @@ def PrintMenu(menu, screen, offset_y = 0, offset_x = 0):
     global megazord, current_line
     for i in range(0, len(menu.content)):
         # Santas variáveis globais batman
-        if current_line == i and menu == megazord.active_menu:
+        if current_line[menu] == i:# and menu == megazord.active_menu:
             screen.addstr(offset_y + i + 1, offset_x + 2, menu.content[i].name, colors.YELLOW)
         else:
             screen.addstr(offset_y + i + 1, offset_x + 2, menu.content[i].name)
@@ -84,14 +84,21 @@ def main(screen):
         if c == ord('q'):
             megazord.Quit()
         elif c == curses.KEY_DOWN or c == ord('2'):
-            current_line = (current_line + 1) % megazord.active_menu.Size()
+            current_line[megazord.active_menu] = (current_line[megazord.active_menu] + 1) % megazord.active_menu.Size()
             redraw = True
         elif c == curses.KEY_UP or c == ord('1'):
-            current_line = (current_line - 1) % megazord.active_menu.Size()
+            current_line[megazord.active_menu] = (current_line[megazord.active_menu] - 1) % megazord.active_menu.Size()
+            redraw = True
+        elif c == curses.KEY_LEFT:
+            megazord.PopMenu()
+            redraw = True
+        elif c == curses.KEY_END:
+            current_line[megazord.active_menu] = megazord.active_menu.Size() - 1
+            redraw = True
+        elif c == curses.KEY_HOME:
+            current_line[megazord.active_menu] = 0
             redraw = True
         elif c == ord('\n'):
-            #megazord.ExecuteLine(current_line)
-            #current_line = 0
             global exec_line_queued
             exec_line_queued = True
             curses_quit = True
@@ -100,9 +107,9 @@ def main(screen):
 
 while megazord.Running():
     if exec_line_queued:
-        megazord.ExecuteLine(current_line)
+        menu_count = len(megazord.menu_history)
+        megazord.ExecuteLine(current_line[megazord.active_menu])
+        if megazord.active_menu not in current_line or menu_count < len(megazord.menu_history):
+            current_line[megazord.active_menu] = 0
         exec_line_queued = False
-        if current_menu != megazord.active_menu:
-            current_line = 0
-            current_menu = megazord.active_menu
     curses.wrapper(main)

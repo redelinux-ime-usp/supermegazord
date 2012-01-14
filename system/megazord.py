@@ -37,6 +37,12 @@ class Megazord:
 
     def Running(self):
         return self.active_menu != None
+        
+    def PopMenu(self):
+        try: # Volta pro menu anterior
+            self.active_menu = self.menu_history.pop()
+        except: # Sai do programa
+            self.active_menu = None
 
     def ExecuteLine(self, line):
         if line >= len(self.active_menu.content):
@@ -56,10 +62,7 @@ class Megazord:
                     self.active_menu = next_menu
 
             else: # return
-                try: # Volta pro menu anterior
-                    self.active_menu = self.menu_history.pop()
-                except: # Sai do programa
-                    self.active_menu = None
+                self.PopMenu()
             
 
         elif command.func == "shell":
