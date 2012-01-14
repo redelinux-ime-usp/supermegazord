@@ -67,21 +67,28 @@ def PrintMenuList(screen):
 
 def main(screen):
     #screen.nodelay(True)
+    curses.curs_set(0)
+
     global megazord, current_line
     colors.init()
 
     global curses_quit
     curses_quit = False
+    redraw = True
     while megazord.Running() and not curses_quit:
-        screen.clear()
-        PrintMenuList(screen)
+        if redraw:
+            screen.clear()
+            PrintMenuList(screen)
+            redraw = False
         c = screen.getch()
         if c == ord('q'):
             megazord.Quit()
         elif c == curses.KEY_DOWN or c == ord('2'):
             current_line = (current_line + 1) % megazord.active_menu.Size()
+            redraw = True
         elif c == curses.KEY_UP or c == ord('1'):
             current_line = (current_line - 1) % megazord.active_menu.Size()
+            redraw = True
         elif c == ord('\n'):
             #megazord.ExecuteLine(current_line)
             #current_line = 0
