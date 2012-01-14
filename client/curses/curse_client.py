@@ -13,19 +13,21 @@ sys.path.append("/root/")
 
 if __name__ != "__main__":
     print "Esse script é interativo e não um módulo."
-    print __name__
     quit()
 
+# Megazord global variables
 from supermegazord.system.megazord import Megazord
+megazord = Megazord()
+current_line = 0
 
 import curses
+# Curses global variables
+curses_quit = False
 
-def PrintMenu(menu, screen):
-    w = 20
+def PrintMenu(menu, screen, offset_y = 0, offset_x = 0):
+    w = 40
     h = len(menu.content) + 2
     color = 2
-    offset_x = 0
-    offset_y = 0
     
     for x in range(1, w - 1):
         screen.addstr(offset_y +    0 , offset_x + x, '═')
@@ -44,22 +46,36 @@ def PrintMenu(menu, screen):
     for i in range(0, len(menu.content)):
         screen.addstr(offset_y + i + 1, offset_x + 2, menu.content[i].name)
         
-
-megazord = Megazord()
-
-curses_quit = False
+def PrintMenuList(screen):
+    global megazord
+    menu_list = [megazord.active_menu]
+    for menu in megazord.menu_history:
+        menu_list.append(menu)
+    
+    num_menu = len(menu_list)
+    for i in range(num_menu - 1, -1, -1):
+        PrintMenu(menu_list[i], screen, num_menu - i, num_menu - i)
+       
 
 def main(screen):
     #screen.nodelay(True)
-    global megazord
-    PrintMenu(megazord.active_menu, screen)
+    global megazord, current_line
 
     global curses_quit
     curses_quit = False
     while megazord.Running() and not curses_quit:
+        screen.clear()
+        PrintMenuList(screen)
         c = screen.getch()
         if c == ord('q'):
             megazord.Quit()
+        elif c == curses.KEY_DOWN or c == ord('2'):
+            current_line = (current_line + 1) % megazord.active_menu.Size()
+        elif c == curses.KEY_UP or c == ord('1'):
+            current_line = (current_line - 1) % megazord.active_menu.Size()
+        elif c == ord('\n'):
+            megazord.ExecuteLine(current_line)
+            current_line = 0
         else:
             screen.refresh()
 

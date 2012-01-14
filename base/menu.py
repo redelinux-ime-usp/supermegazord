@@ -16,7 +16,7 @@ class MenuItem:
 
 class Menu:
 	def __init__(self, data):
-		self.name = data["name"]
+		self.name = data["name"].encode("UTF-8")
 		self.content = []
 		for line_data in data["content"]:
 			name = line_data[0].encode("UTF-8")
@@ -40,3 +40,6 @@ class Menu:
 				arg = line_data[2]
 				
 			self.content.append(MenuItem(name, func, arg))
+
+	def Size(self):
+		return len(self.content)
