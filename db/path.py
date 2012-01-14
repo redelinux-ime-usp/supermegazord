@@ -9,7 +9,5 @@ if __name__ == "__main__":
 	print "Esse módulo não deve ser executado diretamente."
 	quit()
 
-import os.path
-HOME = os.path.expandvars("$HOME")
-MEGAZORD = HOME + "/supermegazord/"
+MEGAZORD = "/root/supermegazord/"
 

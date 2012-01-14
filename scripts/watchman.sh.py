@@ -10,9 +10,8 @@ if __name__ != "__main__":
 	print "Esse arquivo deve ser rodado apenas como um script."
 	quit()
 
-import os
 import sys
-sys.path.append(os.path.expandvars("$HOME"))
+sys.path.append("/root/")
 
 from supermegazord.scripts import watchman
 import curses
