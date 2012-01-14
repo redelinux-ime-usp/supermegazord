@@ -15,7 +15,7 @@ import json
 import subprocess
 
 from supermegazord.base.menu import Menu
-
+ 
 # Evento de quit: active_menu == None
 
 class Megazord:
@@ -43,21 +43,24 @@ class Megazord:
             return False
 
         command = self.active_menu.content[line]
-        if command.func == "menu" or command.func == "return":
-            next_menu = None
+        if command.func == "menu" or command.func == "return":            
             if command.func == "menu":
+                next_menu = None
                 try:
                     next_menu = self.menus[command.arg]
                 except:
                     print "Erro Interno: Menu desconhecido."
+                    
                 if next_menu != None:
                     self.menu_history.append(self.active_menu)
-                    
-            elif len(self.menu_history) > 0:
-                next_menu = self.menu_history.pop()
+                    self.active_menu = next_menu
 
-            if next_menu != None:
-                self.active_menu = next_menu
+            else: # return
+                try: # Volta pro menu anterior
+                    self.active_menu = self.menu_history.pop()
+                except: # Sai do programa
+                    self.active_menu = None
+            
 
         elif command.func == "shell":
             subprocess.call(command.arg, shell=True,
