@@ -17,12 +17,13 @@ if __name__ != "__main__":
 
 # Megazord global variables
 from supermegazord.system.megazord import Megazord
+import functools
 megazord = Megazord()
 current_line = dict()
 current_line[megazord.active_menu] = 0
-exec_line_queued = False
+queued_execution = None
 
-import curses
+import curses, curses.textpad
 # Curses global variables
 curses_quit = False
 from supermegazord.base import colors
@@ -64,6 +65,20 @@ def PrintMenuList(screen):
     for i in range(num_menu - 1, -1, -1):
         PrintMenu(menu_list[i], screen, num_menu - i, num_menu - i)
        
+def GetInput(screen, script_arg):
+    if script_arg.default != "":
+        default_value = "[" + script_arg.default + "] "
+    else:
+        default_value = ""
+    
+    screen.clear()
+    curses.curs_set(1)
+    curses.textpad.rectangle(screen, 2, 3, 6, 40)
+    screen.addstr(3, 5, script_arg.description + " " + default_value)
+    screen.refresh()
+    input = screen.getstr(5, 7) 
+    curses.curs_set(0)
+    return input
 
 def main(screen):
     #screen.nodelay(True)
@@ -99,17 +114,24 @@ def main(screen):
             current_line[megazord.active_menu] = 0
             redraw = True
         elif c == ord('\n'):
-            global exec_line_queued
-            exec_line_queued = True
+            menu_line = megazord.CurrentLine(current_line[megazord.active_menu])
+            global queued_execution
+            if not menu_line.HasArgs():
+                queued_execution = menu_line.Execute
+            else:
+                args = []
+                for script_arg in menu_line.script.args:
+                    args.append(GetInput(screen, script_arg))
+                queued_execution = functools.partial(menu_line.Execute, args)
             curses_quit = True
         else:
             screen.refresh()
 
 while megazord.Running():
-    if exec_line_queued:
+    if queued_execution != None:
         menu_count = len(megazord.menu_history)
-        megazord.ExecuteLine(current_line[megazord.active_menu])
+        queued_execution()
         if megazord.active_menu not in current_line or menu_count < len(megazord.menu_history):
             current_line[megazord.active_menu] = 0
-        exec_line_queued = False
+        queued_execution = None
     curses.wrapper(main)

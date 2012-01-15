@@ -14,29 +14,44 @@ class MenuItem:
     def __init__(self, name, func):
         self.name = name
         self.func = func
+        
+    def HasArgs(self): return False
+        
+    def Execute(self, args = []):
+        return self.func()
 
+class MenuScript:
+    def __init__(self, name, script):
+        self.name = name
+        self.script = script
+        
+    def HasArgs(self): return True
+        
+    def Execute(self, args = []):
+        return self.script.func(args)
+        
 class Menu:
     def __init__(self, data, megazord):
         self.name = data["name"].encode("UTF-8")
         self.content = []
         for line_data in data["content"]:
             name = line_data[0].encode("UTF-8")
-            func = line_data[1]
-            arg = None
+            item = None
+
             if line_data[1] == "menu":
-                func = functools.partial(megazord.OpenMenu, line_data[2])
+                item = MenuItem(name, functools.partial(megazord.OpenMenu, line_data[2]))
             
             elif line_data[1] == "return":
-                func = megazord.PopMenu
+                item = MenuItem(name, megazord.PopMenu)
             
             elif line_data[1] == "script":
-                func = megazord.scripts[line_data[2]].func
+                item = MenuScript(name, megazord.scripts[line_data[2]])
             
 			#elif line_data[1] == "module":
 			#	#func = CallModule
 			#	arg = line_data[2]
 				
-            self.content.append(MenuItem(name, func))
+            self.content.append(item)
 
     def Size(self):
         return len(self.content)

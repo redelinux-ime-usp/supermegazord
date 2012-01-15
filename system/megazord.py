@@ -60,13 +60,15 @@ class Megazord:
             self.active_menu = self.menu_history.pop()
         except: # Sai do programa
             self.active_menu = None
+            
+    def CurrentLine(self, line):
+        try:
+            return self.active_menu.content[line]
+        except:
+            return None
 
     def ExecuteLine(self, line):
-        try:
-            command = self.active_menu.content[line]
-        except:
-            command = None
-            
+        command = self.CurrentLine(line)
         if command != None:
-            return command.func()
+            return command.Execute()
         return False

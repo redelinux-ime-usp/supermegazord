@@ -8,18 +8,43 @@
 # Escrito em: 2012-01-15
 # Modificado em: 2012-01-15 por henriquelima
 
-import subprocess, functools, sys
+import subprocess, functools
 
-def ScriptSubprocess(path):
-    subprocess.call(path, shell=True, stdin=sys.stdin, stdout=sys.stdout)
+def ScriptSubprocess(path, args = []):
+    command = path
+    for arg in args:
+        command = command + " " + arg
+    #subprocess.call(command, shell=True)
+    print command
 
+class ScriptArg:
+    def __init__(self, data):
+        try:    self.description = data["description"]
+        except: self.description = "No Description"
+                
+        try:    self.default  = data["default"]
+        except: self.default  = "";
+                
+        try:    self.prefix = data["prefix"]
+        except: self.prefix = ""
+        
+    def Parse(self, input):
+        resp = input
+        if input == "":
+            resp = self.default
+        
+        return self.prefix + resp
+    
 class Script:
     def __init__(self, data, megazord):
-        self.func = lambda: False
+        self.func = lambda args = []: False
         self.disable_curses = False
         
         # Simple "execute a file"
         if data["type"] == "shell":
             self.disable_curses = True
             self.func = functools.partial(ScriptSubprocess, data["path"])
-            
+            self.args = []
+            if "args" in data:
+                for arg in data["args"]:
+                    self.args.append(ScriptArg(arg))

@@ -47,4 +47,17 @@ while megazord.Running():
         except:
             print "Comando desconhecido."
         if line != -1:
-            megazord.ExecuteLine(line)
+            menu_line = megazord.CurrentLine(line)
+            if not menu_line.HasArgs():
+                menu_line.Execute(line)
+            else:
+                args = []
+                for script_arg in menu_line.script.args:
+                    if script_arg.default != "":
+                        default_value = "[" + script_arg.default + "] "
+                    else:
+                        default_value = ""
+                    
+                    user_arg_input = raw_input(script_arg.description + ": " + default_value)
+                    args.append(script_arg.Parse(user_arg_input))
+                menu_line.Execute(args)
