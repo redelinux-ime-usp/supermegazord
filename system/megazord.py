@@ -6,7 +6,7 @@
 
 # Autor: Henrique Gemignani Passos Lima (henriquelima)
 # Escrito em: 2011-12-13
-# Modificado em: 2011-12-13 por henriquelima
+# Modificado em: 2012-01-15 por henriquelima
 
 import sys
 sys.path.append("/root/")
@@ -15,18 +15,24 @@ import json
 import subprocess
 
 from supermegazord.base.menu import Menu
+from supermegazord.base.script import Script
  
-# Evento de quit: active_menu == None
+# Evento de saída: active_menu == None
 
 class Megazord:
     def __init__(self):
         tmp = open("/root/supermegazord/system/megazord.conf", "r")
         self.config = json.load(tmp)
         tmp.close()
+        
+        self.scripts = {}
+        for script in self.config["scripts"]:
+            self.scripts[script] = Script(self.config["scripts"][script], self)
+            
 
         self.menus = {}
         for menu in self.config["menus"]:
-            self.menus[menu] = Menu(self.config["menus"][menu])
+            self.menus[menu] = Menu(self.config["menus"][menu], self)
 
         self.active_menu = self.menus[self.config["start_menu"]]
         self.menu_history = []
@@ -38,6 +44,17 @@ class Megazord:
     def Running(self):
         return self.active_menu != None
         
+    def OpenMenu(self, menu):
+        next_menu = None
+        try:
+            next_menu = self.menus[menu]
+        except:
+            print "Erro Interno: Menu desconhecido."
+            
+        if next_menu != None:
+            self.menu_history.append(self.active_menu)
+            self.active_menu = next_menu
+        
     def PopMenu(self):
         try: # Volta pro menu anterior
             self.active_menu = self.menu_history.pop()
@@ -45,29 +62,11 @@ class Megazord:
             self.active_menu = None
 
     def ExecuteLine(self, line):
-        if line >= len(self.active_menu.content):
-            return False
-
-        command = self.active_menu.content[line]
-        if command.func == "menu" or command.func == "return":            
-            if command.func == "menu":
-                next_menu = None
-                try:
-                    next_menu = self.menus[command.arg]
-                except:
-                    print "Erro Interno: Menu desconhecido."
-                    
-                if next_menu != None:
-                    self.menu_history.append(self.active_menu)
-                    self.active_menu = next_menu
-
-            else: # return
-                self.PopMenu()
+        try:
+            command = self.active_menu.content[line]
+        except:
+            command = None
             
-
-        elif command.func == "shell":
-            subprocess.call(command.arg, shell=True,
-                                         stdin=sys.stdin,
-					 stdout=sys.stdout)
-
-        return True
+        if command != None:
+            return command.func()
+        return False
