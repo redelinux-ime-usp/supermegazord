@@ -14,8 +14,8 @@ def ScriptSubprocess(path, args = []):
     command = path
     for arg in args:
         command = command + " " + arg
-    #subprocess.call(command, shell=True)
-    print command
+    subprocess.call(command, shell=True)
+    #print command
 
 class ScriptArg:
     def __init__(self, data):

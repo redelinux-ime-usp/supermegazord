@@ -18,9 +18,15 @@ if __name__ != "__main__":
 # Megazord global variables
 from supermegazord.system.megazord import Megazord
 import functools
+
+# Cria e inicializa o nosso megazord
 megazord = Megazord()
+
+# Memoriza a linha atual de cada menu
 current_line = dict()
 current_line[megazord.active_menu] = 0
+
+# Quando o curses reinicia, se essa variavel é != None, ela´é executada como uma função
 queued_execution = None
 
 import curses, curses.textpad
@@ -28,11 +34,7 @@ import curses, curses.textpad
 curses_quit = False
 from supermegazord.base import colors
 
-def PrintMenu(menu, screen, offset_y = 0, offset_x = 0):
-    w = 40
-    h = len(menu.content) + 2
-    color = 2
-    
+def DrawBorders(screen, offset_y, offset_x, h, w, title = ""):
     for x in range(1, w - 1):
         screen.addstr(offset_y +    0 , offset_x + x, '═')
         screen.addstr(offset_y + (h-1), offset_x + x, '═')
@@ -44,8 +46,20 @@ def PrintMenu(menu, screen, offset_y = 0, offset_x = 0):
     screen.addstr(offset_y +   0  , offset_x +   0  , '╔')
     screen.addstr(offset_y +   0  , offset_x + (w-1), '╗')
     screen.addstr(offset_y + (h-1), offset_x +   0  , '╚')
-    screen.addstr(offset_y + (h-1), offset_x + (w-1), '╝')
-    screen.addstr(offset_y +   0  , offset_x +   4  , menu.name)
+    try:
+        screen.addstr(offset_y + (h-1), offset_x + (w-1), '╝')
+    except curses.error: pass
+    if title != "":
+        screen.addstr(offset_y +   0  , offset_x +   4  , title)
+
+
+
+def PrintMenu(menu, screen, offset_y = 0, offset_x = 0):
+    w = 40
+    h = len(menu.content) + 2
+    color = 2
+    
+    DrawBorders(screen, offset_y, offset_x, h, w, menu.name)
 
     global megazord, current_line
     for i in range(0, len(menu.content)):
@@ -64,21 +78,31 @@ def PrintMenuList(screen):
     num_menu = len(menu_list)
     for i in range(num_menu - 1, -1, -1):
         PrintMenu(menu_list[i], screen, num_menu - i, num_menu - i)
-       
-def GetInput(screen, script_arg):
+
+def GetInputSingle(win, i, script_arg):
     if script_arg.default != "":
         default_value = "[" + script_arg.default + "] "
     else:
         default_value = ""
+
+    win.addstr(1 + i*2, 3, script_arg.description + " " + default_value)
+    win.refresh()
+    return win.getstr(2 + i*2, 2, 40)
     
-    screen.clear()
+ 
+def GetInput(screen, script_args):
+    win = curses.newwin((len(script_args) + 1) * 2, 45, 3, 20)
+    win.clear()
+    DrawBorders(win, 0, 0, (len(script_args) + 1) * 2, 45)
+    #win.border()
     curses.curs_set(1)
-    curses.textpad.rectangle(screen, 2, 3, 6, 40)
-    screen.addstr(3, 5, script_arg.description + " " + default_value)
-    screen.refresh()
-    input = screen.getstr(5, 7) 
+    curses.echo()
+    resp = []
+    for i in range(0, len(script_args)):
+        resp.append(GetInputSingle(win, i, script_args[i]))
     curses.curs_set(0)
-    return input
+    curses.noecho()
+    return resp
 
 def main(screen):
     #screen.nodelay(True)
@@ -119,9 +143,7 @@ def main(screen):
             if not menu_line.HasArgs():
                 queued_execution = menu_line.Execute
             else:
-                args = []
-                for script_arg in menu_line.script.args:
-                    args.append(GetInput(screen, script_arg))
+                args = GetInput(screen, menu_line.script.args)
                 queued_execution = functools.partial(menu_line.Execute, args)
             curses_quit = True
         else:
