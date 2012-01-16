@@ -1,4 +1,3 @@
-#!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 
 # Machine: Fornece a classe machine, utilizada pelo script ping
