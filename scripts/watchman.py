@@ -60,14 +60,9 @@ class Group:
 		screen = self.parent.Screen()
 		width = self.NumColumns() * self.ColumnSize()
 		for x in range(1, width):
-			#if x % self.ColumnSize() == 0:
-			#	screen.addstr(self.offset, x, '╦')
-			#	screen.addstr(self.offset + self.height + 1, x, '╩')
-			#else:
-				screen.addstr(self.offset, x, '═')
-				screen.addstr(self.offset + self.height + 1, x, '═')
+			screen.addstr(self.offset, x, '═')
+			screen.addstr(self.offset + self.height + 1, x, '═')
 		for y in range(1, self.height + 1):
-		#	for x in range(0, self.NumColumns() + 1):
 			for x in [0, self.NumColumns()]:
 				screen.addstr(self.offset + y, x * self.ColumnSize(), '║')
 		screen.addstr(self.offset, 0, '╔')
@@ -164,6 +159,7 @@ def Init(screen):
 	AddList(machines.list('125b'), "125b", screen)
 	AddList(machines.list('126'), "126", screen)
 	AddList(machines.list('258'), "258", screen)
+	AddList(machines.list('printers'), "Impressoras", screen)
 	global subtitle
 	subtitle = Subtitle(0, screen)
 	Reposition()

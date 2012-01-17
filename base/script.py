@@ -18,13 +18,13 @@ def ScriptSubprocess(path, args = []):
 
 class ScriptArg:
     def __init__(self, data):
-        try:    self.description = data["description"]
-        except: self.description = "No Description"
+        try:    self.description = data["description"].encode("UTF-8")
+        except: self.description = "Sem descrição".encode("UTF-8")
                 
-        try:    self.default  = data["default"]
+        try:    self.default  = data["default"].encode("UTF-8")
         except: self.default  = "";
                 
-        try:    self.prefix = data["prefix"]
+        try:    self.prefix = data["prefix"].encode("UTF-8")
         except: self.prefix = ""
         
     def Parse(self, input):
@@ -42,7 +42,7 @@ class Script:
         # Simple "execute a file"
         if data["type"] == "shell":
             self.disable_curses = True
-            self.func = functools.partial(ScriptSubprocess, data["path"])
+            self.func = functools.partial(ScriptSubprocess, data["path"].encode("UTF-8"))
             self.args = []
             if "args" in data:
                 for arg in data["args"]:

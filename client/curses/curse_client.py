@@ -87,7 +87,7 @@ def GetInputSingle(win, i, script_arg):
 
     win.addstr(1 + i*2, 3, script_arg.description + " " + default_value)
     win.refresh()
-    return win.getstr(2 + i*2, 2, 40)
+    return script_arg.Parse(win.getstr(2 + i*2, 2, 40))
     
  
 def GetInput(screen, script_args):
