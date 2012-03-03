@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+TryExec=rlscripts
+Exec=/global/bin/rlscripts
+Icon=/global/icons/rl.png
+Comment=Scrips da Rede Linux
+Terminal=false
+Name=RLScripts
+GenericName=Scripts da Rede Linux
+Categories=Utilities;
