@@ -13,6 +13,13 @@ ROOT_PASS  = open('/etc/supermegazord-kerberos.secret').read()
 
 import os
 
+def execute_command(command):
+	wrap = "kadmin -p " + ROOT_PRINC + " -w " + ROOT_PASS + " -q '" + command + "'" + ">/dev/null 2>/dev/null"
+	return os.system(wrap)
+
 def add_user(user, password):
-	command = "kadmin -p " + ROOT_PRINC + " -w " + ROOT_PASS + " -q 'addprinc -pw " + password + " " + user + "'"
-	return os.system(command + ">/dev/null 2>/dev/null")
+	return execute_command("addprinc -pw " + password + " " + user)
+
+def change_password(user, password):
+	return execute_command("change_password -pw " + password + " " + user)
+
