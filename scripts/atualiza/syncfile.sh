@@ -1,5 +1,7 @@
 #!/bin/bash
 
+MACHINES_SCRIPT="/root/supermegazord/db/machines.py"
+
 TARGET_GROUP='clients'
 while getopts ":t:" opt; do
 	case $opt in
@@ -44,4 +46,8 @@ if [ "$TARGET_PATH" == "" ]; then
 	exit 1
 fi
 
-echo "Copiando $SOURCE_PATH para $TARGET_PATH de $TARGET_GROUP"
+#echo "Copiando $SOURCE_PATH para $TARGET_PATH de $TARGET_GROUP"
+for m in $($MACHINES_SCRIPT $TARGET_GROUP); do
+	echo -n "$m: "
+	scp $SOURCE_PATH $m:$TARGET_PATH
+done
