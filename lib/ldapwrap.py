@@ -44,6 +44,8 @@ def add_user(userdata):
 		attrs['uidNumber'] = str(userdata['uid'])
 		attrs['gidNumber'] = userdata['gid']
 		attrs['homeDirectory'] = userdata['home']
+		if 'password' in userdata:
+			attrs['userPassword'] = userdata['password']
 	except:
 		return False
 
@@ -66,3 +68,10 @@ def get_gid(curso):
 		return con.search_s('ou=Group,' + BASEDN, ldap.SCOPE_SUBTREE, 'cn=%s' % curso)[0][1]['gidNumber'][0]
 	except:
 		return -1
+
+def change_password(user, password):
+	import os
+	command = "ldappasswd -D "+ROOTDN+" -w"+ROOTPW+" uid=" + user + ",ou=People," + BASEDN + " -s" + password
+	print command
+	return os.system(command)
+
