@@ -91,9 +91,9 @@ def GetInputSingle(win, i, script_arg):
     
  
 def GetInput(screen, script_args):
-    win = curses.newwin((len(script_args) + 1) * 2, 45, 3, 20)
+    win = curses.newwin((len(script_args) + 1) * 2, 50, 3, 20)
     win.clear()
-    DrawBorders(win, 0, 0, (len(script_args) + 1) * 2, 45)
+    DrawBorders(win, 0, 0, (len(script_args) + 1) * 2, 50)
     #win.border()
     curses.curs_set(1)
     curses.echo()
