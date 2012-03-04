@@ -164,7 +164,7 @@ else:
 	status_conta['home'] = False
 
 print "%(azul)s5/8 - Criando cota de impressão...%(norm)s" % cores.allcolors
-status_conta['print'] = remote.run_script("print", "/root/pkadd.sh " + newuserdata['login']) == 0
+status_conta['print'] = remote.run_script("print", "/root/print/bin/pkadduser " + newuserdata['login']) == 0
 
 print "%(azul)s6/8 - Adicionando usuário nas listas de e-mail...%(norm)s" % cores.allcolors
 status_conta['listas'] = remote.run_script("mail", "/root/email/rl_adiciona_pessoa " + newuserdata['curso'] + " " + newuserdata['login']) == 0
