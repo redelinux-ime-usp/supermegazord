@@ -40,7 +40,6 @@ def valida_login(login):
 jupinfofile   = "/root/supermegazord/db/usuarios/jup_info"
 nojupinfofile = "/root/supermegazord/db/usuarios/nojup_info"
 nidsfile      = "/root/supermegazord/db/usuarios/nids"
-nextuid       = "/root/supermegazord/db/usuarios/nextuid"
 suspensoes    = "/root/supermegazord/db/usuarios/suspensoes"
 historyfolder = "/root/supermegazord/db/usuarios/historicos/"
 
@@ -92,33 +91,35 @@ def get_jupinfo_from_login(login):
 
 def get_next_uid():
 	MAX_UID = 59999 # reservamos 60000 para cima para propósitos especiais
-	try:
-		uid = int(open(nextuid).read().strip())
-	except:
-		uid = 2000
+
+
+	# 
+
+	import datetime
+	prefix = str(datetime.datetime.now().year)[-2:]
+
+	def convert_str(prefix, i):
+		return prefix + ("000" + str(i))[-3:]
+	
 	from  ..lib import ldapwrap
 
-	# Garante que o UID não está sendo utilizado
-	while ldapwrap.find_user_by_uid(uid):
-		uid += 1
+	uid = ""
+	year_id = 0
+	while uid == "":
+		year_id += 1
 
-	if uid == 31415: uid += 1 # Preserva o uid do nub do will
+		# Cria um uid que começa com os ultimos 2 digitos do ano e termina com 3 digitos únicos.
+		uid = convert_str(prefix, year_id)
 
-	if uid > MAX_UID:
-		print "ERRO: Acabaram as UIDs! Admin, você está numa bela enrascada. Eu não queria ser você."
-		# Eu rescrevi esse sistema, mas não me atrevi a mexer nisso, entao deixei a mensagem original. Sinto muito.
-		return '-1'
+		# Verifica se já não existe ninguém com esse ID.
+		if ldapwrap.find_user_by_uid(uid):
+			uid = ""
 	
-	open(nextuid, 'w').write(str(uid + 1))
+	if year_id > 999:
+		print "ERRO: criando mais de 999 contas em um único ano. Caraca, como isso aconteceu!?"
+		return ""
 
-	return str(uid)
-
-def set_next_uid(uid):
-	try:
-		open(nextuid, 'w').write(str(uid))
-		return True
-	except:
-		return False
+	return uid
 
 def ban_login(login, motivo):
 	# TODO: fazer

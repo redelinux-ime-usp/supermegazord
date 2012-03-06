@@ -31,7 +31,8 @@ coletando_nid = True
 nid = -1
 userinfo = None
 while coletando_nid:
-	nid = raw_input("NID: ")
+	print "Pressione ENTER sem digitar nada para sair.\n"
+	nid = raw_input("Preecha o NID do usuário: ").strip()
 	if not nid: exit()
 	if not users.valida_nid(nid):
 		print "Erro: NID inválido."
@@ -82,14 +83,13 @@ Pergunte ao usuario qual login ele deseja ter, respeitando as regras:
 3) Nao pode ser um nome especial ('root', 'admin', etc).
 
 Aperte ENTER sem digitar nada para cancelar.\n'''
-	login = raw_input("Digite o login: ")
+	login = raw_input("Digite o login: ").strip()
 	if not login: exit()
 	if not users.valida_login(login):
 		print "Login inválido."
 		wait()
 		continue
 	
-	from supermegazord.lib import ldapwrap
 	if login == "root" or login == "admin" or ldapwrap.find_user_by_login(login):
 		print "Login indisponível."
 		wait()
@@ -141,7 +141,6 @@ print "%(verd)sIniciando criação de conta.%(norm)s" % cores.allcolors
 print
 
 status_conta = dict()
-from supermegazord.lib import ldapwrap
 from supermegazord.lib import kerbwrap
 from supermegazord.lib import remote
 
