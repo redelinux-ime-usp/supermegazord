@@ -72,6 +72,5 @@ def get_gid(curso):
 def change_password(user, password):
 	import os
 	command = "ldappasswd -D "+ROOTDN+" -w"+ROOTPW+" uid=" + user + ",ou=People," + BASEDN + " -s" + password
-	print command
 	return os.system(command)
 
