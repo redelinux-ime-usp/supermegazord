@@ -1,20 +1,4 @@
 #!/usr/bin/perl
-#
-## Script do MEGAZORD
-##___________________________________________________________________________
-## -> Nome: jupparse
-## -> Descrição: Script que faz o parsing da lista do júpiter trazido da seção
-## de alunos, gerando o arquivo "jup_info".
-## -> Uso: jupparse [-o arquivo_saida] <arquivo-secao-alunos>
-## -> Por: Alberto Bueno Junior (Login: abueno)
-## -> Ultima Atualizacao: 26/03/2010
-##____________________________________________________________________________
-
-# Caminho dos scripts e tudo mais
-$backends = "/root/megazord/backends";
-
-require "/root/megazord/backends/include";
-
 use Getopt::Std;
 getopts("o:", \%opts);
 
