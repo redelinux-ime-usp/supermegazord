@@ -1,7 +1,5 @@
 #!/bin/sh
-#
 # ~/.xsession
-#
 # Este é o arquivo pessoal de inicialização do X.
 
 # Abre uma janela para se emitir comandos.
@@ -21,4 +19,3 @@ export LC_ALL=pt_BR
 
 # Carrega o kde.
 exec gnome-session
-

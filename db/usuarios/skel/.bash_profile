@@ -1,10 +1,6 @@
-#
 # ~/.bash_profile
-#
 
 source /etc/profile
-
-# Acrescenta localização dos executáveis pessoais e o diretório corrente ao PATH.
 
 # Acerta algumas variáveis do shell.
 #TMOUT=1800
@@ -30,14 +26,8 @@ elif [ -f ~/.bash_aliases ]; then
   source ~/.bash_aliases
 fi
 
-# Mostra mensagem idiota. Nao exibe erros se não estiver instalado na máquina.
-if [ `which fortune 2> /dev/null | wc -l` -eq 1 ]; then
-	echo; fortune; echo
-fi
-
 # Checa a cota de disco.
 COTA=`quota 2> /dev/null | tail -n 1 | tr -s ' '| cut -d' ' -f2 | egrep "\*$"`
 if [ $COTA ]; then
   echo -e '*** Cota de disco estourada! ***\n'
 fi
-

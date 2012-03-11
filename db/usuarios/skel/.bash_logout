@@ -1,6 +1,4 @@
-#
 # ~/.bash_logout
-#
 
 # Garante que o arquivo .plan exista e tenha, pelo menos, três linhas.
 if [ ! -e ~/.plan ]; then
@@ -27,7 +25,7 @@ echo >> /tmp/bash_logout.$$
 mv -f /tmp/bash_logout.$$ ~/.plan > /dev/null
 
 # Limpa a tela da estação antes de fazer o logout.
-clear
+clear_console -q
 
 # muda de terminal e vai para o gráfico. Isso tem o efeito (desejável) de
 # limpar o backbuffer do modo texto para que outros usuários não
@@ -37,4 +35,3 @@ if tty | grep -q '^/dev/vc/'; then
    chvt 1
    chvt 7
 fi
-
