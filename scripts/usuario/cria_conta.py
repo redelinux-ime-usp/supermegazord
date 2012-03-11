@@ -159,6 +159,7 @@ print "%(azul)s4/8 - Criando home...%(norm)s" % cores.allcolors
 copy_nfs = remote.copy_files("nfs", "/root/supermegazord/db/usuarios/skel", newuserdata['home']) == 0
 if copy_nfs:
 	status_conta['home'] = remote.run_script("nfs", "chown -R " + newuserdata['uid'] + ":" + newuserdata['gid'] + " " + newuserdata['home']) == 0
+	remote.run_script("nfs", "/root/define_quota.sh " + newuserdata['login'])
 else:
 	status_conta['home'] = False
 
