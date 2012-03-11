@@ -1,0 +1,3 @@
+Nesse diretório você pode colocar seus próprios scripts/programas.
+Assim será possível executá-los chamando apenas pelo nome,
+sem necessidade do caminho completo.

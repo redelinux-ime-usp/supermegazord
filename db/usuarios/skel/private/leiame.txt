@@ -1,7 +1,5 @@
+Este é um diretório protegido, ou seja, somente você terá acesso ao conteúdo
+dos arquivos aqui colocados. Use-o para guardar seu trabalhos, EPs, etc.
 
-  Este é um diretório protegido, ou seja, somente você terá acesso ao conteúdo
-dos arquivos aqui colocados. Use-o para guardar seu trabalhos, EPs, etc...
-
-  Para maiores informações sobre como proteger seus arquivos e diretórios,
+Para maiores informações sobre como proteger seus arquivos e diretórios,
 digite o comando "man chmod".
-
