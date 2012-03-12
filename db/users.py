@@ -35,7 +35,7 @@ def valida_nid(nid):
 
 def valida_login(login):
 	import re
-	return re.compile('^[a-z]{4,}$').match(login)
+	return re.compile('^[a-z]{4,12}$').match(login)
 
 jupinfofile   = "/root/supermegazord/db/usuarios/jup_info"
 nojupinfofile = "/root/supermegazord/db/usuarios/nojup_info"
