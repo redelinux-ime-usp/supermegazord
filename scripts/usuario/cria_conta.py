@@ -78,7 +78,7 @@ while coletando_login:
 
 Pergunte ao usuario qual login ele deseja ter, respeitando as regras:
 
-1) Pelo menos 3 caracteres e no máximo 12;
+1) Pelo menos 2 caracteres e no máximo 12;
 2) So pode conter letras minusculas nao acentuadas (a-z);
 3) Nao pode ser um nome especial ('root', 'admin', etc).
 
