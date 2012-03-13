@@ -21,6 +21,9 @@ def open_connection():
 	con.simple_bind_s(ROOTDN, ROOTPW)
 	return con
 
+def query(target, restriction):
+	con = open_connection()
+
 def find_user_by_restriction(restriction):
 	con = open_connection()
 	try:
@@ -34,18 +37,18 @@ def find_user_by_uid(uid):
 def find_user_by_login(login):
 	return find_user_by_restriction('uid=%s' % login)
 
-def add_user(userdata):
+def add_user(account):
 	attrs = {}
 	attrs['objectClass'] = ['account', 'posixAccount', 'top', 'shadowAccount']
 	try:
-		attrs['cn'] = userdata['nome']
-		attrs['uid'] = userdata['login']
-		attrs['loginShell'] = userdata['shell']
-		attrs['uidNumber'] = str(userdata['uid'])
-		attrs['gidNumber'] = userdata['gid']
-		attrs['homeDirectory'] = userdata['home']
-		if 'password' in userdata:
-			attrs['userPassword'] = userdata['password']
+		attrs['cn'] = account.name
+		attrs['uid'] = account.login
+		attrs['uidNumber'] = str(account.uid)
+		attrs['gidNumber'] = str(account.gid)
+		attrs['homeDirectory'] = account.home
+		attrs['loginShell'] = account.shell
+		if account.password != '':
+			attrs['userPassword'] = account.password
 	except:
 		return False
 

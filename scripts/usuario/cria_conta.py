@@ -13,6 +13,7 @@ SHELL   = "/bin/bash"
 from supermegazord.db import users
 from supermegazord.lib import cores
 from supermegazord.lib import ldapwrap
+from supermegazord.lib.account import Account
 
 def wait():
 	import getpass
@@ -111,6 +112,9 @@ try:
 except:
 	exit()
 
+newuser = Account(uid, gid, login, userinfo.nome, home, SHELL)
+newuser.set_password(users.generate_password())
+newuser.set_nid(nid)
 newuserdata = {
 	'nid': nid,
 	'uid': uid,
@@ -124,12 +128,12 @@ newuserdata = {
 
 clear()
 print "%(verd)sRESUMINDO:\n" % cores.allcolors
-print "NID.....:", newuserdata['nid']
-print "Login...:", newuserdata['login'], "(uid = %s)" % newuserdata['uid']
-print "Nome....:", newuserdata['nome']
-print "Grupo...:", newuserdata['curso'], "(gid = %s)" % newuserdata['gid']
-print "Home....:", newuserdata['home']
-print "Shell...:", newuserdata['shell']
+print "NID.....:", newuser.nid
+print "Login...:", newuser.login, "(uid = %s)" % newuser.uid
+print "Nome....:", newuser.name
+print "Grupo...:", userinfo.curso, "(gid = %s)" % newuser.gid
+print "Home....:", newuser.home
+print "Shell...:", newuser.shell
 print cores.norm
 print "%(verm)sATENCAO: Ultima chance para desistir.\n" % cores.allcolors
 confirm = raw_input("Deseja continuar com a criacao da conta? (y/n) ")
@@ -146,35 +150,35 @@ from supermegazord.lib import remote
 
 print "%(azul)s1/8 - Limpando lixo de algum possivel ex-usuario com mesmo login...%(norm)s" % cores.allcolors
 # possiveis suspensoes
-status_conta['limpeza'] = users.unban_login(newuserdata['login'])
+status_conta['limpeza'] = users.unban_login(newuser.login)
 
 # Adicionando ao passwd (LDAP)
 print "%(azul)s2/8 - Adicionando usuário ao passwd (LDAP)...%(norm)s" % cores.allcolors
-status_conta['passwd'] = ldapwrap.add_user(newuserdata)
+status_conta['passwd'] = newuser.add_to_ldap()
 
 print "%(azul)s3/8 - Adicionando usuário ao Kerberos...%(norm)s" % cores.allcolors
-status_conta['kerberos'] = kerbwrap.add_user(newuserdata['login'], newuserdata['password']) == 0
+status_conta['kerberos'] = kerbwrap.add_user(newuser.login, newuser.password) == 0
 
 print "%(azul)s4/8 - Criando home...%(norm)s" % cores.allcolors
-copy_nfs = remote.copy_files("nfs", "/root/supermegazord/db/usuarios/skel", newuserdata['home']) == 0
+copy_nfs = remote.copy_files("nfs", "/root/supermegazord/db/usuarios/skel", newuser.home) == 0
 if copy_nfs:
-	status_conta['home'] = remote.run_script("nfs", "chown -R " + newuserdata['uid'] + ":" + newuserdata['gid'] + " " + newuserdata['home']) == 0
-	remote.run_script("nfs", "/root/define_quota.sh " + newuserdata['login'])
+	status_conta['home'] = remote.run_script("nfs", "chown -R " + newuser.uid + ":" + newuser.gid + " " + newuser.home) == 0
+	remote.run_script("nfs", "/root/define_quota.sh " + newuser.login)
 else:
 	status_conta['home'] = False
 
 print "%(azul)s5/8 - Criando cota de impressão...%(norm)s" % cores.allcolors
-status_conta['print'] = remote.run_script("print", "/root/print/bin/pkadduser " + newuserdata['login']) == 0
+status_conta['print'] = remote.run_script("print", "/root/print/bin/pkadduser " + newuser.login) == 0
 
 print "%(azul)s6/8 - Adicionando usuário nas listas de e-mail...%(norm)s" % cores.allcolors
-status_conta['listas'] = remote.run_script("mail", "/root/email/rl_adiciona_pessoa " + newuserdata['curso'] + " " + newuserdata['login']) == 0
+status_conta['listas'] = remote.run_script("mail", "/root/email/rl_adiciona_pessoa " + userinfo.curso + " " + newuser.login) == 0
 
 print "%(azul)s7/8 - Registrando abertura de conta no histórico do usuário...%(norm)s" % cores.allcolors
-msg = "Conta " + newuserdata['login'] + (" (%s) aberta\n" % newuserdata['curso']) + ("NID: %s;" % newuserdata['nid']) + " Nome: %s\n" % newuserdata['nome']
-status_conta['historico'] = users.add_history_by_nid(newuserdata['nid'], msg)
+msg = "Conta " + newuser.login + (" (%s) aberta\n" % userinfo.curso) + ("NID: %s;" % newuser.nid) + " Nome: %s\n" % newuser.name
+status_conta['historico'] = users.add_history_by_nid(newuser.nid, msg)
 
 print "%(azul)s8/8 - Associando NID à conta...%(norm)s" % cores.allcolors
-status_conta['nid'] = users.add_nid_login(newuserdata['nid'], newuserdata['login'])
+status_conta['nid'] = users.add_nid_login(newuser.nid, newuser.login)
 
 for k in status_conta:
 	if status_conta[k]:
@@ -182,8 +186,8 @@ for k in status_conta:
 	else:
 		status_conta[k] = cores.verm + "ERRO" + cores.norm
 
-display_login = (newuserdata['login'] + "          ")[:12]
-display_password = newuserdata['password']
+display_login = (newuser.login + "          ")[:12]
+display_password = newuser.password
 
 print
 print "Operações de cadastro realizadas, exibindo resultados:"
