@@ -30,19 +30,42 @@ class Account:
 		import ldapwrap
 		return ldapwrap.add_user(self)
 
-	def is_in_group(self, gid):
-		import ldapwrap
-		group = ldapwrap
-		return False
+	def add_to_kerberos(self):
+		import kerbwrap
+		return kerbwrap.add_user(self.name, self.password)
 
+	def send_password_update(self):
+		import kerbwrap
+		return change_password(self.name, self.password)
+
+	def is_in_group_by_ldapdata(self, group):
+		if group['gidNumber'][0] == str(self.gid): return True
+		if 'memberUid' not in group: return False
+		return self.login in group['memberUid']
+		
+	def is_in_group_by_gid(self, gid):
+		import ldapwrap
+		return self.is_in_group_by_ldapdata(ldapwrap.find_grupo_by_gid(gid))
+
+	def is_in_group_by_name(self, gname):
+		import ldapwrap
+		return self.is_in_group_by_ldapdata(ldapwrap.find_grupo_by_name(gname))
+		
 
 def from_ldap(ldapdata):
-	uid = ldapdata['uidNumber'][0]
-	gid = ldapdata['gidNumber'][0]
-	login = ldapdata['uid'][0]
-	name = ldapdata['cn'][0]
-	home = ldapdata['homeDirectory'][0]
-	shell = ldapata['loginShell'][0]
-	return Account(uid, gid, login, name, home, shell)
+	try:
+		uid = ldapdata['uidNumber'][0]
+		gid = ldapdata['gidNumber'][0]
+		login = ldapdata['uid'][0]
+		name = ldapdata['cn'][0]
+		home = ldapdata['homeDirectory'][0]
+		shell = ldapdata['loginShell'][0]
+		return Account(uid, gid, login, name, home, shell)
+	except:
+		return None
 
+def from_login(login):
+	import ldapwrap
+	return from_ldap(ldapwrap.find_user_by_login(login))
+	
 

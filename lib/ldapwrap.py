@@ -21,13 +21,17 @@ def open_connection():
 	con.simple_bind_s(ROOTDN, ROOTPW)
 	return con
 
-def query(target, restriction):
+def query(target, restriction = ''):
 	con = open_connection()
+	try:
+		return con.search_s(target + ',' + BASEDN, ldap.SCOPE_SUBTREE, restriction)
+	except:
+		return None
 
 def find_user_by_restriction(restriction):
 	con = open_connection()
 	try:
-		return con.search_s('ou=People,' + BASEDN, ldap.SCOPE_SUBTREE, restriction)[0][1]
+		return query('ou=People', restriction)[0][1]
 	except:
 		return None
 
@@ -65,10 +69,21 @@ def add_user(account):
 		return False
 	return False
 
-def get_gid(curso):
-	con = open_connection()
+def find_grupo_by_gid(gid):
 	try:
-		return con.search_s('ou=Group,' + BASEDN, ldap.SCOPE_SUBTREE, 'cn=%s' % curso)[0][1]['gidNumber'][0]
+		return query('ou=Group', 'gidNumber=%s' % gid)[0][1]
+	except:
+		return None
+
+def find_grupo_by_name(name):
+	try:
+		return query('ou=Group', 'cn=%s' % name)[0][1]
+	except:
+		return None
+
+def get_gid(curso):
+	try:
+		return find_grupo_by_name(curso)['gidNumber'][0]
 	except:
 		return -1
 
