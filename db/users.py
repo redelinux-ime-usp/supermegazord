@@ -163,9 +163,16 @@ def generate_password(length = 10):
 
 if __name__ == "__main__":
 	import sys
+	if len(sys.argv) != 2:
+		print "Uso: %s <nid ou login>" % sys.argv[0]
+		exit(1)
+		
 	if valida_nid(sys.argv[1]):
-		print get_jupinfo_from_nid(sys.argv[1]).nome
+		try:
+			print get_jupinfo_from_nid(sys.argv[1]).nome
+		except:
+			print "NID desconhecido"
 	elif valida_login(sys.argv[1]):
 		print login_to_nid(sys.argv[1])
 	else:
-		print "Uso: %s <nid ou login>", sys.argv[0]
+		print "Uso: %s <nid ou login>" % sys.argv[0]
