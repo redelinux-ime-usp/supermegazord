@@ -73,7 +73,7 @@ def nid_to_login(nid):
 def add_nid_login(nid, login):
 	if not nid or not login: return False
 	try:
-		open(nidsfile, 'a').write(nid + ':' + login + '\n')
+		open(nidsfile, 'a').write(login + ':' + nid + '\n')
 		nidscache[0][login] = nid
 		nidscache[1][nid] = login
 		return True
@@ -166,13 +166,12 @@ if __name__ == "__main__":
 	if len(sys.argv) != 2:
 		print "Uso: %s <nid ou login>" % sys.argv[0]
 		exit(1)
-		
-	if valida_nid(sys.argv[1]):
-		try:
+
+	
+	try:
+		if valida_nid(sys.argv[1]):
 			print get_jupinfo_from_nid(sys.argv[1]).nome
-		except:
-			print "NID desconhecido"
-	elif valida_login(sys.argv[1]):
-		print login_to_nid(sys.argv[1])
-	else:
-		print "Uso: %s <nid ou login>" % sys.argv[0]
+		elif valida_login(sys.argv[1]):
+			print login_to_nid(sys.argv[1])
+	except:
+		print "NID ou Login desconhecido"

@@ -1,6 +1,6 @@
 #!/bin/bash
 SUPERMEGAZORD=/root/supermegazord/
-MACHINES=`$SUPERMEGAZORD/db/machines.py all`
+MACHINES=`$SUPERMEGAZORD/scripts/watchman.sh.py --up all`
 
 DB="/root/redelinux/estatisticas/login/`date -d '1 month ago' +'%Y-%m'`"
 

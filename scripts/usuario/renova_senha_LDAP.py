@@ -51,6 +51,8 @@ while ldapinfo == None:
 
 clear()
 
+print ldapinfo['uid'][0]
+
 jupinfo = users.get_jupinfo_from_login(ldapinfo['uid'][0])
 
 print "Confirmando dados:"

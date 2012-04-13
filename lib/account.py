@@ -57,7 +57,10 @@ def from_ldap(ldapdata):
 		uid = ldapdata['uidNumber'][0]
 		gid = ldapdata['gidNumber'][0]
 		login = ldapdata['uid'][0]
-		name = ldapdata['cn'][0]
+		if 'gecos' in ldapdata:
+			name = ldapdata['gecos'][0]
+		else:
+			name = ldapdata['cn'][0]
 		home = ldapdata['homeDirectory'][0]
 		shell = ldapdata['loginShell'][0]
 		return Account(uid, gid, login, name, home, shell)

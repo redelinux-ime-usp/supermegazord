@@ -155,6 +155,7 @@ def AddList(l, name, screen):
 def Init(screen):
 	from ..db import machines
 	AddList(machines.list('servers'), "Servidores", screen)
+	AddList(machines.list('122'), "122", screen)
 	AddList(machines.list('125a'), "125a", screen)
 	AddList(machines.list('125b'), "125b", screen)
 	AddList(machines.list('126'), "126", screen)
