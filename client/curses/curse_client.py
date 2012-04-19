@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.6
+#!/usr/bin/env python2.7
 # -*- coding: utf-8 -*-
 
 # Super Megazord 2: LDAP Edition
@@ -7,9 +7,6 @@
 # Autor: Henrique Gemignani Passos Lima (henriquelima)
 # Escrito em: 2011-08-05
 # Modificado em: 2011-08-05 por henriquelima
-
-import sys
-sys.path.append("/root/")
 
 if __name__ != "__main__":
     print "Esse script é interativo e não um módulo."
@@ -35,22 +32,32 @@ curses_quit = False
 from supermegazord.base import colors
 
 def DrawBorders(screen, offset_y, offset_x, h, w, title = ""):
-    for x in range(1, w - 1):
-        screen.addstr(offset_y +    0 , offset_x + x, '═')
-        screen.addstr(offset_y + (h-1), offset_x + x, '═')
-        for y in range(1, h-1):
-            screen.addstr(offset_y + y, offset_x + x, ' ')
-    for y in range(1, h-1):
-        screen.addstr(offset_y + y, offset_x +   0  , '║')
-        screen.addstr(offset_y + y, offset_x + (w-1), '║')
-    screen.addstr(offset_y +   0  , offset_x +   0  , '╔')
-    screen.addstr(offset_y +   0  , offset_x + (w-1), '╗')
-    screen.addstr(offset_y + (h-1), offset_x +   0  , '╚')
+	BORDER_TOP = '═'
+	BORDER_BOTTOM = '═'
+	BORDER_LEFT = '║'
+	BORDER_RIGHT = '║'
+
+	BORDER_TOP_LEFT     = '╔'
+	BORDER_TOP_RIGHT    = '╗'
+	BORDER_BOTTOM_LEFT  = '╚'
+	BORDER_BOTTOM_RIGHT = '╝'
+
     try:
-        screen.addstr(offset_y + (h-1), offset_x + (w-1), '╝')
+		for x in range(1, w - 1):
+			screen.addstr(offset_y +    0 , offset_x + x, BORDER_TOP)
+			screen.addstr(offset_y + (h-1), offset_x + x, BORDER_BOTTOM)
+			for y in range(1, h-1):
+				screen.addstr(offset_y + y, offset_x + x, ' ')
+		for y in range(1, h-1):
+			screen.addstr(offset_y + y, offset_x +   0  , BORDER_LEFT)
+			screen.addstr(offset_y + y, offset_x + (w-1), BORDER_RIGHT)
+		screen.addstr(offset_y +   0  , offset_x +   0  , BORDER_TOP_LEFT)
+		screen.addstr(offset_y +   0  , offset_x + (w-1), BORDER_TOP_RIGHT)
+		screen.addstr(offset_y + (h-1), offset_x +   0  , BORDER_BOTTOM_LEFT)
+        screen.addstr(offset_y + (h-1), offset_x + (w-1), BORDER_BOTTOM_RIGHT)
+		if title != "":
+			screen.addstr(offset_y +   0  , offset_x +   4  , title)
     except curses.error: pass
-    if title != "":
-        screen.addstr(offset_y +   0  , offset_x +   4  , title)
 
 
 
