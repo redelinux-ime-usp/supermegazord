@@ -6,14 +6,8 @@
 # Escrito em: 2011-08-17 
 # Modificado em: 2012-01-13 por henriquelima
 
-if __name__ == "__main__":
-	import sys
-	sys.path.append("/root/")
-	from supermegazord.db import path
-	from supermegazord.lib.machine import Machine
-else:
-	import path
-	from ..lib.machine import Machine
+from supermegazord.db import path
+from supermegazord.lib.machine import Machine
 
 machines = dict()
 machines['all'] = list()
