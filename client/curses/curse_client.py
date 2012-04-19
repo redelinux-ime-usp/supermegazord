@@ -32,17 +32,15 @@ curses_quit = False
 from supermegazord.base import colors
 
 def DrawBorders(screen, offset_y, offset_x, h, w, title = ""):
-	BORDER_TOP = '═'
-	BORDER_BOTTOM = '═'
-	BORDER_LEFT = '║'
-	BORDER_RIGHT = '║'
-
-	BORDER_TOP_LEFT     = '╔'
-	BORDER_TOP_RIGHT    = '╗'
-	BORDER_BOTTOM_LEFT  = '╚'
-	BORDER_BOTTOM_RIGHT = '╝'
-
-    try:
+	BORDER_TOP			= u'═'.encode('UTF-8')
+	BORDER_BOTTOM		= u'═'.encode('UTF-8')
+	BORDER_LEFT			= u'║'.encode('UTF-8')
+	BORDER_RIGHT		= u'║'.encode('UTF-8')
+	BORDER_TOP_LEFT		= u'╔'.encode('UTF-8')
+	BORDER_TOP_RIGHT	= u'╗'.encode('UTF-8')
+	BORDER_BOTTOM_LEFT	= u'╚'.encode('UTF-8')
+	BORDER_BOTTOM_RIGHT	= u'╝'.encode('UTF-8')
+	try:
 		for x in range(1, w - 1):
 			screen.addstr(offset_y +    0 , offset_x + x, BORDER_TOP)
 			screen.addstr(offset_y + (h-1), offset_x + x, BORDER_BOTTOM)
@@ -54,10 +52,11 @@ def DrawBorders(screen, offset_y, offset_x, h, w, title = ""):
 		screen.addstr(offset_y +   0  , offset_x +   0  , BORDER_TOP_LEFT)
 		screen.addstr(offset_y +   0  , offset_x + (w-1), BORDER_TOP_RIGHT)
 		screen.addstr(offset_y + (h-1), offset_x +   0  , BORDER_BOTTOM_LEFT)
-        screen.addstr(offset_y + (h-1), offset_x + (w-1), BORDER_BOTTOM_RIGHT)
+		screen.addstr(offset_y + (h-1), offset_x + (w-1), BORDER_BOTTOM_RIGHT)
 		if title != "":
 			screen.addstr(offset_y +   0  , offset_x +   4  , title)
-    except curses.error: pass
+	except curses.error:
+		pass
 
 
 
