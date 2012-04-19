@@ -7,20 +7,18 @@
 # Escrito em: 2011-12-13
 # Modificado em: 2012-01-15 por henriquelima
 
-import sys
-sys.path.append("/root/")
-
 import json
 import subprocess
 
 from supermegazord.base.menu import Menu
 from supermegazord.base.script import Script
+from supermegazord.db import path
  
 # Evento de saída: active_menu == None
 
 class Megazord:
     def __init__(self):
-        tmp = open("/root/supermegazord/system/megazord.conf", "r")
+        tmp = open(path.MEGAZORD + "system/megazord.conf", "r")
         self.config = json.load(tmp)
         tmp.close()
         
