@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.6
+#!/usr/bin/env python2.7
 # -*- coding: utf-8 -*-
 
 # Watchman: Monitora o estado das máquianas da rede.
@@ -10,12 +10,8 @@ if __name__ != "__main__":
 	print "Esse arquivo deve ser rodado apenas como um script."
 	quit()
 
-import sys
-sys.path.append("/root/")
-
 from supermegazord.scripts import watchman
-import curses
-import signal
+import sys, curses, signal
 
 class Screen:
 	def __init__(self, screen):
