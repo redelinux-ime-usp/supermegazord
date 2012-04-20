@@ -60,27 +60,45 @@ class Group:
 		screen = self.parent.Screen()
 		width = self.NumColumns() * self.ColumnSize()
 		for x in range(1, width):
-			screen.addstr(self.offset, x, '═')
-			screen.addstr(self.offset + self.height + 1, x, '═')
-		for y in range(1, self.height + 1):
-			for x in [0, self.NumColumns()]:
-				screen.addstr(self.offset + y, x * self.ColumnSize(), '║')
-		screen.addstr(self.offset, 0, '╔')
-		screen.addstr(self.offset + self.height + 1, 0, '╚')
-		screen.addstr(self.offset, width, '╗')
-		screen.addstr(self.offset + self.height + 1, width, '╝')
-		screen.addstr(self.offset, 4, self.name)
+			try: screen.addstr(self.offset, x, '═')
+			except curses.error: pass
 
+			try: screen.addstr(self.offset + self.height + 1, x, '═')
+			except curses.error: pass
+
+			for y in range(1, self.height + 1):
+				for x in [0, self.NumColumns()]:
+					try: screen.addstr(self.offset + y, x * self.ColumnSize(), '║')
+					except curses.error: pass
+		
+		try: screen.addstr(self.offset, 0, '╔')
+		except curses.error: pass
+
+		try: screen.addstr(self.offset + self.height + 1, 0, '╚')
+		except curses.error: pass
+
+		try: screen.addstr(self.offset, width, '╗')
+		except curses.error: pass
+
+		try: screen.addstr(self.offset + self.height + 1, width, '╝')
+		except curses.error: pass
+
+		try: screen.addstr(self.offset, 4, self.name)
+		except curses.error: pass
+			
 		index = 0
 		for member in self.members:
-			y = index / self.NumColumns() + 1 # A linha onde esse membro está
-			x = 1 + self.ColumnSize() * (index % self.NumColumns()) # 1 da borda esquerda
+			try:
+				y = index / self.NumColumns() + 1 # A linha onde esse membro está
+				x = 1 + self.ColumnSize() * (index % self.NumColumns()) # 1 da borda esquerda
 
-			screen.addnstr(y + self.offset, x + 1, member.Name(), self.ColumnSize()-1, member.Color())
-			                                    # 1 caraceter é reservado para a possível '?'
-			if member.StatsAvaiable() == False:
-				screen.addstr(y + self.offset, x, '?', colors.MAGENTA)
-			index += 1
+				screen.addnstr(y + self.offset, x + 1, member.Name(), self.ColumnSize()-1, member.Color())
+													# 1 caraceter é reservado para a possível '?'
+				if member.StatsAvaiable() == False:
+					screen.addstr(y + self.offset, x, '?', colors.MAGENTA)
+				index += 1
+			except curses.error:
+				pass
 
 	def Screen(self):
 		return self.parent.Screen()
@@ -96,16 +114,18 @@ class Subtitle:
 
 	def Draw(self):
 		screen = self.parent.Screen()
-
-		screen.move(self.offset, 0)
-		screen.addstr("UNK:", colors.WHITE)
-		screen.addstr(("  " + str(num_unk) + ";")[len(str(num_unk)):], colors.WHITE)
-		screen.addstr(" UP: ", colors.GREEN)
-		screen.addstr(("  " + str(num_up) + ";")[len(str(num_up)):], colors.GREEN)
-		screen.addstr(" DOWN:", colors.RED)
-		screen.addstr(("  " + str(num_down) + ";")[len(str(num_down)):], colors.RED)
-		screen.addstr(" BUSY:", colors.YELLOW)
-		screen.addstr(("  " + str(num_busy) + ";")[len(str(num_busy)):], colors.YELLOW)
+		try:
+			screen.move(self.offset, 0)
+			screen.addstr("UNK:", colors.WHITE)
+			screen.addstr(("  " + str(num_unk) + ";")[len(str(num_unk)):], colors.WHITE)
+			screen.addstr(" UP: ", colors.GREEN)
+			screen.addstr(("  " + str(num_up) + ";")[len(str(num_up)):], colors.GREEN)
+			screen.addstr(" DOWN:", colors.RED)
+			screen.addstr(("  " + str(num_down) + ";")[len(str(num_down)):], colors.RED)
+			screen.addstr(" BUSY:", colors.YELLOW)
+			screen.addstr(("  " + str(num_busy) + ";")[len(str(num_busy)):], colors.YELLOW)
+		except curses.error:
+			pass
 
 def DrawGroups():
 	while True:
