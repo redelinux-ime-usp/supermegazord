@@ -5,9 +5,10 @@
 
 # Autor: Henrique Gemignani Passos Lima (henriquelima)
 # Escrito em: 2012-01-15
-# Modificado em: 2012-01-15 por henriquelima
+# Modificado em: 2012-04-22 por henriquelima
 
 import subprocess, functools
+from supermegazord.db import path
 
 def ScriptSubprocess(path, args = []):
     command = path
@@ -42,7 +43,8 @@ class Script:
         # Simple "execute a file"
         if data["type"] == "shell":
             self.disable_curses = True
-            self.func = functools.partial(ScriptSubprocess, data["path"].encode("UTF-8"))
+            spath = data["path"].encode("UTF-8").replace("{MEGAZORD}", path.MEGAZORD)
+            self.func = functools.partial(ScriptSubprocess, spath)
             self.args = []
             if "args" in data:
                 for arg in data["args"]:
