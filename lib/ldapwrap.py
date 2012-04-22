@@ -8,17 +8,23 @@ if __name__ == "__main__":
 	print "Esse módulo não deve ser executado diretamente."
 	quit()
 
+from supermegazord.db import path
+
 BASEDN = "dc=linux,dc=ime,dc=usp,dc=br"
 URI	   = "ldap://ldap"
 ROOTDN = "cn=admin,dc=linux,dc=ime,dc=usp,dc=br"
-ROOTPW = open("/etc/supermegazord-ldap.secret").read()
+try:
+	ROOTPW = open(path.MEGAZORD_DB + "secrets/ldap").read()
+except IOError:
+	ROOTPW = None
 
 import ldap
 from ldap import modlist
 
 def open_connection():
 	con = ldap.initialize(URI)
-	con.simple_bind_s(ROOTDN, ROOTPW)
+	if ROOTPW != None:
+		con.simple_bind_s(ROOTDN, ROOTPW)
 	return con
 
 def query(target, restriction = ''):
