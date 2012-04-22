@@ -13,10 +13,11 @@ machines = dict()
 machines['all'] = list()
 
 def open_list(source, group, toall = True):
-	f = open(path.MEGAZORD + "/db/" + source, "r")
+	f = open(path.MEGAZORD_DB + "/maquinas/" + source, "r")
 	machines[group] = list()
 	for raw in f:
-		hostname = raw.replace('\n','')
+		data = raw.replace('\n','').split('-')
+		hostname = data[0]
 		machine = Machine(hostname, None)
 		if toall: machines['all'].append(machine)
 		machines[group].append(machine)
