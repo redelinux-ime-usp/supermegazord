@@ -5,12 +5,10 @@
 # Autor: Henrique Gemignani Passos Lima (henriquelima)
 # Escrito em: 2012-03-02
 
-import sys
-sys.path.append("/root/")
-
 SHELL   = "/bin/bash"
 
 from supermegazord.db import users
+from supermegazord.db import path
 from supermegazord.lib import cores
 from supermegazord.lib import ldapwrap
 from supermegazord.lib.account import Account
@@ -160,7 +158,9 @@ print "%(azul)s3/8 - Adicionando usuário ao Kerberos...%(norm)s" % cores.allcol
 status_conta['kerberos'] = kerbwrap.add_user(newuser.login, newuser.password) == 0
 
 print "%(azul)s4/8 - Criando home...%(norm)s" % cores.allcolors
-copy_nfs = remote.copy_files("nfs", "/root/supermegazord/db/usuarios/skel", newuser.home) == 0
+# Melhorar ae :)
+# tar c -C/opt/megazord-db/usuarios skel | ssh nfs "tar x -C/tmp && chown -R $USER:$GROUP /tmp/skel && mv /tmp/skel /home/$GROUP/$USER && /root/define_quota.sh $USER"
+copy_nfs = remote.copy_files("nfs", path.MEGAZORDDB + "usuarios/skel", newuser.home) == 0
 if copy_nfs:
 	status_conta['home'] = remote.run_script("nfs", "chown -R " + newuser.uid + ":" + newuser.gid + " " + newuser.home) == 0
 	remote.run_script("nfs", "/root/define_quota.sh " + newuser.login)
