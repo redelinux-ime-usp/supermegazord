@@ -8,7 +8,7 @@
 from threading import Thread
 from Queue import Queue
 
-num_threads = 16
+num_threads = 32
 queue = Queue()
 
 def Worker(i, q):
