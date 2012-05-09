@@ -37,11 +37,11 @@ def valida_login(login):
 	import re
 	return re.compile('^[a-z]{2,12}$').match(login)
 
-jupinfofile   = "/root/supermegazord/db/usuarios/jup_info"
-nojupinfofile = "/root/supermegazord/db/usuarios/nojup_info"
-nidsfile      = "/root/supermegazord/db/usuarios/nids"
-suspensoes    = "/root/supermegazord/db/usuarios/suspensoes"
-historyfolder = "/root/supermegazord/db/usuarios/historicos/"
+jupinfofile   = "/opt/megazord-db/usuarios/jupiter/jup_info"
+nojupinfofile = "/opt/megazord-db/usuarios/jupiter/nojup_info"
+nidsfile      = "/opt/megazord-db/usuarios/nids"
+suspensoes    = "/opt/megazord-db/usuarios/suspensoes"
+historyfolder = "/opt/megazord-db/usuarios/historicos/"
 
 nidscache = None
 def load_nidscache():
