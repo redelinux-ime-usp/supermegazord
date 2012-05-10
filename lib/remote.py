@@ -13,6 +13,9 @@ import subprocess
 def run_script(host, script_path, user = "root"):
 	return subprocess.call(["ssh", "-l" + user, host, script_path])
 
+def run_script_with_localpipe(host, script_path, pipe, user = "root"):
+	return subprocess.call([pipe + " | ssh -l " + user + " " + host + " " + script_path], shell=True)
+
 def copy_file(host, source_path, target_path = "", user = "root"):
 	devnull = open('/dev/null')
 	return subprocess.call(["scp", source_path, user + "@" + host + ":" + target_path], stdout=devnull)

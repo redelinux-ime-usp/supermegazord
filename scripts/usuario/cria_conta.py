@@ -160,18 +160,15 @@ status_conta['kerberos'] = kerbwrap.add_user(newuser.login, newuser.password) ==
 print "%(azul)s4/8 - Criando home...%(norm)s" % cores.allcolors
 # Melhorar ae :)
 # tar c -C/opt/megazord-db/usuarios skel | ssh nfs "tar x -C/tmp && chown -R $USER:$GROUP /tmp/skel && mv /tmp/skel /home/$GROUP/$USER && /root/define_quota.sh $USER"
-copy_nfs = remote.copy_files("nfs", path.MEGAZORDDB + "usuarios/skel", newuser.home) == 0
-if copy_nfs:
-	status_conta['home'] = remote.run_script("nfs", "chown -R " + newuser.uid + ":" + newuser.gid + " " + newuser.home) == 0
-	remote.run_script("nfs", "/root/define_quota.sh " + newuser.login)
-else:
-	status_conta['home'] = False
+# "tar c -C " + path.MEGAZORD_DB + "usuarios/skel | ssh nfs 'sudo /root/cria_conta.sh'"
+status_conta['home'] = remote.run_script_with_localpipe("nfs", "sudo /megazord/cria_conta.sh " + newuser.login + " " + userinfo.curso, 
+														"tar c -C " + path.MEGAZORD_DB + "usuarios skel/", "megazord") == 0
 
 print "%(azul)s5/8 - Criando cota de impressão...%(norm)s" % cores.allcolors
-status_conta['print'] = remote.run_script("print", "/root/print/bin/pkadduser " + newuser.login) == 0
+status_conta['print'] = remote.run_script("print", "sudo /root/print/bin/pkadduser " + newuser.login, "megazord") == 0
 
 print "%(azul)s6/8 - Adicionando usuário nas listas de e-mail...%(norm)s" % cores.allcolors
-status_conta['listas'] = remote.run_script("mail", "/root/email/rl_adiciona_pessoa " + userinfo.curso + " " + newuser.login) == 0
+status_conta['listas'] = remote.run_script("mail", "sudo /root/email/rl_adiciona_pessoa " + userinfo.curso + " " + newuser.login, "megazord") == 0
 
 print "%(azul)s7/8 - Registrando abertura de conta no histórico do usuário...%(norm)s" % cores.allcolors
 msg = "Conta " + newuser.login + (" (%s) aberta\n" % userinfo.curso) + ("NID: %s;" % newuser.nid) + " Nome: %s\n" % newuser.name
@@ -180,10 +177,14 @@ status_conta['historico'] = users.add_history_by_nid(newuser.nid, msg)
 print "%(azul)s8/8 - Associando NID à conta...%(norm)s" % cores.allcolors
 status_conta['nid'] = users.add_nid_login(newuser.nid, newuser.login)
 
+log = open(path.MEGAZORD_DB + "log/cadastro", "a")
+log.write(newuser.login)
+
 for k in status_conta:
 	if status_conta[k]:
 		status_conta[k] = cores.verd + " OK " + cores.norm
 	else:
+		log.write(", " + k)
 		status_conta[k] = cores.verm + "ERRO" + cores.norm
 
 display_login = (newuser.login + "          ")[:12]
@@ -200,4 +201,6 @@ print " ------------------------------------------------------------------------
 print
 print cores.verm + "                    Devolva a carteirinha do usuário!" + cores.norm
 print
+
+
 wait()
