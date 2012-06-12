@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.6
+#!/usr/bin/env python2.7
 # -*- coding: utf-8 -*-
 
 # DB: Fornece uma interface simples para acesso à bancos de dados.
