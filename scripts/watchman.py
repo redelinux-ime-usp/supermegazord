@@ -1,3 +1,4 @@
+#!/usr/bin/env python2.7
 # -*- coding: utf-8 -*-
 
 # Watchman: Monitora o estado das máquianas da rede.
@@ -5,16 +6,11 @@
 # Escrito em: 2011-08-05 
 # Modificado em: 2011-08-05 por henriquelima
 
-if __name__ == "__main__":
-	print "Esse módulo não deve ser executado diretamente."
-	quit()
-
-import curses
-import time
+import curses, time, sys, signal
 from threading import Thread
-from ..lib import ping, busy
-from ..lib.machine import Machine
-from ..base import colors
+from supermegazord.lib import ping, busy
+from supermegazord.lib.machine import Machine
+from supermegazord.base import colors
 
 status_colors = []
 groups = []
@@ -23,6 +19,23 @@ num_unk = 0
 num_up = 0
 num_down = 0
 num_busy = 0
+
+class Screen:
+	def __init__(self, screen):
+		self.screen = screen
+
+	def Width(self):
+		height, width = self.screen.getmaxyx()
+		return width
+
+	def Clear(self):
+		self.screen.clear()
+
+	def Draw(self):
+		self.screen.refresh()
+	
+	def Screen(self):
+		return self.screen
 
 class Group:
 	def __init__(self, name, offset, parent):
@@ -173,7 +186,7 @@ def AddList(l, name, screen):
 	groups.append(group)
 
 def Init(screen):
-	from ..db import machines
+	from supermegazord.db import machines
 	AddList(machines.list('servers'), "Servidores", screen)
 	AddList(machines.list('122'), "122", screen)
 	AddList(machines.list('125a'), "125a", screen)
@@ -185,9 +198,8 @@ def Init(screen):
 	subtitle = Subtitle(0, screen)
 	Reposition()
 
-def Run():
+def CursesRun():
 	global groups
-
 	curses.curs_set(0)
 	colors.init()
 	global status_colors
@@ -214,3 +226,94 @@ def Close():
 	#Wait until worker threads are done to exit
 	ping.Wait()
 	busy.Wait()
+
+
+userquit = False
+def signal_int(signalnum, handler):
+	global userquit
+	userquit = True
+
+# O wrapper impede que o terminal fique zuado caso de alguma merda no script
+def main(stdscr):
+	stdscr.nodelay(True)
+	screenobj = Screen(stdscr)
+
+	Init(screenobj)
+	CursesRun()
+	
+	global userquit
+	userquit = False
+	while not userquit:
+		c = stdscr.getch()
+		if c == curses.KEY_RESIZE:
+			screenobj.Clear()
+			Resize(screenobj)
+		elif c == ord('q'):
+			userquit = True
+		elif c == ord('u'):
+			Update()
+
+def Run():
+	signal.signal(signal.SIGINT, signal_int)
+	curses.wrapper(main)
+	Close()
+
+def prepare_parser(watch_parse):
+	import supermegazord.db.machines as machines
+	def watchman_parser(args):
+		print args
+		pass
+
+	import argparse
+	check_arg = watch_parse.add_mutually_exclusive_group(required=False)
+	check_arg.add_argument('--up'  , '-u', action='store_const', dest='checkfor', const=1)
+	check_arg.add_argument('--down', '-d', action='store_const', dest='checkfor', const=0)
+	check_arg.set_defaults(checkfor=0)
+	
+	stats_arg = watch_parse.add_mutually_exclusive_group(required=False)
+	stats_arg.add_argument('--unknown',    action='store_const', dest='stats', const=2)
+	stats_arg.add_argument('--who',  '-w', action='store_const', dest='stats', const=1)
+	stats_arg.set_defaults(stats=0)
+
+	watch_parse.add_argument('group', choices=machines.groups(), default='all')
+	watch_parse.set_defaults(func=watchman_parser)
+
+if __name__ == "__main__":
+	if len(sys.argv) == 1:
+		Run()
+		sys.exit()
+
+	checkfor = 1
+	stats = 0
+	group = 'all'
+	for arg in sys.argv[1:]:
+		if arg == "--up" or arg == "-u":
+			checkfor = 1
+		elif arg == "--down" or arg == "-d":
+			checkfor = 0
+		elif arg == "--unknown":
+			stats = 2
+		elif arg == "--who" or arg == "-w":
+			stats = 1
+		else:
+			group = arg
+	from supermegazord.db import machines
+	from supermegazord.lib import ping
+	l = machines.list(group)
+	ping.Run(l)
+	if stats != 0:
+		from supermegazord.lib import busy
+		busy.Run(l)
+		busy.Wait()
+	ping.Wait()
+	for m in l:
+		if m.Power() == checkfor:
+			if stats == 2 and m.StatsAvaiable():
+				continue
+			print m.hostname,
+			if stats == 1:
+				for user in m.userlist:
+					print user,
+			print
+
+
