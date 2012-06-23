@@ -9,21 +9,19 @@ if __name__ != "__main__":
 	print "Esse arquivo deve ser rodado apenas como um script."
 	quit()
 
-import sys, argparse
+import sys 
 
 if len(sys.argv) == 1:
 	import supermegazord.client.curse.curse_client as cursescli
 	cursescli.Run()
 	quit(0)
 
-parser = argparse.ArgumentParser(description='Super Megazord.')
+import argparse, machine_parser, users_parser
 
+parser = argparse.ArgumentParser(description='Super Megazord.')
 subparsers = parser.add_subparsers(help='Possíveis scripts')
 
-import machine_parser
 machine_parser.prepare_parser(subparsers.add_parser('machines'))
-
-import users_parser
 users_parser.prepare_parser(subparsers.add_parser('users'))
 
 args = parser.parse_args()
