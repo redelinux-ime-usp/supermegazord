@@ -259,13 +259,28 @@ def Run():
 	Close()
 
 def prepare_parser(watch_parse):
-	import supermegazord.db.machines as machines
+	import supermegazord.db.machines as machines 
 	def watchman_parser(args):
-		print args
-		pass
+		import supermegazord.lib.ping as ping
+		l = machines.list(args.group)
+		ping.Run(l)
+		if args.stats != 0:
+			import supermegazord.lib.busy as busy
+			busy.Run(l)
+			busy.Wait()
+		ping.Wait()
+		for m in l:
+			if m.Power() == args.checkfor:
+				if args.stats == 2 and m.StatsAvaiable():
+					continue
+				print m.hostname,
+				if args.stats == 1:
+					for user in m.userlist:
+						print user,
+				print
 
 	import argparse
-	check_arg = watch_parse.add_mutually_exclusive_group(required=False)
+	check_arg = watch_parse.add_mutually_exclusive_group(required=True)
 	check_arg.add_argument('--up'  , '-u', action='store_const', dest='checkfor', const=1)
 	check_arg.add_argument('--down', '-d', action='store_const', dest='checkfor', const=0)
 	check_arg.set_defaults(checkfor=0)
@@ -275,45 +290,16 @@ def prepare_parser(watch_parse):
 	stats_arg.add_argument('--who',  '-w', action='store_const', dest='stats', const=1)
 	stats_arg.set_defaults(stats=0)
 
-	watch_parse.add_argument('group', choices=machines.groups(), default='all')
+	watch_parse.add_argument('group', choices=machines.groups(), default='all', nargs='?')
 	watch_parse.set_defaults(func=watchman_parser)
 
 if __name__ == "__main__":
 	if len(sys.argv) == 1:
 		Run()
 		sys.exit()
-
-	checkfor = 1
-	stats = 0
-	group = 'all'
-	for arg in sys.argv[1:]:
-		if arg == "--up" or arg == "-u":
-			checkfor = 1
-		elif arg == "--down" or arg == "-d":
-			checkfor = 0
-		elif arg == "--unknown":
-			stats = 2
-		elif arg == "--who" or arg == "-w":
-			stats = 1
-		else:
-			group = arg
-	from supermegazord.db import machines
-	from supermegazord.lib import ping
-	l = machines.list(group)
-	ping.Run(l)
-	if stats != 0:
-		from supermegazord.lib import busy
-		busy.Run(l)
-		busy.Wait()
-	ping.Wait()
-	for m in l:
-		if m.Power() == checkfor:
-			if stats == 2 and m.StatsAvaiable():
-				continue
-			print m.hostname,
-			if stats == 1:
-				for user in m.userlist:
-					print user,
-			print
-
-
+	else:
+		import argparse
+		parser = argparse.ArgumentParser(description='Watchman')
+		prepare_parser(parser)
+		args = parser.parse_args()
+		args.func(args)
