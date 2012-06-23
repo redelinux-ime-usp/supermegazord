@@ -11,8 +11,10 @@ if __name__ == "__main__":
 
 
 class Machine:
-	def __init__(self, hostname, parent):
+	def __init__(self, hostname, ip, mac, parent):
 		self.hostname = hostname
+		self.ip = ip
+		self.mac = mac
 		self.parent = parent
 		self.ResetStatus()
 

@@ -18,7 +18,9 @@ def open_list(source, group, toall = True):
 	for raw in f:
 		data = raw.replace('\n','').split('-')
 		hostname = data[0]
-		machine = Machine(hostname, None)
+		mac = data[1]
+		ip = data[2]
+		machine = Machine(hostname, ip, mac, None)
 		if toall: machines['all'].append(machine)
 		machines[group].append(machine)
 
