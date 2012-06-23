@@ -1,0 +1,39 @@
+#!/bin/bash
+### BEGIN INIT INFO
+# Provides:          megazordd
+# Required-Start:    
+# Required-Stop:     
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Starts the RL Stats Daemon
+### END INIT INFO
+
+MODO="$1"
+RODANDO=`ps uax | grep remote_client | grep python | awk -F" " '{print $2}'`
+case $MODO in
+	start)
+		echo -n "Starting megazordd... "
+		if [ "$RODANDO" == "" ]
+		then
+			/opt/supermegazord/system/remote_client.py && echo "done!"
+		else
+			echo "Error: already running!"
+		fi
+		;;
+	stop)
+		echo -n "Stopping megazord daemon... "
+		if [ "$RODANDO" == "" ]
+		then
+			echo "Warning: not running!"
+		else
+			kill $RODANDO && echo "done!"
+		fi
+		;;
+	restart)
+		$0 stop
+		$0 start
+		;;
+	*)
+		echo 'Usage: megazordd {start|stop|restart}'
+		;;
+esac
