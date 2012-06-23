@@ -10,9 +10,9 @@ if __name__ == "__main__":
 	quit()
 
 def prepare_parser(user_parse):
-	def users_parser(args):
+	def user_parser(args):
 		print "hai"
 
 	import argparse
-	user_parse.set_defaults(func=users_parser)
+	user_parse.set_defaults(func=user_parser)
 
