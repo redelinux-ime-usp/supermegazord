@@ -8,10 +8,6 @@
 # Escrito em: 2011-08-05
 # Modificado em: 2011-08-05 por henriquelima
 
-if __name__ != "__main__":
-    print "Esse script é interativo e não um módulo."
-    quit()
-
 # Megazord global variables
 from supermegazord.system.megazord import Megazord
 import functools
@@ -155,11 +151,16 @@ def main(screen):
         else:
             screen.refresh()
 
-while megazord.Running():
-    if queued_execution != None:
-        menu_count = len(megazord.menu_history)
-        queued_execution()
-        if megazord.active_menu not in current_line or menu_count < len(megazord.menu_history):
-            current_line[megazord.active_menu] = 0
-        queued_execution = None
-    curses.wrapper(main)
+def Run():
+	global megazord, queued_execution, menu_count, current_line
+	while megazord.Running():
+		if queued_execution != None:
+			menu_count = len(megazord.menu_history)
+			queued_execution()
+			if megazord.active_menu not in current_line or menu_count < len(megazord.menu_history):
+				current_line[megazord.active_menu] = 0
+			queued_execution = None
+		curses.wrapper(main)
+
+if __name__ == "__main__":
+	Run()
