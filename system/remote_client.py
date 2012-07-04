@@ -9,14 +9,14 @@ HOSTNAME = '' # Symbolic name meaning all available interfaces
 PORT = 15000
 BUFSIZ = 1024
 
-valid_commands = [ 'machines' ]
+valid_commands = [ 'machines', 'watchman' ]
 
 #This function takes Bash commands and returns them
 def runMegazord(cmd):
 	sp = cmd.split(' ')
 	if sp[0] not in valid_commands:
 		return "Permission denied."
-	p = subprocess.Popen("/opt/supermegazord/client/supermegazord.sh.py " + cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+	p = subprocess.Popen("/opt/supermegazord/client/supermegazord.sh.py " + cmd.strip(), shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 	out = p.stdout.read().strip() + p.stderr.read().strip()
 	return out  #This is the stdout+stderr from the shell command
 
@@ -44,7 +44,7 @@ def controller():
 		except: 
 			print "OH NOES, CRASH"
 		import re
-		if re.compile('^[a-z\- ]+$').match(data):
+		if re.compile('^[a-z0-9\- ]+$').match(data):
 			clientsock.send(runMegazord(data))
 		else:
 			clientsock.send("Invalid command: '" + data + "'")

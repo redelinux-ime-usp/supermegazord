@@ -37,7 +37,9 @@ def checker(machine):
 	elif len(data) > 0:
 		users = []
 		for userinfo in data.split('\n'):
-			users.append(userinfo.split(' ')[0])
+			u = userinfo.split(' ')[0]
+			if u not in users:
+				users.append(u)
 		machine.SetUserList(users)
 
 def Run(machines):

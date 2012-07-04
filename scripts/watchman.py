@@ -275,12 +275,12 @@ def prepare_parser(watch_parse):
 					continue
 				print m.hostname,
 				if args.stats == 1:
-					for user in m.userlist:
+					for user in m.user_list:
 						print user,
 				print
 
 	import argparse
-	check_arg = watch_parse.add_mutually_exclusive_group(required=True)
+	check_arg = watch_parse.add_mutually_exclusive_group(required=False)
 	check_arg.add_argument('--up'  , '-u', action='store_const', dest='checkfor', const=1)
 	check_arg.add_argument('--down', '-d', action='store_const', dest='checkfor', const=0)
 	check_arg.set_defaults(checkfor=0)
