@@ -7,7 +7,8 @@ if [ $# -ne 1 ]; then
 
 DEL=$1
 
-LDIF=$(mktmp)
+# ... mktemp
+LDIF=$(mktemp)
 echo "dn: uid=$DEL,ou=People,dc=linux,dc=ime,dc=usp,dc=br" >> $LDIF
 echo "changetype: modify" >> $LDIF
 echo "delete: userPassword" >> $LDIF

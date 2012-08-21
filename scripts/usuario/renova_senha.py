@@ -68,9 +68,14 @@ if confirm != "y": exit()
 newpassword = users.generate_password()
 
 from supermegazord.lib import kerbwrap
-if kerbwrap.change_password(ldapinfo['uid'][0], newpassword) != 0:
-	print "Erro mudando senha!"
-	exit()
+if kerbwrap.user_exists(ldapinfo['uid'][0]):
+	if kerbwrap.change_password(ldapinfo['uid'][0], newpassword) != 0:
+		print "Erro mudando senha!"
+		exit()
+else:
+	if kerbwrap.add_user(ldapinfo['uid'][0], newpassword) != 0:
+		print "Erro adicionando usuario no kerberos!"
+		exit()
 
 display_login = (ldapinfo['uid'][0] + "          ")[:12]
 display_password = newpassword 

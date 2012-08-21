@@ -11,16 +11,20 @@ if __name__ == "__main__":
 from supermegazord.db import path
 
 ROOT_PRINC = "root/admin"
-try:
-	ROOT_PASS = open(path.MEGAZORD_DB + "secrets/kerberos").read()
-except IOError:
-	ROOT_PASS = ""
+ROOT_FILE  = path.MEGAZORD_DB + "secrets/kerberos"
+LOG_FILE = "/var/log/supermegazord.log"
 
 import os
 
 def execute_command(command):
-	wrap = "kadmin -p " + ROOT_PRINC + " -w " + ROOT_PASS + " -q '" + command + "'" + ">/dev/null 2>/dev/null"
+	wrap = "kadmin -p " + ROOT_PRINC + " -q '" + command + "'" + ">>" + LOG_FILE + " 2>>" + LOG_FILE + "<" + ROOT_FILE
 	return os.system(wrap)
+
+def user_exists(user):
+	import subprocess
+	p = subprocess.Popen(["kadmin", "-p" + ROOT_PRINC, "-q getprinc " + user], stdin=open(ROOT_FILE), stderr=subprocess.PIPE, stdout=open('/dev/null'))
+	out, err = p.communicate()
+	return err.find("Principal does not exist while retrieving") == -1
 
 def add_user(user, password):
 	return execute_command("addprinc -pw " + password + " " + user)
