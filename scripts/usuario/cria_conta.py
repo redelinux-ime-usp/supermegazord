@@ -178,13 +178,12 @@ print "%(azul)s8/8 - Associando NID à conta...%(norm)s" % cores.allcolors
 status_conta['nid'] = users.add_nid_login(newuser.nid, newuser.login)
 
 log = open(path.MEGAZORD_DB + "log/cadastro", "a")
-log.write(newuser.login)
+log.write("Cadastrando usuário '{0}'; Status: {1}\n".format(newuser.login, str(status_conta)))
 
 for k in status_conta:
 	if status_conta[k]:
 		status_conta[k] = cores.verd + " OK " + cores.norm
 	else:
-		log.write(", " + k)
 		status_conta[k] = cores.verm + "ERRO" + cores.norm
 
 display_login = (newuser.login + "          ")[:12]
