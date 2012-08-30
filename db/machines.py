@@ -6,6 +6,7 @@
 # Escrito em: 2011-08-17 
 # Modificado em: 2012-01-13 por henriquelima
 
+import json
 from supermegazord.db import path
 from supermegazord.lib.machine import Machine
 
@@ -13,25 +14,25 @@ machines = dict()
 machines['all'] = list()
 
 def open_list(source, group, toall = True):
-	f = open(path.MEGAZORD_DB + "/maquinas/" + source, "r")
 	machines[group] = list()
-	for raw in f:
-		data = raw.replace('\n','').split('-')
-		hostname = data[0]
-		mac = data[1]
-		ip = data[2]
+
+	f = open(path.MEGAZORD_DB + "/maquinas/" + source + ".conf", "r")
+	fulldata = json.load(f)
+	for hostname, data in fulldata.iteritems():
+		mac = data['mac']
+		ip = data['ip']
 		machine = Machine(hostname, ip, mac, None)
 		if toall: machines['all'].append(machine)
 		machines[group].append(machine)
 
-open_list("lista_122", "122")
-open_list("lista_125a", "125a")
-open_list("lista_125b", "125b")
-open_list("lista_126", "126")
-open_list("lista_258", "258")
+open_list("122", "122")
+open_list("125a", "125a")
+open_list("125b", "125b")
+open_list("126", "126")
+open_list("258", "258")
 machines['clients'] = list(machines['all'])
-open_list("lista_servidores", "servers")
-open_list("lista_impressoras", "printers", False)
+open_list("servidores", "servers")
+open_list("impressoras", "printers", False)
 
 machines['aquario']  = machines['122']
 machines['admin']    = machines['125a']
