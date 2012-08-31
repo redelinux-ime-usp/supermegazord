@@ -119,6 +119,9 @@ class Group:
 	def Colors(self, num):
 		return status_colors[num]
 
+	def Sort(self):
+		self.members = sorted(self.members, key=lambda m: m.hostname)
+
 class Subtitle:
 	def __init__(self, offset, parent):
 		self.height = 0
@@ -183,6 +186,7 @@ def AddList(l, name, screen):
 	for machine in l:
 		group.Add(machine)
 		machine.parent = group
+	group.Sort()
 	groups.append(group)
 
 def Init(screen):
