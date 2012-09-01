@@ -20,6 +20,14 @@ class JupInfo:
 		self.curso = curso
 		self.ingresso = ingresso
 
+	def __str__(self):
+		return "NID:" + (" "*8 + str(self.nid))[-8:] + " Curso: " + (str(self.curso) + " "*4)[:4] + (
+			" Ingresso: ") + self.ingresso + "; Nome: " + self.nome
+
+	def __repr__(self):
+		return "JupInfo(%r)" % self.__dict__
+		
+
 def jupinfo_from_raw(s):
 	data = s.strip().split(':')
 	try:
