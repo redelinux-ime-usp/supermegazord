@@ -16,6 +16,7 @@ class Machine:
 		self.ip = ip
 		self.mac = mac
 		self.parent = parent
+		self.aliases = []
 		self.user_list = []
 		self.ResetStatus()
 

@@ -22,6 +22,8 @@ def open_list(source, group, toall = True):
 		mac = data['mac']
 		ip = data['ip']
 		machine = Machine(hostname, ip, mac, None)
+		if 'aliases' in data:
+			machine.aliases.extend(data['aliases'])
 		if toall: machines['all'].append(machine)
 		machines[group].append(machine)
 
