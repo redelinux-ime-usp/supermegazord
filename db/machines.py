@@ -13,34 +13,32 @@ from supermegazord.lib.machine import Machine
 machines = dict()
 machines['all'] = list()
 
-def open_list(source, group, toall = True):
-	machines[group] = list()
-
-	f = open(path.MEGAZORD_DB + "/maquinas/" + source + ".conf", "r")
-	fulldata = json.load(f)
+def open_list(source):
+	result = list()
+	with open(path.MEGAZORD_DB + "/maquinas/" + source + ".conf", "r") as f:
+		fulldata = json.load(f)
 	for hostname, data in fulldata.iteritems():
 		mac = data['mac']
 		ip = data['ip']
 		machine = Machine(hostname, ip, mac, None)
 		if 'aliases' in data:
 			machine.aliases.extend(data['aliases'])
-		if toall: machines['all'].append(machine)
-		machines[group].append(machine)
+		result.append(machine)
+	return result
 
-open_list("122", "122")
-open_list("125a", "125a")
-open_list("125b", "125b")
-open_list("126", "126")
-open_list("258", "258")
-machines['clients'] = list(machines['all'])
-open_list("servidores", "servers")
-open_list("impressoras", "printers", False)
+with open(path.MEGAZORD_DB + "/maquinas/grupos.conf", "r") as f:
+	grupos = json.load(f)
 
-machines['aquario']  = machines['122']
-machines['admin']    = machines['125a']
-machines['corredor'] = machines['125b']
-machines['herois']   = machines['126']
-machines['bcc']      = machines['258']
+for arq in grupos['arquivos']:
+	machines[arq] = open_list(arq)
+
+for nome, l in grupos['conjuntos'].iteritems():
+	machines[nome] = list()
+	for membro in l:
+		machines[nome].extend(machines[membro])
+
+for apelido, nome in grupos['apelidos'].iteritems():
+	machines[apelido] = machines[nome]
 
 def list(group):
 	return machines[group]
