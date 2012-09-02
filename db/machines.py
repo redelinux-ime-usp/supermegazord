@@ -11,7 +11,6 @@ from supermegazord.db import path
 from supermegazord.lib.machine import Machine
 
 machines = dict()
-machines['all'] = list()
 
 def open_list(source):
 	result = list()
@@ -27,17 +26,17 @@ def open_list(source):
 	return result
 
 with open(path.MEGAZORD_DB + "/maquinas/grupos.conf", "r") as f:
-	grupos = json.load(f)
+	grupos_conf = json.load(f)
 
-for arq in grupos['arquivos']:
+for arq in grupos_conf['arquivos']:
 	machines[arq] = open_list(arq)
 
-for nome, l in grupos['conjuntos'].iteritems():
+for nome, l in grupos_conf['conjuntos'].iteritems():
 	machines[nome] = list()
 	for membro in l:
 		machines[nome].extend(machines[membro])
 
-for apelido, nome in grupos['apelidos'].iteritems():
+for apelido, nome in grupos_conf['apelidos'].iteritems():
 	machines[apelido] = machines[nome]
 
 def list(group):
@@ -45,6 +44,9 @@ def list(group):
 
 def groups():
 	return machines.keys()
+
+def files():
+	return grupos_conf['arquivos']
 
 if __name__ == "__main__":
 	import sys
