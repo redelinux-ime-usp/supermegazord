@@ -10,7 +10,7 @@ if __name__ == "__main__":
 
 
 class Account:
-	def __init__(self, uid, gid, login, name, home, shell):
+	def __init__(self, uid, gid, login, name, home, shell, nid = -1):
 		self.uid = uid
 		self.gid = gid
 		self.login = login
@@ -18,7 +18,7 @@ class Account:
 		self.home = home
 		self.shell = shell
 		self.password = ''
-		self.nid = -1
+		self.nid = nid
 
 	def set_nid(self, nid):
 		self.nid = nid
@@ -56,6 +56,7 @@ def from_ldap(ldapdata):
 	try:
 		uid = ldapdata['uidNumber'][0]
 		gid = ldapdata['gidNumber'][0]
+		nid = ldapdata['nid'][0]
 		login = ldapdata['uid'][0]
 		if 'gecos' in ldapdata:
 			name = ldapdata['gecos'][0]
@@ -63,7 +64,7 @@ def from_ldap(ldapdata):
 			name = ldapdata['cn'][0]
 		home = ldapdata['homeDirectory'][0]
 		shell = ldapdata['loginShell'][0]
-		return Account(uid, gid, login, name, home, shell)
+		return Account(uid, gid, login, name, home, shell, nid)
 	except:
 		return None
 

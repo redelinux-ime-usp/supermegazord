@@ -47,9 +47,13 @@ def find_user_by_uid(uid):
 def find_user_by_login(login):
 	return find_user_by_restriction('uid=%s' % login)
 
+def find_user_by_nid(nid):
+	return find_user_by_restriction('nid=%s' % nid)
+
 def add_user(account):
+	if account.nid < 0: return False
 	attrs = {}
-	attrs['objectClass'] = ['account', 'posixAccount', 'top', 'shadowAccount']
+	attrs['objectClass'] = ['account', 'posixAccount', 'top', 'shadowAccount', 'megazordAccount']
 	try:
 		attrs['cn'] = account.name
 		attrs['uid'] = account.login
@@ -57,6 +61,7 @@ def add_user(account):
 		attrs['gidNumber'] = str(account.gid)
 		attrs['homeDirectory'] = account.home
 		attrs['loginShell'] = account.shell
+		attrs['nid'] = str(account.nid)
 		if account.password != '':
 			attrs['userPassword'] = account.password
 	except:

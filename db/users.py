@@ -6,12 +6,7 @@
 # Escrito em: 2012-02-29
 # Modificado em: 2012-01-13 por henriquelima
 
-if __name__ == "__main__":
-	import sys
-	sys.path.append("/root/")
-	from supermegazord.lib import ldapwrap
-else:
-	from ..lib import ldapwrap
+import supermegazord.lib.ldapwrap as ldapwrap
 
 class JupInfo:
 	def __init__(self, nid, nome, curso, ingresso):
@@ -51,42 +46,35 @@ nidsfile      = "/opt/megazord-db/usuarios/nids"
 suspensoes    = "/opt/megazord-db/usuarios/suspensoes"
 historyfolder = "/opt/megazord-db/usuarios/historicos/"
 
-nidscache = None
-def load_nidscache():
-	global nidscache
-	if nidscache != None: return
-	nidscache = ({}, {})
-	for line in open(nidsfile):
-		# Array 0 = Key: login, value:  NID
-		# Array 1 = Key:  NID , value: login
-		split = line.strip().split(':')
-		if len(split) != 2: continue
-		nidscache[0][split[0]] = split[1]
-		nidscache[1][split[1]] = split[0]
+nidscache = ({}, {})
+def cache_nid(login, nid):
+	# Array 0 = Key: login, value:  NID
+	# Array 1 = Key:  NID , value: login
+	nidscache[0][login] = nid
+	nidscache[1][nid] = login
+	
 
 def login_to_nid(login):
-	load_nidscache()
-	try:
+	if login in nidscache[0]:
 		return nidscache[0][login]
-	except:
-		return ''
+	data = ldapwrap.find_user_by_login(login)
+	if data: nid = data['nid'][0]
+	else: nid = ''
+	cache_nid(login, nid)
+	return nid
 
 def nid_to_login(nid):
-	load_nidscache()
-	try:
+	if nid in nidscache[1]:
 		return nidscache[1][nid]
-	except:
-		return ''
+	data = ldapwrap.find_user_by_nid(nid)
+	if data: login = data['uid'][0]
+	else: login = ''
+	cache_nid(login, nid)
+	return login
 
 def add_nid_login(nid, login):
-	if not nid or not login: return False
-	try:
-		open(nidsfile, 'a').write(login + ':' + nid + '\n')
-		nidscache[0][login] = nid
-		nidscache[1][nid] = login
-		return True
-	except:
-		return False
+	#TODO obsolete
+	return False
 
 def get_jupinfo_from_nid(nid):
 	for source in (jupinfofile, nojupinfofile):
@@ -155,7 +143,7 @@ def add_history_by_nid(nid, msg):
 	if not nid: return False
 	import datetime
 	try:
-		open(historyfolder + nid, 'a').write(datetime.date.today().isoformat() + " - " + msg)
+		open(historyfolder + nid, 'a').write(datetime.datetime.now().isoformat(" ") + " - " + msg + "\n")
 		return True
 	except:
 		return False

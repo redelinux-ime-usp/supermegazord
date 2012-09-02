@@ -110,9 +110,8 @@ try:
 except:
 	exit()
 
-newuser = Account(uid, gid, login, userinfo.nome, home, SHELL)
+newuser = Account(uid, gid, login, userinfo.nome, home, SHELL, nid)
 newuser.set_password(users.generate_password())
-newuser.set_nid(nid)
 newuserdata = {
 	'nid': nid,
 	'uid': uid,
@@ -174,8 +173,8 @@ print "%(azul)s7/8 - Registrando abertura de conta no histórico do usuário...%
 msg = "Conta " + newuser.login + (" (%s) aberta\n" % userinfo.curso) + ("NID: %s;" % newuser.nid) + " Nome: %s\n" % newuser.name
 status_conta['historico'] = users.add_history_by_nid(newuser.nid, msg)
 
-print "%(azul)s8/8 - Associando NID à conta...%(norm)s" % cores.allcolors
-status_conta['nid'] = users.add_nid_login(newuser.nid, newuser.login)
+print "%(azul)s8/8 - Fazendo nada...%(norm)s" % cores.allcolors
+status_conta['placeholder'] = True
 
 log = open(path.MEGAZORD_DB + "log/cadastro", "a")
 log.write("Cadastrando usuário '{0}'; Status: {1}\n".format(newuser.login, str(status_conta)))
@@ -193,7 +192,7 @@ print
 print "Operações de cadastro realizadas, exibindo resultados:"
 print ".---------------------------------------------------------------------------."
 print "| Limpeza   - %(limpeza)s | Passwd    - %(passwd)s | Kerberos  - %(kerberos)s | Home      - %(home)s |" % status_conta
-print "| Print     - %(print)s | Listas    - %(listas)s | Historico - %(historico)s | NID       - %(nid)s |" % status_conta
+print "| Print     - %(print)s | Listas    - %(listas)s | Historico - %(historico)s | Nada      - %(placeholder)s |" % status_conta
 print " --------------------------------------------------------------------------- "
 print "|             Login:   " + cores.verd + display_login + cores.norm + "   | Senha:   " + cores.verd + display_password + cores.norm + "                 |"
 print " --------------------------------------------------------------------------- "
