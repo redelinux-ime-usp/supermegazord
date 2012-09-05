@@ -7,21 +7,7 @@
 # Modificado em: 2012-01-13 por henriquelima
 
 import supermegazord.lib.ldapwrap as ldapwrap
-
-class JupInfo:
-	def __init__(self, nid, nome, curso, ingresso):
-		self.nid = nid
-		self.nome = nome
-		self.curso = curso
-		self.ingresso = ingresso
-
-	def __str__(self):
-		return "NID:" + (" "*8 + str(self.nid))[-8:] + " Curso: " + (str(self.curso) + " "*4)[:4] + (
-			" Ingresso: ") + self.ingresso + "; Nome: " + self.nome
-
-	def __repr__(self):
-		return "JupInfo(%r)" % self.__dict__
-		
+from supermegazord.lib.jupinfo import JupInfo
 
 def jupinfo_from_raw(s):
 	data = s.strip().split(':')
@@ -58,8 +44,11 @@ def login_to_nid(login):
 	if login in nidscache[0]:
 		return nidscache[0][login]
 	data = ldapwrap.find_user_by_login(login)
-	if data: nid = data['nid'][0]
-	else: nid = ''
+	if data: 
+		if 'nid' not in data: return ''
+		nid = data['nid'][0]
+	else:
+		nid = ''
 	cache_nid(login, nid)
 	return nid
 

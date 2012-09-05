@@ -21,6 +21,9 @@ except IOError:
 import ldap
 from ldap import modlist
 
+def is_admin():
+	return ROOTPW != None
+
 def open_connection():
 	con = ldap.initialize(URI)
 	if ROOTPW != None:

@@ -22,7 +22,7 @@ parser = argparse.ArgumentParser(description='Super Megazord.')
 subparsers = parser.add_subparsers(help='Possíveis scripts')
 
 machine_parser.prepare_parser(subparsers.add_parser('machines'))
-user_parser.prepare_parser(subparsers.add_parser('user'))
+user_parser.prepare_parser(subparsers.add_parser('users'))
 watchman.prepare_parser(subparsers.add_parser('watchman'))
 
 args = parser.parse_args()
