@@ -164,7 +164,7 @@ status_conta['home'] = remote.run_script_with_localpipe("nfs", "sudo /megazord/c
 														"tar c -C " + path.MEGAZORD_DB + "usuarios skel/", "megazord") == 0
 
 print "%(azul)s5/8 - Criando cota de impressão...%(norm)s" % cores.allcolors
-status_conta['print'] = remote.run_script("print", "sudo /root/print/bin/pkadduser " + newuser.login, "megazord") == 0
+status_conta['print'] = remote.run_script("print", "sudo /root/files/bin/pkadduser " + newuser.login, "megazord") == 0
 
 print "%(azul)s6/8 - Adicionando usuário nas listas de e-mail...%(norm)s" % cores.allcolors
 status_conta['listas'] = remote.run_script("mail", "sudo /root/email/rl_adiciona_pessoa " + userinfo.curso + " " + newuser.login, "megazord") == 0
