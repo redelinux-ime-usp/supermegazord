@@ -30,8 +30,9 @@ def open_connection():
 		con.simple_bind_s(ROOTDN, ROOTPW)
 	return con
 
-def query(target, restriction = ''):
-	con = open_connection()
+def query(target, restriction = '', con = None):
+	if con == None:
+		con = open_connection()
 	try:
 		return con.search_s(target + ',' + BASEDN, ldap.SCOPE_SUBTREE, restriction)
 	except:
@@ -106,3 +107,17 @@ def change_password(user, password):
 	command = "ldappasswd -D "+ROOTDN+" -w"+ROOTPW+" uid=" + user + ",ou=People," + BASEDN + " -s" + password
 	return os.system(command)
 
+def remove_password(uid):
+	dn = "uid=" + str(uid) + ",ou=People,dc=linux,dc=ime,dc=usp,dc=br"
+	con = open_connection()
+	user = query('ou=People', 'uid=' + str(uid), con)
+	try:
+		password = user[0][1]['userPassword'][0]
+	except:
+		return True
+
+	try:
+		con.modify_s( dn, [ (ldap.MOD_DELETE, 'userPassword', password) ])
+		return True
+	except:
+		return False
