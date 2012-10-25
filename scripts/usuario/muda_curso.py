@@ -12,7 +12,7 @@ from supermegazord.lib.account import Account
 
 import sys
 if len(sys.argv) != 3:
-	print "Uso: %s login novo_curso" % sys.arvg[0]
+	print "Uso: %s login novo_curso" % sys.argv[0]
 	exit(1)
 
 login = sys.argv[1]

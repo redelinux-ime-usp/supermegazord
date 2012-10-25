@@ -10,6 +10,11 @@ from supermegazord.db import path
 from supermegazord.lib import ldapwrap
 from supermegazord.lib.account import Account
 
+import sys
+if len(sys.argv) != 2:
+	print "Uso: %s login" % sys.argv[0]
+	exit(1)
+
 login = sys.argv[1]
 dados = ldapwrap.find_user_by_login(login)
 
