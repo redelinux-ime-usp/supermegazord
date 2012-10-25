@@ -143,8 +143,8 @@ def add_history_by_login(login, msg):
 def generate_password(length = 10):
 	import string
 	from random import choice
-	chars = string.letters + string.digits
-	return choice(string.letters) + ''.join(choice(chars) for _ in xrange(length - 2)) + choice(string.digits)
+	chars = string.lowercase + string.digits
+	return choice(string.uppercase) + ''.join(choice(chars) for _ in xrange(length - 2)) + choice(string.digits)
 
 if __name__ == "__main__":
 	import sys

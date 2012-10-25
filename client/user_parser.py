@@ -11,16 +11,6 @@ if __name__ == "__main__":
 
 import supermegazord.db.users as userdata
 
-def validate_type(atype, val):
-	if atype == 'auto':
-		if userdata.valida_nid(val):
-			atype = 'nid'
-		elif userdata.valida_login(val):
-			atype = 'login'
-		else:
-			atype = 'name'
-	return atype
-	
 def get_data(atype, u):
 	login = nid = curso = ingresso = nome = "n/a"
 
@@ -33,7 +23,14 @@ def get_data(atype, u):
 		login = u
 	elif atype == 'name':
 		pass
-
+	elif atype == 'auto':
+		if userdata.valida_nid(u):
+			jupinfo = userdata.get_jupinfo_from_nid(u)
+			nid = u
+		else:
+			jupinfo = userdata.get_jupinfo_from_login(u)
+			login = u
+	
 	if jupinfo:
 		nid = jupinfo.nid
 		curso = jupinfo.curso
@@ -47,8 +44,7 @@ def prepare_parser(user_parse):
 	def user_parser(args):
 		print "   Login    |   NID   | Curso | Ingresso |   Nome" 
 		for u in args.user:
-			atype = validate_type(args.type, u)
-			login, nid, curso, ingresso, nome = get_data(atype, u)
+			login, nid, curso, ingresso, nome = get_data(args.type, u)
 
 			# Trata tamanhos
 			login = (str(login) + " "*12)[:12]
