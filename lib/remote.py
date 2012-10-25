@@ -11,8 +11,32 @@ if __name__ == "__main__":
 import subprocess
 import supermegazord.db.path as path
 
-def run_script(host, script_path, user = "root"):
-	return subprocess.call(["ssh", "-i" + path.MEGAZORD_DB + "secrets/keys/" + host, "-l" + user, host, script_path])
+import paramiko
+import sys
+
+def connect(destination, user = "megazord"):
+	ssh = paramiko.SSHClient()
+	ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+	try:
+		ssh.connect(destination, username=user, key_filename=path.MEGAZORD_DB + "secrets/keys/" + destination)
+		return ssh
+	except:
+		print "Falha ao conectar em '" + destination + "':", sys.exc_info()[1]
+		return None
+
+def run_script(destination, script, user = "megazord"):
+	ssh = connect(destination, user)
+	if not ssh: return -1
+	
+	chan = ssh.get_transport().open_session()
+	try:
+		chan.exec_command(script)
+	except:
+		return -1
+	ret = chan.recv_exit_status()
+	print chan.recv_stderr(200),
+	return ret
+	
 
 def run_script_with_localpipe(host, script_path, pipe, user = "root"):
 	return subprocess.call([pipe + " | ssh -i " + path.MEGAZORD_DB + "secrets/keys/" + host + " -l " + user + " " + host + " " + script_path], shell=True)

@@ -39,5 +39,5 @@ log.write("Desativando usuário '{0}'; Status: {1}\n".format(login, str(status_c
 
 for k in status_conta:
 	if not status_conta[k]:
-		print "Erro: etapa " + k + " mal-sucedida"
+		print "Erro: etapa '" + k + "' mal-sucedida"
 

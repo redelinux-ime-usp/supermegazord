@@ -21,8 +21,8 @@ dados = ldapwrap.find_user_by_login(login)
 
 from supermegazord.lib import remote
 status_conta = {}
-status_conta['mail'] = remote.run_script("mail", "sudo /root/email/rl_atualiza_curso.sh " + login + " " + novo_curso, "megazord")
-status_conta['home'] = remote.run_script("nfs", "sudo /megazord/atualiza_curso.sh " + login + " " + novo_curso, "megazord")
+status_conta['mail'] = remote.run_script("mail", "sudo /root/email/rl_atualiza_curso.sh " + login + " " + novo_curso) == 0
+status_conta['home'] = remote.run_script("nfs", "sudo /megazord/atualiza_curso.sh " + login + " " + novo_curso) == 0
 status_conta['ldap'] = False
 
 log = open(path.MEGAZORD_DB + "log/uso", "a")
