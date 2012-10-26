@@ -1,4 +1,7 @@
 #!/usr/bin/perl
+
+use utf8;
+
 use Getopt::Std;
 getopts("o:", \%opts);
 
@@ -7,11 +10,14 @@ $opts{'o'} and do {
    select OUTF;
 };
 
+binmode(STDOUT, ":utf8");
+binmode(STDERR, ":utf8");
+
 $arq = shift or exec "cat $0 | grep ^\#\# | cut -c4-";
 
 END { unlink("/tmp/jupparse-tmp-$$"); }
 
-# cÛdigos dos cursos:
+# c√≥digos dos cursos:
 %codcurso = (
              "45010" => "bm",
              "45021" => "lic",
@@ -30,16 +36,17 @@ END { unlink("/tmp/jupparse-tmp-$$"); }
 ); 
 
 open FILE, $arq or die "Erro ao abrir $arq\n$!\n";
+binmode(FILE, ":utf8");
 $linha = 0;
 $sucessos = 0;
 $falhas = 0;
 while (<FILE>) {
    $linha++;
    chomp;
-   # 2007-01-04: n„o existe mais o ciclo b·sico
+   # 2007-01-04: n√£o existe mais o ciclo b√°sico
    # -- dtiemy
-   #/Matem[a·]tica - Ciclo B[a·]sico/ and next; # ignora alunos do ciclo b·sico
-   /^\d/ or next;      # linhas que n„o comeÁam com n˙mero s„o cabeÁalhos
+   #/Matem[a√°]tica - Ciclo B[a√°]sico/ and next; # ignora alunos do ciclo b√°sico
+   /^\d/ or next;      # linhas que n√£o come√ßam com n√∫mero s√£o cabe√ßalhos
 
    @f = split /\t+/;
    @f ne 11 and do {
@@ -53,12 +60,12 @@ while (<FILE>) {
 
    $cod .= "-$sufixo";
 
-   # Aparentemente (ninguÈm na seÁ„o de alunos soube explicar isso direito)
-   # sÛ precisamos olhar para a parte do cÛdigo de curso que vem antes do
-   # hÌfen. Mas utilizamos a parte que vem depois para decidir entre
+   # Aparentemente (ningu√©m na se√ß√£o de alunos soube explicar isso direito)
+   # s√≥ precisamos olhar para a parte do c√≥digo de curso que vem antes do
+   # h√≠fen. Mas utilizamos a parte que vem depois para decidir entre
    # lic e licn.
    $cod =~ /^(\d+)-(\d+)$/ or do {
-      print STDERR "Aviso: ${linha}: cÛdigo de curso mal formatado: $cod\n";
+      print STDERR "Aviso: ${linha}: c√≥digo de curso mal formatado: $cod\n";
       $falhas++;
       next;
    };
@@ -67,7 +74,7 @@ while (<FILE>) {
    $codsuf = $2;
    
    exists $codcurso{$codpref} or do {
-      print STDERR "Aviso: ${linha}: cÛdigo de curso desconhecido: $cod\n";
+      print STDERR "Aviso: ${linha}: c√≥digo de curso desconhecido: $cod\n";
       $falhas++;
       next;
    };
@@ -82,7 +89,7 @@ while (<FILE>) {
    };
 
    ($dia, $mes, $ano) = ($1, $2, $3);
-   # MudanÁa do formato da data na lista
+   # Mudan√ßa do formato da data na lista
    # 2006-02-12, dtiemy
    # $ano += ($ano > 40) ? 1900 : 2000;
 
@@ -90,10 +97,10 @@ while (<FILE>) {
    $sucessos++;
 }
 
-print STDERR "Resumo: $sucessos usu·rios processados com sucesso\n" .
-         "        $falhas linhas da entrada n„o puderam ser interpretadas\n";
+print STDERR "Resumo: $sucessos usu√°rios processados com sucesso\n" .
+         "        $falhas linhas da entrada n√£o puderam ser interpretadas\n";
 
-# fÛssil da linha principal do script antigo, para referÍncia:
-#cat | grep -v -w "Matem·tica - Ciclo B·sico" | \
+# f√≥ssil da linha principal do script antigo, para refer√™ncia:
+#cat | grep -v -w "Matem√°tica - Ciclo B√°sico" | \
 #perl -ne 'print "$1:$2:$3-$5:$4\n" if (m/(\d+)\s+\d+\s+(\D+\S)\s+(\d+)\s+(\S+).*45\s+(\d+)/);' |  sort -t: -u -n
 

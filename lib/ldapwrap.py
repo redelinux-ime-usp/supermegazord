@@ -30,11 +30,14 @@ def open_connection():
 		con.simple_bind_s(ROOTDN, ROOTPW)
 	return con
 
-def query(target, restriction = '', con = None):
+def query(target, restriction = None, con = None):
 	if con == None:
 		con = open_connection()
 	try:
-		return con.search_s(target + ',' + BASEDN, ldap.SCOPE_SUBTREE, restriction)
+		if restriction:
+			return con.search_s(target + ',' + BASEDN, ldap.SCOPE_SUBTREE, restriction)
+		else:
+			return con.search_s(target + ',' + BASEDN, ldap.SCOPE_SUBTREE)
 	except:
 		return None
 
