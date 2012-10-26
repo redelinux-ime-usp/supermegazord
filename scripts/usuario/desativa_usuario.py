@@ -20,9 +20,18 @@ dados = ldapwrap.find_user_by_login(login)
 
 from supermegazord.lib import remote
 status_conta = {}
-status_conta['mail'] = remote.run_script("mail", "sudo /root/email/rl_desativa_login.sh " + login, "megazord")
-status_conta['printer'] = remote.run_script("printer", "sudo /root/files/bin/pkdeluser " + login, "megazord")
-status_conta['home'] = remote.run_script("nfs", "sudo /megazord/desativa_conta.sh " + login, "megazord")
+
+print "Desativando do mail..."
+status_conta['mail'] = remote.run_script("mail", "sudo /root/email/rl_desativa_login.sh " + login, "megazord") == 0
+
+print "\nDesativando do printer..."
+status_conta['printer'] = remote.run_script("printer", "sudo /root/files/bin/pkdeluser " + login, "megazord") == 0
+
+print "\nDesativando do NFS..."
+status_conta['home'] = remote.run_script("nfs", "sudo /megazord/desativa_conta.sh " + login, "megazord") == 0
+
+print "\nDesativando do LDAP..."
+print "Não implementado...\n"
 status_conta['ldap'] = False
 
 log = open(path.MEGAZORD_DB + "log/desativar", "a")
