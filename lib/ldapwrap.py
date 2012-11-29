@@ -9,10 +9,15 @@ if __name__ == "__main__":
 	quit()
 
 from supermegazord.db import path
+import json
 
-BASEDN = "dc=linux,dc=ime,dc=usp,dc=br"
-URI	   = "ldap://ldap"
-ROOTDN = "cn=admin,dc=linux,dc=ime,dc=usp,dc=br"
+with open(path.MEGAZORD_DB + "/conf/ldap.conf", "r") as f:
+	fulldata = json.load(f)
+	
+
+BASEDN	= fulldata['BASEDN']
+URI	  	= fulldata['URI']
+ROOTDN	= fulldata['ROOTDN']
 try:
 	ROOTPW = open(path.MEGAZORD_DB + "secrets/ldap").read()
 except IOError:
