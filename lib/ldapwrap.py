@@ -87,17 +87,23 @@ def add_user(account):
 		return False
 	return False
 
-def find_grupo_by_gid(gid):
+def find_group_by_gid(gid):
 	try:
 		return query('ou=Group', 'gidNumber=%s' % gid)[0][1]
 	except:
 		return None
 
-def find_grupo_by_name(name):
+def find_group_by_name(name):
 	try:
 		return query('ou=Group', 'cn=%s' % name)[0][1]
 	except:
 		return None
+
+def find_grupo_by_gid(gid):
+	return find_group_by_gid(gid)
+
+def find_grupo_by_name(name):
+	return find_group_by_name(name)
 
 def get_gid(curso):
 	try:

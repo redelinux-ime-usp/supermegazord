@@ -8,6 +8,11 @@ if __name__ == "__main__":
 	print "Esse módulo não deve ser executado diretamente."
 	quit()
 
+class Group:
+	def __init__(self, gid, name, members):
+		self.gid = gid
+		self.name = name
+		self.members
 
 class Account:
 	def __init__(self, uid, gid, login, name, home, shell, nid = -1):
@@ -19,6 +24,7 @@ class Account:
 		self.shell = shell
 		self.password = ''
 		self.nid = nid
+		self.group = group_from_gid(gid)
 
 	def set_nid(self, nid):
 		self.nid = nid
@@ -34,9 +40,11 @@ class Account:
 		import kerbwrap
 		return kerbwrap.add_user(self.name, self.password)
 
-	def send_password_update(self):
+	#def send_password_update(self):
 		import kerbwrap
 		return change_password(self.name, self.password)
+
+	def is_in_group(self, group):
 
 	def is_in_group_by_ldapdata(self, group):
 		if group['gidNumber'][0] == str(self.gid): return True
@@ -72,4 +80,14 @@ def from_login(login):
 	import ldapwrap
 	return from_ldap(ldapwrap.find_user_by_login(login))
 	
-
+def group_from_gid(gid):
+	import ldapwrap
+	data = ldapwrap.find_group_by_gid(gid)
+	try:
+		if 'memberUid' in data:
+			members = data['memberUid']
+		else:
+			members = []
+		return Group(data['gidNumber'][0], data['cn'][0], members)
+	except:
+		return None
