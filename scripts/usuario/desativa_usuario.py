@@ -18,17 +18,25 @@ if len(sys.argv) != 2:
 login = sys.argv[1]
 dados = ldapwrap.find_user_by_login(login)
 
+if not dados:
+	print "Usuário inválido."
+	exit(1)
+
+group = ldapwrap.find_group_by_gid(dados['gidNumber'][0])['cn'][0]
+
 from supermegazord.lib import remote
 status_conta = {}
 
+comando = "sudo /megazord/scripts/desativa_conta " + login + " " + group
+
 print "Desativando do mail..."
-status_conta['mail'] = remote.run_script("mail", "sudo /root/email/rl_desativa_login.sh " + login, "megazord") == 0
+status_conta['mail']    = remote.run_script("mail",    comando, "megazord") == 0
 
 print "\nDesativando do printer..."
-status_conta['printer'] = remote.run_script("printer", "sudo /root/files/bin/pkdeluser " + login, "megazord") == 0
+status_conta['printer'] = remote.run_script("printer", comando, "megazord") == 0
 
 print "\nDesativando do NFS..."
-status_conta['home'] = remote.run_script("nfs", "sudo /megazord/desativa_conta.sh " + login, "megazord") == 0
+status_conta['home']    = remote.run_script("nfs",     comando, "megazord") == 0
 
 print "\nDesativando do LDAP..."
 print "Não implementado...\n"
