@@ -9,6 +9,6 @@ if __name__ == "__main__":
 	print "Esse módulo não deve ser executado diretamente."
 	quit()
 
-MEGAZORD = "/opt/supermegazord/"
-MEGAZORD_DB = "/opt/megazord-db/"
+MEGAZORD = "D:/stuff/programming/projects/supermegazord/"
+MEGAZORD_DB = "D:/stuff/megazord-db/"
 

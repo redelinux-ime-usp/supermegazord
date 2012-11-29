@@ -112,23 +112,13 @@ except:
 
 newuser = Account(uid, gid, login, userinfo.nome, home, SHELL, nid)
 newuser.set_password(users.generate_password())
-newuserdata = {
-	'nid': nid,
-	'uid': uid,
-	'gid': gid,
-	'login': login,
-	'password': users.generate_password(),
-	'curso': userinfo.curso,
-	'nome': userinfo.nome,
-	'home': home,
-	'shell': SHELL }
 
 clear()
 print "%(verd)sRESUMINDO:\n" % cores.allcolors
 print "NID.....:", newuser.nid
 print "Login...:", newuser.login, "(uid = %s)" % newuser.uid
 print "Nome....:", newuser.name
-print "Grupo...:", userinfo.curso, "(gid = %s)" % newuser.gid
+print "Grupo...:", newuser.group.name, "(gid = %s)" % newuser.group.gid
 print "Home....:", newuser.home
 print "Shell...:", newuser.shell
 print cores.norm
@@ -160,17 +150,17 @@ print "%(azul)s4/8 - Criando home...%(norm)s" % cores.allcolors
 # Melhorar ae :)
 # tar c -C/opt/megazord-db/usuarios skel | ssh nfs "tar x -C/tmp && chown -R $USER:$GROUP /tmp/skel && mv /tmp/skel /home/$GROUP/$USER && /root/define_quota.sh $USER"
 # "tar c -C " + path.MEGAZORD_DB + "usuarios/skel | ssh nfs 'sudo /root/cria_conta.sh'"
-status_conta['home'] = remote.run_script_with_localpipe("nfs", "sudo /megazord/cria_conta.sh " + newuser.login + " " + userinfo.curso, 
+status_conta['home'] = remote.run_script_with_localpipe("nfs", "sudo /megazord/cria_conta.sh " + newuser.login + " " + newuser.group.name, 
 														"tar c -C " + path.MEGAZORD_DB + "usuarios skel/", "megazord") == 0
 
 print "%(azul)s5/8 - Criando cota de impressão...%(norm)s" % cores.allcolors
 status_conta['print'] = remote.run_script("printer", "sudo /root/files/bin/pkadduser " + newuser.login, "megazord") == 0
 
 print "%(azul)s6/8 - Adicionando usuário nas listas de e-mail...%(norm)s" % cores.allcolors
-status_conta['listas'] = remote.run_script("mail", "sudo /root/email/rl_adiciona_pessoa " + userinfo.curso + " " + newuser.login, "megazord") == 0
+status_conta['listas'] = remote.run_script("mail", "sudo /root/email/rl_adiciona_pessoa " + newuser.group.name + " " + newuser.login, "megazord") == 0
 
 print "%(azul)s7/8 - Registrando abertura de conta no histórico do usuário...%(norm)s" % cores.allcolors
-msg = "Conta " + newuser.login + (" (%s) aberta\n" % userinfo.curso) + ("NID: %s;" % newuser.nid) + " Nome: %s\n" % newuser.name
+msg = "Conta " + newuser.login + (" (%s) aberta\n" % newuser.group.name) + ("NID: %s;" % newuser.nid) + " Nome: %s\n" % newuser.name
 status_conta['historico'] = users.add_history_by_nid(newuser.nid, msg)
 
 print "%(azul)s8/8 - Fazendo nada...%(norm)s" % cores.allcolors

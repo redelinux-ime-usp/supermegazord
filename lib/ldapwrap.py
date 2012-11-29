@@ -70,7 +70,7 @@ def add_user(account):
 		attrs['cn'] = account.name
 		attrs['uid'] = account.login
 		attrs['uidNumber'] = str(account.uid)
-		attrs['gidNumber'] = str(account.gid)
+		attrs['gidNumber'] = str(account.group.gid)
 		attrs['homeDirectory'] = account.home
 		attrs['loginShell'] = account.shell
 		attrs['nid'] = str(account.nid)
