@@ -139,8 +139,8 @@ def change_group(uid, gid):
 	except:
 		return False
 	
-def add_member_to_group(gid, login):
-	dn = "uid=" + str(gid) + ",ou=Group," + BASEDN
+def group_add_member(gname, login):
+	dn = "cn=" + gname + ",ou=Group," + BASEDN
 	con = open_connection()
 	try:
 		con.modify_s(dn, [ (ldap.MOD_ADD, 'memberUid', str(login)) ] )
@@ -148,8 +148,8 @@ def add_member_to_group(gid, login):
 	except:
 		return False
 
-def remove_member_from_group(gid, login):
-	dn = "uid=" + str(gid) + ",ou=Group," + BASEDN
+def group_remove_member(gname, login):
+	dn = "cn=" + gname + ",ou=Group," + BASEDN
 	con = open_connection()
 	try:
 		con.modify_s(dn, [ (ldap.MOD_DELETE, 'memberUid', str(login)) ] )
