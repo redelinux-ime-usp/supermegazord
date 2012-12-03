@@ -38,19 +38,16 @@ def open_connection():
 def query(target, restriction = None, con = None):
 	if con == None:
 		con = open_connection()
-	try:
-		if restriction:
-			return con.search_s(target + ',' + BASEDN, ldap.SCOPE_SUBTREE, restriction)
-		else:
-			return con.search_s(target + ',' + BASEDN, ldap.SCOPE_SUBTREE)
-	except:
-		return None
+	if restriction:
+		return con.search_s(target + ',' + BASEDN, ldap.SCOPE_SUBTREE, restriction)
+	else:
+		return con.search_s(target + ',' + BASEDN, ldap.SCOPE_SUBTREE)
 
 def find_user_by_restriction(restriction):
 	con = open_connection()
 	try:
 		return query('ou=People', restriction)[0][1]
-	except:
+	except IndexError:
 		return None
 
 def find_user_by_uid(uid):
@@ -76,7 +73,7 @@ def add_user(account):
 		attrs['nid'] = str(account.nid)
 		if account.password != '':
 			attrs['userPassword'] = account.password
-	except:
+	except KeyError:
 		return False
 
 	try:
@@ -116,27 +113,27 @@ def get_gid(curso):
 	except:
 		return -1
 
-def change_password(user, password):
+def change_password(login, password):
 	import os
-	command = "ldappasswd -D "+ROOTDN+" -w"+ROOTPW+" uid=" + user + ",ou=People," + BASEDN + " -s" + password
+	command = "ldappasswd -D "+ROOTDN+" -w"+ROOTPW+" uid=" + login + ",ou=People," + BASEDN + " -s" + password
 	return os.system(command)
 
-def remove_password(uid):
-	dn = "uid=" + str(uid) + ",ou=People," + BASEDN
+def remove_password(login):
+	dn = "uid=" + str(login) + ",ou=People," + BASEDN
 	con = open_connection()
 	try:
 		con.modify_s( dn, [ (ldap.MOD_DELETE, 'userPassword', None) ])
 		return True
-	except:
+	except ldap.NO_SUCH_OBJECT:
 		return False
 
-def change_group(uid, gid):
-	dn = "uid=" + str(uid) + ",ou=People," + BASEDN
+def change_group(login, gid):
+	dn = "uid=" + str(login) + ",ou=People," + BASEDN
 	con = open_connection()
 	try:
 		con.modify_s( dn, [ (ldap.MOD_REPLACE, 'gidNumber', [str(gid)]) ] )
 		return True
-	except:
+	except ldap.NO_SUCH_OBJECT:
 		return False
 	
 def group_add_member(gname, login):
@@ -145,7 +142,7 @@ def group_add_member(gname, login):
 	try:
 		con.modify_s(dn, [ (ldap.MOD_ADD, 'memberUid', str(login)) ] )
 		return True
-	except:
+	except ldap.NO_SUCH_OBJECT:
 		return False
 
 def group_remove_member(gname, login):
@@ -154,6 +151,6 @@ def group_remove_member(gname, login):
 	try:
 		con.modify_s(dn, [ (ldap.MOD_DELETE, 'memberUid', str(login)) ] )
 		return True
-	except:
+	except ldap.NO_SUCH_OBJECT:
 		return False
 	

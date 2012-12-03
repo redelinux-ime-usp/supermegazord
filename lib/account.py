@@ -28,8 +28,15 @@ class Account:
 		self.password = password
 		
 	def change_group(self, newgroup):
+		if not isinstance(newgroup, megazordgroup.Group):
+			if isinstance(newgroup, int):
+				newgroup = megazordgroup.from_gid(newgroup)
+			else:
+				newgroup = megazordgroup.from_name(newgroup)
+		
+		if newgroup == None: return False
 		import ldapwrap
-		result = ldapwrap.change_group(self.uid, newgroup.gid)
+		result = ldapwrap.change_group(self.login, newgroup.gid)
 		if result: self.group = newgroup
 		return result
 
@@ -57,23 +64,21 @@ class Account:
 		
 
 def from_ldap(ldapdata):
-	try:
-		uid = ldapdata['uidNumber'][0]
-		gid = ldapdata['gidNumber'][0]
-		if 'nid' in ldapdata:
-			nid = ldapdata['nid'][0]
-		else:
-			nid = -1
-		login = ldapdata['uid'][0]
-		if 'gecos' in ldapdata:
-			name = ldapdata['gecos'][0]
-		else:
-			name = ldapdata['cn'][0]
-		home = ldapdata['homeDirectory'][0]
-		shell = ldapdata['loginShell'][0]
-		return Account(uid, gid, login, name, home, shell, nid)
-	except:
-		return None
+	if not ldapdata: return None
+	uid = ldapdata['uidNumber'][0]
+	gid = ldapdata['gidNumber'][0]
+	if 'nid' in ldapdata:
+		nid = ldapdata['nid'][0]
+	else:
+		nid = -1
+	login = ldapdata['uid'][0]
+	if 'gecos' in ldapdata:
+		name = ldapdata['gecos'][0]
+	else:
+		name = ldapdata['cn'][0]
+	home = ldapdata['homeDirectory'][0]
+	shell = ldapdata['loginShell'][0]
+	return Account(uid, gid, login, name, home, shell, nid)
 
 def from_login(login):
 	import ldapwrap
