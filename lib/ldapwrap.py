@@ -122,16 +122,38 @@ def change_password(user, password):
 	return os.system(command)
 
 def remove_password(uid):
-	dn = "uid=" + str(uid) + ",ou=People,dc=linux,dc=ime,dc=usp,dc=br"
+	dn = "uid=" + str(uid) + ",ou=People," + BASEDN
 	con = open_connection()
-	user = query('ou=People', 'uid=' + str(uid), con)
 	try:
-		password = user[0][1]['userPassword'][0]
-	except:
-		return True
-
-	try:
-		con.modify_s( dn, [ (ldap.MOD_DELETE, 'userPassword', password) ])
+		con.modify_s( dn, [ (ldap.MOD_DELETE, 'userPassword', None) ])
 		return True
 	except:
 		return False
+
+def change_group(uid, gid):
+	dn = "uid=" + str(uid) + ",ou=People," + BASEDN
+	con = open_connection()
+	try:
+		con.modify_s( dn, [ (ldap.MOD_REPLACE, 'gidNumber', [str(gid)]) ] )
+		return True
+	except:
+		return False
+	
+def add_member_to_group(gid, login):
+	dn = "uid=" + str(gid) + ",ou=Group," + BASEDN
+	con = open_connection()
+	try:
+		con.modify_s(dn, [ (ldap.MOD_ADD, 'memberUid', str(login)) ] )
+		return True
+	except:
+		return False
+
+def remove_member_from_group(gid, login):
+	dn = "uid=" + str(gid) + ",ou=Group," + BASEDN
+	con = open_connection()
+	try:
+		con.modify_s(dn, [ (ldap.MOD_DELETE, 'memberUid', str(login)) ] )
+		return True
+	except:
+		return False
+	

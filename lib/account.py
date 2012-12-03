@@ -26,6 +26,12 @@ class Account:
 		
 	def set_password(self, password):
 		self.password = password
+		
+	def change_group(self, newgroup):
+		import ldapwrap
+		result = ldapwrap.change_group(self.uid, newgroup.gid)
+		if result: self.group = newgroup
+		return result
 
 	def add_to_ldap(self):
 		import ldapwrap
@@ -37,7 +43,7 @@ class Account:
 
 	def send_password_update(self):
 		import kerbwrap
-		return change_password(self.name, self.password)
+		return kerbwrap.change_password(self.name, self.password)
 
 	def is_in_group(self, group):
 		if group.gid == self.group.gid: return True
