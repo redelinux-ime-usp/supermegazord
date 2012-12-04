@@ -22,7 +22,7 @@ if not user:
 	exit(1)
 
 def comando(user):
-	return "sudo /megazord/scripts/desativa_conta " + user.login + " " + user.group.name
+	return "sudo /megazord/scripts/ativa_conta " + user.login + " " + user.group.name
 	
 def ldap_disable(user):
 	group = user.group
