@@ -71,8 +71,6 @@ def add_user(account):
 		attrs['homeDirectory'] = account.home
 		attrs['loginShell'] = account.shell
 		attrs['nid'] = str(account.nid)
-		if account.password != '':
-			attrs['userPassword'] = account.password
 	except KeyError:
 		return False
 

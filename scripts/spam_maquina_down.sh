@@ -3,7 +3,7 @@
 DOWN=$(/opt/bin/watchman --down clients)
 LISTA=batata
 
-if [ "$DOWN" != "" ]; then
+if [ "$DOWN" != "" -a 1 == 2 ]; then
 	telnet mail 25 <<EOF
 helo linux.ime.usp.br
 mail from: $LISTA@linux.ime.usp.br
