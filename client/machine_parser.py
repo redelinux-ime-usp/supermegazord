@@ -15,12 +15,16 @@ def prepare_parser(mach_parse):
 		if not isinstance(args.group, list): args.group = [args.group]
 		for group in args.group:
 			for m in machines.list(group):
-				print m.__dict__[args.print_value]
+				if args.print_value == "all":
+					print m.hostname + "?" + m.ip + "?" + m.mac
+				else:
+					print m.__dict__[args.print_value]
 
 	import argparse
 	print_val = mach_parse.add_mutually_exclusive_group(required=False)
 	print_val.add_argument('--ip', action='store_const', dest='print_value', const='ip')
 	print_val.add_argument('--mac', action='store_const', dest='print_value', const='mac')
+	print_val.add_argument('--all', action='store_const', dest='print_value', const='all')
 	print_val.set_defaults(print_value='hostname')
 	mach_parse.add_argument('group', choices=machines.groups(), default='all', nargs='*')
 	mach_parse.set_defaults(func=machines_parser)
