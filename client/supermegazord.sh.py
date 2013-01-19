@@ -12,8 +12,8 @@ if __name__ != "__main__":
 import sys 
 
 if len(sys.argv) == 1:
-	#import supermegazord.client.curse.curse_client as cursescli
-	#cursescli.Run()
+	import supermegazord.client.curse.curse_client as cursescli
+	cursescli.Run()
 	quit(0)
 
 import argparse, machine_parser, user_parser, watchman_parser
