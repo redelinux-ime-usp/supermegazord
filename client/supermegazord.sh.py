@@ -16,7 +16,7 @@ if len(sys.argv) == 1:
 	cursescli.Run()
 	quit(0)
 
-import argparse, machine_parser, user_parser, watchman_parser
+import argparse, machine_parser, user_parser, watchman_parser, precadastro_parser
 
 parser = argparse.ArgumentParser(description='Super Megazord.')
 subparsers = parser.add_subparsers(help='Possíveis scripts')
@@ -24,6 +24,7 @@ subparsers = parser.add_subparsers(help='Possíveis scripts')
 machine_parser.prepare_parser(subparsers.add_parser('machines'))
 user_parser.prepare_parser(subparsers.add_parser('users'))
 watchman_parser.prepare_parser(subparsers.add_parser('watchman'))
+precadastro_parser.prepare_parser(subparsers.add_parser('precadastro'))
 
 args = parser.parse_args()
 args.func(args)
