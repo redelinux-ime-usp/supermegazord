@@ -41,22 +41,23 @@ def get_data(atype, u):
 
 def prepare_parser(user_parse):
 
-	def user_parser(args):
-		print "   Login    |   NID   | Curso | Ingresso |   Nome" 
+	def search_parser(args):
+		print "   Login            |   NID   | Curso | Ingresso |   Nome" 
 		for u in args.user:
 			login, nid, curso, ingresso, nome = get_data(args.type, u)
 
 			# Trata tamanhos
-			login = (str(login) + " "*12)[:12]
+			login = (str(login) + " "*20)[:20]
 			nid = (" "*8 + str(nid))[-8:]
 			curso = (str(curso) + " "*6)[:6]
 			ingresso = (str(ingresso) + " "*10)[:10]
 
 			print login + "|" + nid + " | " + curso + "|" + ingresso + "| " + nome
 
-	import argparse
-	user_parse.add_argument('--type', choices=['nid', 'login', 'name', 'auto'], dest='type', default='auto')
-	user_parse.add_argument('user', nargs='+')
+	subparsers = user_parse.add_subparsers()
 
-	user_parse.set_defaults(func=user_parser)
+	search = subparsers.add_parser('search')
+	search.add_argument('--type', choices=['nid', 'login', 'name', 'auto'], dest='type', default='auto')
+	search.add_argument('user', nargs='+')
+	search.set_defaults(func=search_parser)
 
