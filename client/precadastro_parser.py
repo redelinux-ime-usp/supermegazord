@@ -34,11 +34,12 @@ def prepare_parser(precadastro_parse):
 			data = json.load(f)
 		data[args.nid] = {
 			'login': args.login,
-			'principal': args.principal,
+			'password': args.password,
 			'time': time.time()
 		}
 		with open(path.MEGAZORD_DB + "usuarios/precadastro", 'w') as f:
 			json.dump(data, f, indent=2, separators=(',', ': '))
+		print "sucesso"
 
 	subparsers = precadastro_parse.add_subparsers()
 
@@ -52,6 +53,6 @@ def prepare_parser(precadastro_parse):
 	cadastra.set_defaults(func=cadastra_parser)
 	cadastra.add_argument('--nid', required=True)
 	cadastra.add_argument('--login', required=True)
-	cadastra.add_argument('--principal', required=True, help='Principal do Kerberos temporário associado a essa conta.')
+	cadastra.add_argument('--password', required=True)
 
 
