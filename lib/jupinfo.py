@@ -19,3 +19,7 @@ class JupInfo:
 
 	def __repr__(self):
 		return "JupInfo('%s','%s','%s','%s')" % (self.nid, self.nome, self.curso, self.ingresso)
+
+def from_nid(nid):
+	import supermegazord.db.users as users
+	return users.get_jupinfo_from_nid(nid)

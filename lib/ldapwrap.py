@@ -15,6 +15,7 @@ with open(path.MEGAZORD_DB + "/conf/ldap.conf", "r") as f:
 	fulldata = json.load(f)
 	
 
+DEFAULT_SHELL = "/bin/bash"
 BASEDN	= fulldata['BASEDN']
 URI	  	= fulldata['URI']
 ROOTDN	= fulldata['ROOTDN']
@@ -59,18 +60,23 @@ def find_user_by_login(login):
 def find_user_by_nid(nid):
 	return find_user_by_restriction('nid=%s' % nid)
 
-def add_user(account):
+def add_user_account(account):
 	if account.nid < 0: return False
+	return add_user(account.nid, account.name, account.login, account.uid,
+			 account.group.gid, account.home)
+
+def add_user(nid, name, login, uid, gid, home):
+	if nid < 0: return False
 	attrs = {}
 	attrs['objectClass'] = ['account', 'posixAccount', 'top', 'shadowAccount', 'megazordAccount']
 	try:
-		attrs['cn'] = account.name
-		attrs['uid'] = account.login
-		attrs['uidNumber'] = str(account.uid)
-		attrs['gidNumber'] = str(account.group.gid)
-		attrs['homeDirectory'] = account.home
-		attrs['loginShell'] = account.shell
-		attrs['nid'] = str(account.nid)
+		attrs['cn'] = name
+		attrs['uid'] = login
+		attrs['uidNumber'] = str(uid)
+		attrs['gidNumber'] = str(gid)
+		attrs['homeDirectory'] = home
+		attrs['loginShell'] = DEFAULT_SHELL
+		attrs['nid'] = str(nid)
 	except KeyError:
 		return False
 

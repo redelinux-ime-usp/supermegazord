@@ -10,6 +10,8 @@ if __name__ == "__main__":
 	quit()
 
 def prepare_parser(precadastro_parse):
+	import supermegazord.lib.precadastro as precadastrodb
+
 	def verifica_parser(args):
 		import supermegazord.db.users as userdata
 
@@ -18,34 +20,28 @@ def prepare_parser(precadastro_parse):
 				print 'inexistente'
 			elif userdata.nid_to_login(args.nid) != '':
 				print 'usado'
+			elif precadastrodb.fetch(args.nid) != None:
+				print 'precadastro'
 			else:
 				print 'livre'
 		
 		if args.login:
 			if userdata.login_to_nid(args.login) != '':
 				print 'usado'
+			elif precadastrodb.search('login', args.login) != None:
+				print 'precadastro'
 			else:
 				print 'livre'
 	
 	def cadastra_parser(args):
-		import supermegazord.db.path as path
-		import json, time
-		with open(path.MEGAZORD_DB + "usuarios/precadastro") as f:
-			data = json.load(f)
-		data[args.nid] = {
-			'login': args.login,
-			'password': args.password,
-			'time': time.time()
-		}
-		with open(path.MEGAZORD_DB + "usuarios/precadastro", 'w') as f:
-			json.dump(data, f, indent=2, separators=(',', ': '))
+		precadastrodb.insert(args.nid, args.login, args.password)
 		print "sucesso"
 
 	subparsers = precadastro_parse.add_subparsers()
 
 	verifica = subparsers.add_parser('status')
 	verifica.set_defaults(func=verifica_parser)
-	verifica_options = verifica.add_mutually_exclusive_group()
+	verifica_options = verifica.add_mutually_exclusive_group(required=True)
 	verifica_options.add_argument('--nid')
 	verifica_options.add_argument('--login')
 

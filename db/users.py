@@ -68,18 +68,13 @@ def add_nid_login(nid, login):
 def get_jupinfo_from_nid(nid):
 	for source in (jupinfofile, nojupinfofile):
 		for line in open(source):
-			if nid == line.strip().split(':')[0]:
+			if str(nid) == line.strip().split(':')[0]:
 				return jupinfo_from_raw(line)
 
 def get_jupinfo_from_login(login):
 	return get_jupinfo_from_nid(login_to_nid(login))
 
 def get_next_uid():
-	MAX_UID = 59999 # reservamos 60000 para cima para propósitos especiais
-
-
-	# 
-
 	import datetime
 	prefix = str(datetime.datetime.now().year)[-2:]
 
@@ -101,9 +96,8 @@ def get_next_uid():
 			uid = ""
 	
 	if year_id > 999:
-		print "ERRO: criando mais de 999 contas em um único ano. Caraca, como isso aconteceu!?"
-		return ""
-
+		raise Exception("Criando mais de 999 contas em um único ano. Caraca, como isso aconteceu!?")
+	
 	return uid
 
 def ban_login(login, motivo):

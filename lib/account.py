@@ -42,7 +42,7 @@ class Account:
 
 	def add_to_ldap(self):
 		import ldapwrap
-		return ldapwrap.add_user(self)
+		return ldapwrap.add_user_account(self)
 
 	def add_to_kerberos(self):
 		import kerbwrap
@@ -55,6 +55,12 @@ class Account:
 	def is_in_group(self, group):
 		if group.gid == self.group.gid: return True
 		return self.login in group.members
+
+	def activate(self):
+		raise Exception("Not yet implemented.")
+
+	def deactivate(self):
+		raise Exception("Not yet implemented.")
 		
 	def __repr__(self):
 		return 'Account({0},{1},"{2}","{3}","{4}","{5}",{6})'.format(self.uid, self.group.gid, self.login, self.name, self.home, self.shell, self.nid)
@@ -62,6 +68,40 @@ class Account:
 	def __str__(self):
 		return "Account[{2}; uid {0}; {1}]".format(self.uid, self.group, self.login)
 		
+def _load_precadastro()
+	import supermegazord.db.path as path
+	with open(path.MEGAZORD_DB + "usuarios/precadastro") as f:
+		return json.load(f)
+
+def _save_precadastro(data)
+	import supermegazord.db.path as path
+	with open(path.MEGAZORD_DB + "usuarios/precadastro", 'w') as f:
+		json.dump(data, f)
+
+def create(nid):
+	from supermegazord.db.users import get_next_uid
+	import supermegazord.lib.jupinfo as jupinfo
+	import json, time, datetime
+	precadastro = _load_precadastro()
+	if str(nid) not in precadastro:
+		return None
+	data = precadastro[str(nid)]
+	if datetime.timedelta(0, time.time() - int(data['time'])).days > PRECADASTRO_MAX_DAYS:
+		del precadastro[str(nid)]
+
+
+	
+	info  = jupinfo.from_nid(nid)
+	if not info: raise Exception("NID dado não possui Jupinfo.")
+
+	uid   = get_next_uid()
+	login = data['login']
+	group = megazordgroup.from_name(info.curso)
+	if not group: raise Exception("Jupinfo possui curso inválido: " + info.curso)
+
+	home = "/home/" + group.name + "/" + data['login']
+
+	return True
 
 def from_ldap(ldapdata):
 	if not ldapdata: return None
