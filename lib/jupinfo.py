@@ -14,8 +14,8 @@ class JupInfo:
 		self.ingresso = ingresso
 
 	def __str__(self):
-		return "NID:" + (" "*8 + str(self.nid))[-8:] + " Curso: " + (str(self.curso) + " "*4)[:4] + (
-			" Ingresso: ") + self.ingresso + "; Nome: " + self.nome
+		return "NID:" + (" "*8 + str(self.nid))[-8:] + "; Curso: " + (str(self.curso) + " "*4)[:4] + (
+			"; Ingresso: ") + self.ingresso + "; Nome: " + self.nome
 
 	def __repr__(self):
 		return "JupInfo('%s','%s','%s','%s')" % (self.nid, self.nome, self.curso, self.ingresso)

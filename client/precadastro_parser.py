@@ -38,6 +38,20 @@ def prepare_parser(precadastro_parse):
 	def adiciona_parser(args):
 		precadastrodb.insert(args.nid, args.login, args.password)
 		print "sucesso"
+	
+	def lista_parser(args):
+		import supermegazord.lib.jupinfo as jupinfo
+		for p in precadastrodb.list_all():
+			print str(jupinfo.from_nid(p['nid'])) + "; Login: " + p['login']
+
+	def finaliza_parser(args):
+		if precadastrodb.finaliza(args.nid):
+			print "Cadastro do NID '%s' finalizado com sucesso." % args.nid
+		else:
+			print "Erros no cadastro. Verifique o log para maiores detalhes."
+	
+	def remove_parser(args):
+		precadastrodb.remove(args.nid)
 
 	subparsers = precadastro_parse.add_subparsers()
 
@@ -52,5 +66,16 @@ def prepare_parser(precadastro_parse):
 	adiciona.add_argument('--nid', required=True)
 	adiciona.add_argument('--login', required=True)
 	adiciona.add_argument('--password', required=True)
+
+	lista = subparsers.add_parser('lista')
+	lista.set_defaults(func=lista_parser)
+
+	finaliza = subparsers.add_parser('finaliza')
+	finaliza.set_defaults(func=finaliza_parser)
+	finaliza.add_argument('nid')
+
+	remove = subparsers.add_parser('remove')
+	remove.set_defaults(func=remove_parser)
+	remove.add_argument('nid')
 
 

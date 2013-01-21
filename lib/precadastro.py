@@ -65,6 +65,16 @@ def remove(nid):
 	conn.commit()
 	conn.close()
 
+def list_all():
+	conn = _connect()
+	c = conn.cursor()
+	resp = []
+	for i in c.execute("SELECT * from precadastro"):
+		resp.append({ 'nid': i[0], 'login': i[1] })
+	conn.close()
+	return resp
+	
+
 PRECADASTRO_MAX_DAYS = 30
 def finaliza_cadastro(nid):
 	import supermegazord.db.users        as users
