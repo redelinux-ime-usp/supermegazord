@@ -60,38 +60,27 @@ def find_user_by_login(login):
 def find_user_by_nid(nid):
 	return find_user_by_restriction('nid=%s' % nid)
 
-def add_user_account(account):
-	if account.nid < 0: return False
-	return add_user(account.nid, account.name, account.login, account.uid,
-			 account.group.gid, account.home)
-
-def add_user(nid, name, login, uid, gid, home):
-	if nid < 0: return False
+def add_user(account):
+	if account.nid == None: return False
 	attrs = {}
 	attrs['objectClass'] = ['account', 'posixAccount', 'top', 'shadowAccount', 'megazordAccount']
-	try:
-		attrs['cn'] = name
-		attrs['uid'] = login
-		attrs['uidNumber'] = str(uid)
-		attrs['gidNumber'] = str(gid)
-		attrs['homeDirectory'] = home
-		attrs['loginShell'] = DEFAULT_SHELL
-		attrs['nid'] = str(nid)
-	except KeyError:
-		return False
+	attrs['cn'] = str(account.name)
+	attrs['uid'] = str(account.login)
+	attrs['uidNumber'] = str(account.uid)
+	attrs['gidNumber'] = str(account.group.gid)
+	attrs['homeDirectory'] = str(account.home)
+	attrs['loginShell'] = str(account.shell)
+	attrs['nid'] = str(account.nid)
 
-	try:
-		ldif = modlist.addModlist(attrs)
-	except:
-		return False
+	ldif = modlist.addModlist(attrs)
+	con = open_connection()
 
 	try:
 		dn = "uid=" + attrs['uid'] + ",ou=People,dc=linux,dc=ime,dc=usp,dc=br"
-		open_connection().add_s(dn, ldif)
-		return True
+		con.add_s(dn, ldif)
 	except:
 		return False
-	return False
+	return True
 
 def find_group_by_gid(gid):
 	try:

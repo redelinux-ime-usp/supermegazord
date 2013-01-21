@@ -22,9 +22,11 @@ def valida_nid(nid):
 	import re
 	return re.compile('^[0-9]{4,}$').match(nid)
 
+logins_invalidos = ['admin', 'root']
+
 def valida_login(login):
 	import re
-	return re.compile('^[a-z]{2,12}$').match(login)
+	return re.compile('^[a-z]{2,12}$').match(login) and (login not in logins_invalidos)
 
 jupinfofile   = "/opt/megazord-db/usuarios/jupiter/jup_info"
 nojupinfofile = "/opt/megazord-db/usuarios/jupiter/nojup_info"

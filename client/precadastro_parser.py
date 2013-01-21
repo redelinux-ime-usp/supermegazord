@@ -30,6 +30,8 @@ def prepare_parser(precadastro_parse):
 				print 'usado'
 			elif precadastrodb.search('login', args.login) != None:
 				print 'precadastro'
+			elif not userdata.valida_login(args.login):
+				print 'invalido'
 			else:
 				print 'livre'
 	
