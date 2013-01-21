@@ -35,7 +35,7 @@ def prepare_parser(precadastro_parse):
 			else:
 				print 'livre'
 	
-	def cadastra_parser(args):
+	def adiciona_parser(args):
 		precadastrodb.insert(args.nid, args.login, args.password)
 		print "sucesso"
 
@@ -47,10 +47,10 @@ def prepare_parser(precadastro_parse):
 	verifica_options.add_argument('--nid')
 	verifica_options.add_argument('--login')
 
-	cadastra = subparsers.add_parser('cadastra')
-	cadastra.set_defaults(func=cadastra_parser)
-	cadastra.add_argument('--nid', required=True)
-	cadastra.add_argument('--login', required=True)
-	cadastra.add_argument('--password', required=True)
+	adiciona = subparsers.add_parser('adiciona')
+	adiciona.set_defaults(func=adiciona_parser)
+	adiciona.add_argument('--nid', required=True)
+	adiciona.add_argument('--login', required=True)
+	adiciona.add_argument('--password', required=True)
 
 
