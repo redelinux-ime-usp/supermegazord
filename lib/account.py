@@ -52,7 +52,7 @@ class Account:
 		if group.gid == self.group.gid: return True
 		return self.login in group.members
 
-	def activate(self):
+	def reactivate(self):
 		if self.group.name != "exaluno": return True
 		import remote
 		import supermegazord.db.path as path
@@ -63,7 +63,7 @@ class Account:
 		if not group:
 			raise Exception("Nenhum grupo válido no qual é membro secundário")
 		status = group.remove_member(self) and self.change_group(group) and self.change_home("/home/" + group.name + "/" + self.login)
-		command = "sudo /megazord/scripts/ativa_conta " + self.login + " " + self.group.name
+		command = "sudo /megazord/scripts/reativa_conta " + self.login + " " + self.group.name
 		results = remote.run_remote_batch(['mail', 'printer', 'nfs'], command, "megazord")
 		for s in results: results[s] = (results[s] == 0)
 		results['ldap'] = status

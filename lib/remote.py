@@ -34,7 +34,8 @@ def run_script(destination, script, user = "megazord"):
 	except:
 		return -1
 	ret = chan.recv_exit_status()
-	print chan.recv_stderr(200),
+	err = chan.recv_stderr(200)
+	if len(err) > 0: print err,
 	return ret
 
 def run_remote_batch(server_list, command, user = "megazord"):

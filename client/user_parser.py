@@ -54,10 +54,40 @@ def prepare_parser(user_parse):
 
 			print login + "|" + nid + " | " + curso + "|" + ingresso + "| " + nome
 
+	def reactivate_parser(args):
+		import supermegazord.lib.account as account
+		acc = account.from_login(args.user)
+		if not acc:
+			print "Erro: usuário '{0}' não encontrado.\n".format(args.user)
+			return
+		if acc.reactivate():
+			print "Conta '{0}' re-ativada com successo.\n".format(acc.login)
+		else:
+			print "Erro ao re-ativar conta '{0}'.\n".format(acc.login)
+	
+	def deactivate_parser(args):
+		import supermegazord.lib.account as account
+		acc = account.from_login(args.user)
+		if not acc:
+			print "Erro: usuário '{0}' não encontrado.\n".format(args.user)
+			return
+		if acc.deactivate():
+			print "Conta '{0}' desativada com successo.\n".format(acc.login)
+		else:
+			print "Erro ao desativar conta '{0}'.\n".format(acc.login)
+
 	subparsers = user_parse.add_subparsers()
 
 	search = subparsers.add_parser('search')
 	search.add_argument('--type', choices=['nid', 'login', 'name', 'auto'], dest='type', default='auto')
 	search.add_argument('user', nargs='+')
 	search.set_defaults(func=search_parser)
+
+	reactivate = subparsers.add_parser('reactivate')
+	reactivate.add_argument('user')
+	reactivate.set_defaults(func=reactivate_parser)
+	
+	deactivate = subparsers.add_parser('deactivate')
+	deactivate.add_argument('user')
+	deactivate.set_defaults(func=deactivate_parser)
 

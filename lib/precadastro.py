@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+
 # Precadastro: Armazena precadastros em um arquivo.
 # Autor: Henrique Gemignani Passos Lima (henriquelima)
 # Escrito em: 2013-01-20
@@ -122,7 +123,7 @@ def finaliza_cadastro(nid):
 	msg = "Conta " + newuser.login + (" (%s) aberta\n" % newuser.group.name) + ("NID: %s;" % newuser.nid) + " Nome: %s\n" % newuser.name
 	status['historico'] = users.add_history_by_nid(newuser.nid, msg)
 
-	newuser.log("Conta '{0}' ({1}) aberta. Nome: {2}; Status: {3}".format(newuser.login, newuser.group.name, newuser.name, str(status))
+	newuser.log("Conta '{0}' ({1}) aberta. Nome: {2}; Status: {3}".format(newuser.login, newuser.group.name, newuser.name, str(status)))
 	
 	# Remove o precadastro
 	remove(nid)
