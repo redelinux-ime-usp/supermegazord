@@ -36,7 +36,12 @@ def run_script(destination, script, user = "megazord"):
 	ret = chan.recv_exit_status()
 	print chan.recv_stderr(200),
 	return ret
-	
+
+def run_remote_batch(server_list, command, user = "megazord"):
+	results = {}
+	for server in server_list:
+		results[server] = run_script(server, command, user)
+	return results
 
 def run_script_with_localpipe(host, script_path, pipe, user = "root"):
 	return subprocess.call([pipe + " | ssh -i " + path.MEGAZORD_DB + "secrets/keys/" + host + " -l " + user + " " + host + " " + script_path], shell=True)

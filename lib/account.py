@@ -37,6 +37,13 @@ class Account:
 		import ldapwrap
 		return ldapwrap.add_user(self)
 
+	def change_home(self, newhome):
+		import ldapwrap
+		result = ldapwrap.change_user_field(self.login, 'homeDirectory', newhome)
+		if result:
+			self.home = newhome
+		return result
+
 	def change_password(self, password):
 		import kerbwrap
 		return kerbwrap.change_password(self.name, password)
@@ -46,10 +53,42 @@ class Account:
 		return self.login in group.members
 
 	def activate(self):
-		raise Exception("Not yet implemented.")
+		if self.group.name != "exaluno": return True
+		import remote
+		import supermegazord.db.path as path
+		group = None
+		for g in megazordgroup.all():
+			if g.name != "olimpo" and g.name != "imortais" and self.login in g.members:
+				group = g
+		if not group:
+			raise Exception("Nenhum grupo válido no qual é membro secundário")
+		status = group.remove_member(self) and self.change_group(group) and self.change_home("/home/" + group.name + "/" + self.login)
+		command = "sudo /megazord/scripts/ativa_conta " + self.login + " " + self.group.name
+		results = remote.run_remote_batch(['mail', 'printer', 'nfs'], command, "megazord")
+		for s in results: results[s] = (results[s] == 0)
+		results['ldap'] = status
+		for s in results: status = status and results[s]
+		self.log("Conta '{0}' re-ativada. Status: {1}".format(self.login, str(results)))
+		return status
 
 	def deactivate(self):
-		raise Exception("Not yet implemented.")
+		if self.group.name == "exaluno": return True
+		import remote
+		import supermegazord.db.path as path
+		command = "sudo /megazord/scripts/desativa_conta " + self.login + " " + self.group.name
+		results = remote.run_remote_batch(['mail', 'printer', 'nfs'], command, "megazord")
+		for s in results: results[s] = (results[s] == 0)
+		results['ldap'] = self.group.add_member(self) and self.change_group('exaluno') and self.change_home("/home/exaluno/" + self.login)
+		status = True
+		for s in results: status = status and results[s]
+		self.log("Conta '{0}' desativada. Status: {1}".format(self.login, str(results)))
+		return status
+
+	def log(self, s):
+		import datetime
+		import supermegazord.db.path as path
+		with open(path.MEGAZORD_DB + "usuarios/historicos/" + str(self.nid), "a") as f:
+			f.write(str(datetime.datetime.now()) + ": " + s + "\n")
 		
 	def __repr__(self):
 		return 'Account({0},{1},"{2}","{3}","{4}","{5}",{6})'.format(self.uid, self.group.gid, self.login, self.name, self.home, self.shell, self.nid)

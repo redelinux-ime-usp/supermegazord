@@ -16,13 +16,16 @@ def _connect():
 	return conn
 
 def setup_table():
-	conn = _connect()
-	c = conn.cursor()
-	c.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='precadastro'")
-	if not c.fetchone():
-		c.execute('''CREATE TABLE precadastro (nid, login, password, time)''')
-		conn.commit()
-	conn.close()
+	try:
+		conn = _connect()
+		c = conn.cursor()
+		c.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='precadastro'")
+		if not c.fetchone():
+			c.execute('''CREATE TABLE precadastro (nid, login, password, time)''')
+			conn.commit()
+		conn.close()
+	except:
+		pass
 	
 setup_table()
 
@@ -119,9 +122,9 @@ def finaliza_cadastro(nid):
 	msg = "Conta " + newuser.login + (" (%s) aberta\n" % newuser.group.name) + ("NID: %s;" % newuser.nid) + " Nome: %s\n" % newuser.name
 	status['historico'] = users.add_history_by_nid(newuser.nid, msg)
 
-	log = open(path.MEGAZORD_DB + "log/cadastro", "a")
-	log.write("Cadastrando usuário '{0}'; Status: {1}\n".format(newuser.login, str(status)))
-
+	newuser.log("Conta '{0}' ({1}) aberta. Nome: {2}; Status: {3}".format(newuser.login, newuser.group.name, newuser.name, str(status))
+	
+	# Remove o precadastro
 	remove(nid)
 
 	result = True

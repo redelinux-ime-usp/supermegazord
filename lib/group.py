@@ -12,7 +12,7 @@ cache = {}
 
 class Group:
 	def __init__(self, gid, name, members):
-		self.gid = int(gid)
+		self.gid = gid
 		self.name = name
 		self.members = members
 		if self.gid not in cache:
@@ -39,18 +39,14 @@ class Group:
 		return "Group[{1}; gid {0}]".format(self.gid, self.name)
 
 def from_ldap(ldapdata):
-	try:
-		if int(ldapdata['gidNumber'][0]) in cache: return cache[int(ldapdata['gidNumber'][0])]
-		if 'memberUid' in ldapdata:
-			members = ldapdata['memberUid']
-		else:
-			members = []
-		return Group(ldapdata['gidNumber'][0], ldapdata['cn'][0], members)
-	except:
-		return None
+	if ldapdata['gidNumber'][0] in cache: return cache[ldapdata['gidNumber'][0]]
+	if 'memberUid' in ldapdata:
+		members = ldapdata['memberUid']
+	else:
+		members = []
+	return Group(ldapdata['gidNumber'][0], ldapdata['cn'][0], members)
 
 def from_gid(gid):
-	gid = int(gid)
 	if gid in cache: return cache[gid]
 	import ldapwrap
 	return from_ldap(ldapwrap.find_group_by_gid(gid))
@@ -58,3 +54,11 @@ def from_gid(gid):
 def from_name(name):
 	import ldapwrap
 	return from_ldap(ldapwrap.find_group_by_name(name))
+
+def all():
+	import ldapwrap
+	data = ldapwrap.query('ou=Group','cn=*')
+	resp = []
+	for d in data:
+		resp.append(from_ldap(d[1]))
+	return resp

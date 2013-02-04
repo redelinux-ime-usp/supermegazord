@@ -14,8 +14,12 @@ machines = dict()
 
 def open_list(source):
 	result = list()
-	with open(path.MEGAZORD_DB + "/maquinas/" + source + ".conf", "r") as f:
-		fulldata = json.load(f)
+	try:
+		with open(path.MEGAZORD_DB + "/maquinas/" + source + ".conf", "r") as f:
+			fulldata = json.load(f)
+	except ValueError, e:
+		raise Exception("Erro no arquivo '{0}': {1}".format(path.MEGAZORD_DB + "/maquinas/" + source + ".conf", str(e)))
+
 	for hostname, data in fulldata.iteritems():
 		mac = data['mac']
 		ip = data['ip']

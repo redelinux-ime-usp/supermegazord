@@ -106,16 +106,20 @@ def get_gid(curso):
 	except:
 		return -1
 
-def change_password(login, password):
-	import os
-	command = "ldappasswd -D "+ROOTDN+" -w"+ROOTPW+" uid=" + login + ",ou=People," + BASEDN + " -s" + password
-	return os.system(command)
-
 def remove_password(login):
 	dn = "uid=" + str(login) + ",ou=People," + BASEDN
 	con = open_connection()
 	try:
 		con.modify_s( dn, [ (ldap.MOD_DELETE, 'userPassword', None) ])
+		return True
+	except ldap.NO_SUCH_OBJECT:
+		return False
+
+def change_user_field(login, field, newval):
+	dn = "uid=" + str(login) + ",ou=People," + BASEDN
+	con = open_connection()
+	try:
+		con.modify_s( dn, [ (ldap.MOD_REPLACE, field, newval) ])
 		return True
 	except ldap.NO_SUCH_OBJECT:
 		return False
