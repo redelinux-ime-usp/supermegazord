@@ -48,6 +48,7 @@ class Account:
 		return result
 
 	def change_password(self, password):
+		self.log("Ocorreu uma mudança de senha.")
 		import kerbwrap
 		return kerbwrap.change_password(self.login, password) == 0
 

@@ -9,26 +9,27 @@ if __name__ == "__main__":
 	print "Esse arquivo é um módulo."
 	quit()
 
-import supermegazord.db.users as userdata
-
 def search_accounts(atype, u):
 	import supermegazord.lib.account as account
+	import supermegazord.lib.tools as tools
 	if atype == 'auto':
-		if userdata.valida_nid(u):
+		if tools.valida_nid(u):
 			atype = 'nid'
 		else:
 			atype = 'login'
 	return account.search(u, atype)
 
 def get_data(acc):
+	import supermegazord.lib.jupinfo as libjupinfo
+	
 	login = acc.login
 	nid = curso = ingresso = nome = "n/a"
 
 	jupinfo = None
 	if acc.nid:
-		jupinfo = userdata.get_jupinfo_from_nid(acc.nid)
+		jupinfo = libjupinfo.from_nid(acc.nid)
 	if not jupinfo:
-		jupinfo = userdata.get_jupinfo_from_login(acc.login)
+		jupinfo = libjupinfo.from_login(acc.login)
 
 	if jupinfo:
 		nid = jupinfo.nid
@@ -42,7 +43,7 @@ def get_data(acc):
 
 	return login, nid, curso, ingresso, nome
 
-def prepare_parser(user_parse):
+def prepare_parser(account_parse):
 
 	def search_parser(args):
 		print "   Login            |   NID   | Curso | Ingresso |   Nome"
@@ -96,7 +97,7 @@ def prepare_parser(user_parse):
 		else:
 			print "Erro ao renovar senha da conta '{0}'.".format(acc.login)
 
-	subparsers = user_parse.add_subparsers()
+	subparsers = account_parse.add_subparsers()
 
 	search = subparsers.add_parser('search')
 	search.add_argument('--type', choices=['nid', 'login', 'name', 'auto'], dest='type', default='auto')

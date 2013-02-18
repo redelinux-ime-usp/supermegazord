@@ -23,3 +23,7 @@ class JupInfo:
 def from_nid(nid):
 	import supermegazord.db.users as users
 	return users.get_jupinfo_from_nid(nid)
+
+def from_login(login):
+	import supermegazord.db.users as users
+	return users.get_jupinfo_from_login(login)
