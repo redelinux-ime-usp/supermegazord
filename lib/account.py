@@ -20,6 +20,8 @@ class Account:
 		self.home = home
 		self.shell = shell
 		self.nid = nid
+		assert self.login, "Account has invalid login."
+		assert self.group and self.uid, "Account '{0}' has invalid group and/or UID.".format(self.login)
 		if self.uid not in cache:
 			cache[self.uid] = self
 
@@ -102,20 +104,26 @@ class Account:
 		
 def from_ldap(ldapdata):
 	if not ldapdata: return None
-	uid = ldapdata['uidNumber'][0]
-	if uid in cache: return cache[uid]
-	gid = ldapdata['gidNumber'][0]
+	try:
+		uid = ldapdata['uidNumber'][0]
+		if uid in cache: return cache[uid]
+
+		gid = ldapdata['gidNumber'][0]
+		login = ldapdata['uid'][0]
+		home = ldapdata['homeDirectory'][0]
+		shell = ldapdata['loginShell'][0]
+
+	except KeyError:
+		return None
+
 	if 'nid' in ldapdata:
 		nid = ldapdata['nid'][0]
 	else:
 		nid = None
-	login = ldapdata['uid'][0]
 	if 'gecos' in ldapdata:
 		name = ldapdata['gecos'][0]
 	else:
 		name = ldapdata['cn'][0]
-	home = ldapdata['homeDirectory'][0]
-	shell = ldapdata['loginShell'][0]
 	return Account(uid, gid, login, name, home, shell, nid)
 
 def from_login(login):
@@ -124,17 +132,18 @@ def from_login(login):
 
 def search(value, field = 'login'):
 	if field == 'login':
-		restriction = 'uid=*' + value + '*'
+		restriction = 'uid=*' + value + ('*' if value != '' else '')
 	elif field == 'nid':
 		restriction = 'nid=' + value
 	elif field == 'name':
-		restriction = 'cn=*' + value + '*'
+		restriction = 'cn=*' + value + ('*' if value != '' else '')
 	else:
 		raise Exception("Unknown restriction field: " + field)
 	resp = set()
 	import ldapwrap
 	data = ldapwrap.query("ou=People", restriction)
 	for d in data:
-		resp.add(from_ldap(d[1]))
+		x = from_ldap(d[1])
+		if x: resp.add(x)
 	return resp
 

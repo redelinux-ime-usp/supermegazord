@@ -39,6 +39,7 @@ class Group:
 		return "Group[{1}; gid {0}]".format(self.gid, self.name)
 
 def from_ldap(ldapdata):
+	if not ldapdata: return None
 	if ldapdata['gidNumber'][0] in cache: return cache[ldapdata['gidNumber'][0]]
 	if 'memberUid' in ldapdata:
 		members = ldapdata['memberUid']
