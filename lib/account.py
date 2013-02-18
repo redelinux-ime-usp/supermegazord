@@ -46,7 +46,7 @@ class Account:
 
 	def change_password(self, password):
 		import kerbwrap
-		return kerbwrap.change_password(self.name, password)
+		return kerbwrap.change_password(self.login, password) == 0
 
 	def is_in_group(self, group):
 		if group.gid == self.group.gid: return True
