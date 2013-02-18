@@ -34,3 +34,9 @@ printer:
 	/root/files/bin/pkadduser
 
 
+--- FERRAMENTAS DO MEGAZORD
+
+CLI:
+
+-> supermegazord users
+ Ferramentas para manipular as 

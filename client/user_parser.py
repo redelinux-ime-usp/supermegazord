@@ -11,40 +11,47 @@ if __name__ == "__main__":
 
 import supermegazord.db.users as userdata
 
-def get_data(atype, u):
-	login = nid = curso = ingresso = nome = "n/a"
+def search_accounts(atype, u):
+	import supermegazord.lib.account as account
+	if atype == 'auto':
+		if userdata.valida_nid(u):
+			atype = 'nid'
+		else:
+			atype = 'login'
+	return account.search(u, atype)
+
+def get_data(acc):
+	login = acc.login
+	nid = curso = ingresso = nome = "n/a"
 
 	jupinfo = None
-	if atype == 'nid':
-		jupinfo = userdata.get_jupinfo_from_nid(u)
-		nid = u
-	elif atype == 'login':
-		jupinfo = userdata.get_jupinfo_from_login(u)
-		login = u
-	elif atype == 'name':
-		pass
-	elif atype == 'auto':
-		if userdata.valida_nid(u):
-			jupinfo = userdata.get_jupinfo_from_nid(u)
-			nid = u
-		else:
-			jupinfo = userdata.get_jupinfo_from_login(u)
-			login = u
-	
+	if acc.nid:
+		jupinfo = userdata.get_jupinfo_from_nid(acc.nid)
+	if not jupinfo:
+		jupinfo = userdata.get_jupinfo_from_login(acc.login)
+
 	if jupinfo:
 		nid = jupinfo.nid
 		curso = jupinfo.curso
 		ingresso = jupinfo.ingresso
 		nome = jupinfo.nome
+	else:
+		if acc.nid: nid = acc.nid
+		curso = acc.group.name
+		nome = acc.name
 
 	return login, nid, curso, ingresso, nome
 
 def prepare_parser(user_parse):
 
 	def search_parser(args):
-		print "   Login            |   NID   | Curso | Ingresso |   Nome" 
+		print "   Login            |   NID   | Curso | Ingresso |   Nome"
+		results = set()
 		for u in args.user:
-			login, nid, curso, ingresso, nome = get_data(args.type, u)
+			results |= search_accounts(args.type, u)
+
+		for u in results:
+			login, nid, curso, ingresso, nome = get_data(u)
 
 			# Trata tamanhos
 			login = (str(login) + " "*20)[:20]

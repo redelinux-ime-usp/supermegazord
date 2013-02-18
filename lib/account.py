@@ -8,6 +8,7 @@ if __name__ == "__main__":
 	print "Esse módulo não deve ser executado diretamente."
 	quit()
 	
+cache = {}
 import supermegazord.lib.group as megazordgroup
 
 class Account:
@@ -19,6 +20,8 @@ class Account:
 		self.home = home
 		self.shell = shell
 		self.nid = nid
+		if self.uid not in cache:
+			cache[self.uid] = self
 
 	def change_group(self, newgroup):
 		if not isinstance(newgroup, megazordgroup.Group):
@@ -91,7 +94,7 @@ class Account:
 			f.write(str(datetime.datetime.now()) + ": " + s + "\n")
 		
 	def __repr__(self):
-		return 'Account({0},{1},"{2}","{3}","{4}","{5}",{6})'.format(self.uid, self.group.gid, self.login, self.name, self.home, self.shell, self.nid)
+		return 'Account("{0}","{1}","{2}","{3}","{4}","{5}","{6}")'.format(self.uid, self.group.gid, self.login, self.name, self.home, self.shell, self.nid)
 		
 	def __str__(self):
 		return "Account[{2}; uid {0}; {1}]".format(self.uid, self.group, self.login)
@@ -99,11 +102,12 @@ class Account:
 def from_ldap(ldapdata):
 	if not ldapdata: return None
 	uid = ldapdata['uidNumber'][0]
+	if uid in cache: return cache[uid]
 	gid = ldapdata['gidNumber'][0]
 	if 'nid' in ldapdata:
 		nid = ldapdata['nid'][0]
 	else:
-		nid = -1
+		nid = None
 	login = ldapdata['uid'][0]
 	if 'gecos' in ldapdata:
 		name = ldapdata['gecos'][0]
@@ -116,3 +120,20 @@ def from_ldap(ldapdata):
 def from_login(login):
 	import ldapwrap
 	return from_ldap(ldapwrap.find_user_by_login(login))
+
+def search(value, field = 'login'):
+	if field == 'login':
+		restriction = 'uid=*' + value + '*'
+	elif field == 'nid':
+		restriction = 'nid=' + value
+	elif field == 'name':
+		restriction = 'cn=*' + value + '*'
+	else:
+		raise Exception("Unknown restriction field: " + field)
+	resp = set()
+	import ldapwrap
+	data = ldapwrap.query("ou=People", restriction)
+	for d in data:
+		resp.add(from_ldap(d[1]))
+	return resp
+

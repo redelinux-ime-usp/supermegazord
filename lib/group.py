@@ -58,7 +58,7 @@ def from_name(name):
 def all():
 	import ldapwrap
 	data = ldapwrap.query('ou=Group','cn=*')
-	resp = []
+	resp = set()
 	for d in data:
-		resp.append(from_ldap(d[1]))
+		resp.add(from_ldap(d[1]))
 	return resp
