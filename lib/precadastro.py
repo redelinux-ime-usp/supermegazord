@@ -114,11 +114,11 @@ def finaliza_cadastro(nid):
 	status['kerberos'] = kerbwrap.add_user(newuser.login, data['password']) == 0
 
 	status['home']     = remote.run_script_with_localpipe("nfs", 
-									"sudo /megazord/script/cria_conta " + newuser.login + " " + newuser.group.name,
+									"sudo /megazord/scripts/cria_conta " + newuser.login + " " + newuser.group.name,
 									"tar c -C " + path.MEGAZORD_DB + "usuarios skel/", "megazord") == 0
 	
-	status['print']    = remote.run_script("printer", "sudo /megazord/script/cria_conta " + newuser.login + " " + newuser.group.name, "megazord") == 0
-	status['listas']   = remote.run_script("mail",    "sudo /megazord/script/cria_conta " + newuser.login + " " + newuser.group.name, "megazord") == 0
+	status['print']    = remote.run_script("printer", "sudo /megazord/scripts/cria_conta " + newuser.login + " " + newuser.group.name, "megazord") == 0
+	status['listas']   = remote.run_script("mail",    "sudo /megazord/scripts/cria_conta " + newuser.login + " " + newuser.group.name, "megazord") == 0
 	
 	msg = "Conta " + newuser.login + (" (%s) aberta\n" % newuser.group.name) + ("NID: %s;" % newuser.nid) + " Nome: %s\n" % newuser.name
 	status['historico'] = users.add_history_by_nid(newuser.nid, msg)

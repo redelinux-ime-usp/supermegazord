@@ -45,8 +45,10 @@ def prepare_parser(precadastro_parse):
 			print str(jupinfo.from_nid(p['nid'])) + "; Login: " + p['login']
 
 	def finaliza_parser(args):
-		if precadastrodb.finaliza(args.nid):
+		if precadastrodb.finaliza_cadastro(args.nid):
 			print "Cadastro do NID '%s' finalizado com sucesso." % args.nid
+			print
+			print "\033[1;31mDevolva a carteirinha para o usuário!\033[0m"
 		else:
 			print "Erros no cadastro. Verifique o log para maiores detalhes."
 	
