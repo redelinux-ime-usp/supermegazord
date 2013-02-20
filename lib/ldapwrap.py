@@ -76,15 +76,18 @@ def add_user(account):
 	con = open_connection()
 
 	try:
-		dn = "uid=" + attrs['uid'] + ",ou=People,dc=linux,dc=ime,dc=usp,dc=br"
+		dn = "uid=" + attrs['uid'] + ",ou=People," + BASEDN
 		con.add_s(dn, ldif)
 	except:
 		return False
 	return True
 
-def delete_user(uid)
-	raise Exception("NYI")
-	return False
+def delete_user(uid):
+	con = open_connection()
+	if not con: return False
+	dn = "uid=" + uid + ",ou=People," + BASEDN
+	con.delete_s(dn)
+	return True
 
 def find_group_by_gid(gid):
 	try:
