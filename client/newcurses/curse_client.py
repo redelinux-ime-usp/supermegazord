@@ -39,41 +39,69 @@ class BaseListScreen:
         self.data = list()
         self.screen_name = "Lista Genérica"
         self.header = ""
+        self.filtering = False
+        self.filter_string = ""
+        
+        def select(): return self.select(self.data[self.current_line]) if len(self.data) > 0 else False
+        def start_filtering(): self.filtering = True
         self.commands = {
             curses.KEY_DOWN:  lambda c: self.change_line(self.current_line + 1),
             curses.KEY_UP:    lambda c: self.change_line(self.current_line - 1),
             curses.KEY_NPAGE: lambda c: self.change_line(self.current_line + self.page_size()),
             curses.KEY_PPAGE: lambda c: self.change_line(self.current_line - self.page_size()),
+            27:               lambda c: self.change_filter(""),
+            ord('/'):         lambda c: start_filtering(),
+            ord('\n'):        lambda c: select()
         }
         self.commands[ord('1')] = self.commands[curses.KEY_UP]
         self.commands[ord('2')] = self.commands[curses.KEY_DOWN]
         self.commands[curses.KEY_RIGHT] = self.commands[curses.KEY_NPAGE]
         self.commands[curses.KEY_LEFT]  = self.commands[curses.KEY_PPAGE]
-
-        def select():
-            if len(self.data) > 0:
-                return self.select(self.data[self.current_line])
-            return False
-        self.commands[ord('\n')] = lambda c: select()
     
     def change_line(self, newline):
         self.current_line = max(0, min(newline, len(self.data) - 1))
+    
+    def change_filter(self, filterstr):
+        self.filter_string = filterstr
+        self.update_data()
+        self.change_line(self.current_line)
+
+    def update_data(self): pass
+    
+    def filter_addchar(self, c):
+        if c == 27:
+            self.filtering = False
+            self.filter_string = ""
+        elif c == ord('\n'):
+            self.filtering = False
+        elif c >= ord('a') and c <= ord('z'):
+            self.filter_string += chr(c)
+        elif c == curses.KEY_BACKSPACE:
+            if len(self.filter_string) > 0:
+                self.filter_string = self.filter_string[:-1]
+            else:
+                self.filtering = False
+        else:
+            return False
+        self.update_data()
+        self.change_line(self.current_line)
+        return True
 
     def update(self, c):
+        if c == curses.KEY_RESIZE: return True
+        if self.filtering:
+            return self.filter_addchar(c)
         if c in self.commands:
             result = self.commands[c](c)
             if result != None:
                 return result
             return True
    
-    def page_size(self):
-        return 20
+    def page_size(self): return 20
 
-    def select(self, row):
-        pass
+    def select(self, row): pass
 
-    def draw_row(self, screen, row_data, y, x, selected = False):
-        pass
+    def draw_row(self, screen, row_data, y, x, selected = False): pass
 
     def draw(self, screen):
         current_page = int(self.current_line / self.page_size())
@@ -102,16 +130,12 @@ class UserListScreen(BaseListScreen):
         BaseListScreen.__init__(self)
         self.filtering = False
         self.filter_string = ""
-        self.update_filter()
+        self.update_data()
         self.screen_name = "Lista de Usuários"
         self.header = fill_with_spaces("Login", 20+2) + fill_with_spaces("Grupo", 9) + "Nome"
 
-        def start_filtering(): self.filtering = True
-        self.commands[27] = lambda c: self.update_filter("")
         self.commands[ord('q')] = lambda c: change_screen(None)
-        self.commands[ord('/')] = lambda c: start_filtering()
         self.commands[ord('p')] = lambda c: change_screen(precadastro_screen)
-
 
     def page_size(self):
         return max_height - 4
@@ -121,43 +145,10 @@ class UserListScreen(BaseListScreen):
         change_screen(userinfo_screen)
         return True
 
-    def update_filter(self, filterstr = None):
+    def update_data(self):
         import supermegazord.lib.account as account
-        if filterstr != None: self.filter_string = filterstr
         self.data = sorted(account.search(self.filter_string), key=lambda item: item.login)
-        self.change_line(self.current_line)
 
-    def filter_addchar(self, c):
-        if c == 27:
-            self.filtering = False
-            self.filter_string = ""
-        elif c == ord('\n'):
-            self.filtering = False
-        elif c >= ord('a') and c <= ord('z'):
-            self.filter_string += chr(c)
-        elif c == curses.KEY_BACKSPACE:
-            if len(self.filter_string) > 0:
-                self.filter_string = self.filter_string[:-1]
-            else:
-                self.filtering = False
-        else:
-            return False
-        self.update_filter()
-        return True
-
-    def update(self, c):
-        global current_screen
-        if c == curses.KEY_RESIZE:
-            return True
-
-        if self.filtering:
-            return self.filter_addchar(c)
-
-        result = BaseListScreen.update(self, c)
-        if result != None: return result
-
-        return False
-    
     def draw_row(self, screen, user, y, x, selected):
         screen.addnstr(y, x,
             fill_with_spaces(user.login, 20) + "  " +
