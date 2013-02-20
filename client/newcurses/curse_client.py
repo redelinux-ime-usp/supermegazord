@@ -200,6 +200,11 @@ class BaseInfoScreen(BaseScreen):
         self.queued_command = None
         self.command_output = None
 
+    def confirm(self, c):
+        self.queued_command = self.commands[c]
+        if 'execute' not in self.queued_command:
+            raise Exception("Command requesting confirmation has no execute attrib.")
+    
     def update(self, c):
         if c == curses.KEY_RESIZE: return True
         
@@ -214,6 +219,9 @@ class BaseInfoScreen(BaseScreen):
         elif self.queued_command:
             if c == ord('y'):
                 self.command_output = self.queued_command['execute']()
+                if not self.command_output: 
+                    raise Exception("Command '" + str(self.queued_command['description'])
+                                    + "' did not give any output.")
                 return True
             elif c == ord('\n') or c == ord('q') or c == KEY_ESCAPE or c == ord('n'):
                 self.queued_command = None
@@ -244,30 +252,32 @@ class BaseInfoScreen(BaseScreen):
         else:
             desc = self.queued_command['description'].upper() 
             screen.addnstr("\n              " + desc, max_width, colors.RED)
-            screen.addstr("\n\n")
+            screen.addstr("\n")
             if self.command_output:
                 for s in self.command_output.split("\n"):
-                    screen.addnstr(s, max_width)
+                    screen.addnstr("\n" + s, max_width)
             else:
                 confirmstr = "Confirmar? (y/N)"
-                screen.addnstr("              " + " " * ((len(desc) - len(confirmstr)) / 2) + confirmstr, max_width)
+                screen.addnstr("\n              " + " " * ((len(desc) - len(confirmstr)) / 2) + confirmstr, max_width)
 
 class UserInfoScreen(BaseInfoScreen):
     def __init__(self, user):
         BaseInfoScreen.__init__(self)
         self.current = user
-        def confirm(c):
-            self.queued_command = self.commands[c]
-            if 'execute' not in self.queued_command:
-                raise Exception("Command requesting confirmation has no execute attrib.")
         def nyi(c):
             self.queued_command = { 'description': "Não Implementado" }
-            self.command_output = "Comando não implementado. Use a CLI."
-        def nothing(): return "TMPSTRING"
-        self.commands[ord('p')] = { 'description': "gerar uma nova senha", 'func': confirm, 'execute': nothing }
-        self.commands[ord('d')] = { 'description': "desativar a conta",    'func': nyi, 'execute': nothing }
-        self.commands[ord('r')] = { 'description': "reativar a conta",     'func': nyi, 'execute': nothing }
-        self.commands[ord('a')] = { 'description': "apagar a conta",       'func': nyi, 'execute': nothing }
+            self.command_output = "Comando não implementado. Use a linha de comando."
+        def newpassword():
+            import supermegazord.lib.tools as tools
+            password = tools.generate_password()
+            if self.current.change_password(password):
+                return "Senha mudada com sucesso.\n   Nova senha: '" + password + "'"
+            else:
+                return "Erro ao gerar senha."
+        self.commands[ord('p')] = { 'description': "gerar uma nova senha", 'func': self.confirm, 'execute': newpassword }
+        self.commands[ord('d')] = { 'description': "desativar a conta",    'func': nyi, 'execute': None }
+        self.commands[ord('r')] = { 'description': "reativar a conta",     'func': nyi, 'execute': None }
+        self.commands[ord('a')] = { 'description': "apagar a conta",       'func': nyi, 'execute': None }
         self.commands[KEY_ESCAPE] = { 'func': lambda c: change_screen(userlist_screen) }
         self.commands[ord('q')] = { 'description': "voltar à tela anterior", 'func': lambda c: change_screen(userlist_screen) }
 
