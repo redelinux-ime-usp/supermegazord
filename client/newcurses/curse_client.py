@@ -58,6 +58,8 @@ class BaseListScreen:
         self.commands[ord('2')] = self.commands[curses.KEY_DOWN]
         self.commands[curses.KEY_RIGHT] = self.commands[curses.KEY_NPAGE]
         self.commands[curses.KEY_LEFT]  = self.commands[curses.KEY_PPAGE]
+        
+        self.command_list = [{ "hint": "/", "description": "Busca" }]
     
     def change_line(self, newline):
         self.current_line = max(0, min(newline, len(self.data) - 1))
@@ -119,21 +121,21 @@ class BaseListScreen:
             screen.addnstr(offset_y + count + 1, offset_x, "/" + self.filter_string, max_width)
         else:
             screen.addstr("\n")
-            def print_small_command_instruction(key, description):
-                screen.addch(ord(key), colors.GREEN)
-                screen.addstr(" - " + description + "; ")
-            print_small_command_instruction('/', "Busca")
-            print_small_command_instruction('p', "Pré-Cadastro")
+            def print_small_command_instruction(cl):
+                screen.addch(ord(cl["hint"]), colors.GREEN)
+                screen.addstr(" - " + cl["description"] + "; ")
+            map(print_small_command_instruction, self.command_list)
         
 
 class UserListScreen(BaseListScreen):
     def __init__(self):
         BaseListScreen.__init__(self)
         self.screen_name = "Lista de Usuários"
-        self.header = fill_with_spaces("Login", 20+2) + fill_with_spaces("Grupo", 9) + "Nome"
+        self.header = fill_with_spaces("Login", 20) + "  " + fill_with_spaces("NID  ", 8, False) + "  Nome"
 
         self.commands[ord('q')] = lambda c: change_screen(None)
         self.commands[ord('p')] = lambda c: change_screen(precadastro_screen)
+        self.command_list.append({ "hint": "p", "description": "Pré-Cadastro" })
 
     def page_size(self):
         return max_height - 4
@@ -150,7 +152,7 @@ class UserListScreen(BaseListScreen):
     def draw_row(self, screen, user, y, x, selected):
         screen.addnstr(y, x,
             fill_with_spaces(user.login, 20) + "  " +
-            fill_with_spaces(user.group.name, 7) + "  " +
+            fill_with_spaces(user.nid if user.nid else "n/a", 8, False) + "  " +
             fill_with_spaces(user.name, max_width),
             max_width, colors.YELLOW if selected else colors.WHITE)
 
@@ -198,6 +200,8 @@ class PrecadastroListScreen(BaseListScreen):
         self.header = fill_with_spaces("Login", 20+2) + fill_with_spaces("NID", 9)
         
         self.commands[ord('q')] = lambda c: change_screen(None)
+        self.commands[ord('p')] = lambda c: change_screen(userlist_screen)
+        self.command_list.append({ "hint": "p", "description": "Lista de Usuários" })
 
     def page_size(self):
         return max_height - 4
@@ -227,7 +231,7 @@ def main(screen):
 
     colors.init()
 
-    global current_screen, userlist_screen, userinfo_screen
+    global current_screen, userlist_screen, userinfo_screen, precadastro_screen
     current_screen = userlist_screen = UserListScreen()
     userinfo_screen = UserInfoScreen()
     precadastro_screen = PrecadastroListScreen()
