@@ -29,7 +29,8 @@ def fill_with_spaces(s, size, right_side = True):
         return (" " * size + s)[-size:]
 
 def megazord_header(screen, section):
-    screen.addnstr(" " * 10 + "SUPERMEGAZORD - " + section + " " * max_width, max_width)
+    screen.addstr(0, 0, " " * max_width, curses.color_pair(2))
+    screen.addnstr(0, 0, " " * 10 + "SUPERMEGAZORD - " + section, max_width, curses.color_pair(2))
 
 def change_screen(newscreen):
     global current_screen
@@ -51,7 +52,7 @@ class BaseScreen:
 
     def draw(self, screen):
         megazord_header(screen, self.screen_name)
-        screen.addnstr("\n" + self.header + " " * max_width, max_width)
+        screen.addnstr(1, 0, self.header + " " * max_width, max_width, colors.CYAN)
 
 class BaseListScreen(BaseScreen):
     def __init__(self):
@@ -126,7 +127,7 @@ class BaseListScreen(BaseScreen):
         for i in range(start, min(start+count, len(self.data))):
             self.draw_row(screen, self.data[i], offset_y + (i % self.page_size()), offset_x, i == self.current_line)
         screen.addnstr(offset_y + count, offset_x, 
-                       " " * 15 + "Page " + str(current_page + 1) + "/" + str(num_pages + 1), max_width)
+                       " " * 15 + "Page " + str(current_page + 1) + "/" + str(num_pages + 1), max_width, colors.CYAN)
         if self.filtering:
             screen.addnstr(offset_y + count + 1, offset_x, "/" + self.filter_string, max_width)
         else:
@@ -177,6 +178,9 @@ class PrecadastroListScreen(BaseListScreen):
 
     def page_size(self):
         return max_height - 4
+
+    def select(self, precadastro):
+        change_screen(PrecadastroInfoScreen(precadastro))
         
     def update_data(self):
         import supermegazord.lib.precadastro as precadastro
@@ -290,6 +294,28 @@ class UserInfoScreen(BaseInfoScreen):
         screen.addnstr("\nCurso:    " + self.current.group.name, max_width)
         screen.addnstr("\nIngresso: " + (jupinfo and jupinfo.ingresso or "n/a"), max_width)
 
+class PrecadastroInfoScreen(BaseInfoScreen):
+    def __init__(self, precadastro):
+        BaseInfoScreen.__init__(self)
+        self.current = precadastro
+        def nyi(c):
+            self.queued_command = { 'description': "Não Implementado" }
+            self.command_output = "Comando não implementado. Use a linha de comando."
+        #self.commands[ord('p')] = { 'description': "gerar uma nova senha", 'func': self.confirm, 'execute': newpassword }
+        #self.commands[ord('d')] = { 'description': "desativar a conta",    'func': nyi, 'execute': None }
+        #self.commands[ord('r')] = { 'description': "reativar a conta",     'func': nyi, 'execute': None }
+        #self.commands[ord('a')] = { 'description': "apagar a conta",       'func': nyi, 'execute': None }
+        self.commands[KEY_ESCAPE] = { 'func': lambda c: change_screen(precadastro_screen) }
+        self.commands[ord('q')] = { 'description': "voltar à tela anterior", 'func': lambda c: change_screen(precadastro_screen) }
+
+    def draw_current(self, screen):
+        import supermegazord.lib.jupinfo as libjupinfo
+        jupinfo = libjupinfo.from_nid(self.current['nid'])
+        screen.addnstr("\nLogin:    " + self.current['login'], max_width)
+        screen.addnstr("\nNome:     " + (jupinfo and jupinfo.nome or "NID não possui Jupinfo"), max_width)
+        screen.addnstr("\nNID:      " + self.current['nid'], max_width)
+        screen.addnstr("\nCurso:    " + (jupinfo and jupinfo.curso or "n/a"), max_width)
+        screen.addnstr("\nIngresso: " + (jupinfo and jupinfo.ingresso or "n/a"), max_width)
 #=======================
 # Lista de telas
 userlist_screen = None
