@@ -117,7 +117,7 @@ def prepare_parser(account_parse):
 	
 	remove = subparsers.add_parser('remove')
 	remove.add_argument('user')
-	remove.set_defaults(func=reactivate_parser)
+	remove.set_defaults(func=remove_parser)
 
 	reactivate = subparsers.add_parser('reactivate')
 	reactivate.add_argument('user')
