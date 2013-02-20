@@ -29,21 +29,102 @@ def fill_with_spaces(s, size, right_side = True):
 def megazord_header(screen, section):
     screen.addnstr(" " * 10 + "SUPERMEGAZORD - " + section + " " * max_width, max_width)
 
-class UserListScreen:
+def change_screen(newscreen):
+    global current_screen
+    current_screen = newscreen
+
+class BaseListScreen:
     def __init__(self):
         self.current_line = 0
-        self.page_size = max_height - 4
+        self.data = list()
+        self.screen_name = "Lista Genérica"
+        self.header = ""
+        self.commands = {
+            curses.KEY_DOWN:  lambda c: self.change_line(self.current_line + 1),
+            curses.KEY_UP:    lambda c: self.change_line(self.current_line - 1),
+            curses.KEY_NPAGE: lambda c: self.change_line(self.current_line + self.page_size()),
+            curses.KEY_PPAGE: lambda c: self.change_line(self.current_line - self.page_size()),
+        }
+        self.commands[ord('1')] = self.commands[curses.KEY_UP]
+        self.commands[ord('2')] = self.commands[curses.KEY_DOWN]
+        self.commands[curses.KEY_RIGHT] = self.commands[curses.KEY_NPAGE]
+        self.commands[curses.KEY_LEFT]  = self.commands[curses.KEY_PPAGE]
+
+        def select():
+            if len(self.data) > 0:
+                return self.select(self.data[self.current_line])
+            return False
+        self.commands[ord('\n')] = lambda c: select()
+    
+    def change_line(self, newline):
+        self.current_line = max(0, min(newline, len(self.data) - 1))
+
+    def update(self, c):
+        if c in self.commands:
+            result = self.commands[c](c)
+            if result != None:
+                return result
+            return True
+   
+    def page_size(self):
+        return 20
+
+    def select(self, row):
+        pass
+
+    def draw_row(self, screen, row_data, y, x, selected = False):
+        pass
+
+    def draw(self, screen):
+        current_page = int(self.current_line / self.page_size())
+        num_pages = int(len(self.data) / self.page_size())
+        start, count, offset_y, offset_x = current_page * self.page_size(), self.page_size(), 2, 0
+        start = max(start, 0)
+        megazord_header(screen, self.screen_name)
+        screen.addnstr("\n" + self.header + " " * max_width, max_width)
+        for i in range(start, min(start+count, len(self.data))):
+            self.draw_row(screen, self.data[i], offset_y + (i % self.page_size()), offset_x, i == self.current_line)
+        screen.addnstr(offset_y + count, offset_x, 
+                       " " * 15 + "Page " + str(current_page + 1) + "/" + str(num_pages + 1), max_width)
+        if self.filtering:
+            screen.addnstr(offset_y + count + 1, offset_x, "/" + self.filter_string, max_width)
+        else:
+            screen.addstr("\n")
+            def print_small_command_instruction(key, description):
+                screen.addch(ord(key), colors.GREEN)
+                screen.addstr(" - " + description + "; ")
+            print_small_command_instruction('/', "Busca")
+            print_small_command_instruction('p', "Pré-Cadastro")
+        
+
+class UserListScreen(BaseListScreen):
+    def __init__(self):
+        BaseListScreen.__init__(self)
         self.filtering = False
         self.filter_string = ""
         self.update_filter()
-        pass
+        self.screen_name = "Lista de Usuários"
+        self.header = fill_with_spaces("Login", 20+2) + fill_with_spaces("Grupo", 9) + "Nome"
 
-    def change_line(self, newline):
-        self.current_line = max(0, min(newline, len(self.users) - 1))
+        def start_filtering(): self.filtering = True
+        self.commands[27] = lambda c: self.update_filter("")
+        self.commands[ord('q')] = lambda c: change_screen(None)
+        self.commands[ord('/')] = lambda c: start_filtering()
+        self.commands[ord('p')] = lambda c: change_screen(precadastro_screen)
 
-    def update_filter(self):
+
+    def page_size(self):
+        return max_height - 4
+    
+    def select(self, row):
+        userinfo_screen.current_user = row
+        change_screen(userinfo_screen)
+        return True
+
+    def update_filter(self, filterstr = None):
         import supermegazord.lib.account as account
-        self.users = sorted(account.search(self.filter_string), key=lambda item: item.login)
+        if filterstr != None: self.filter_string = filterstr
+        self.data = sorted(account.search(self.filter_string), key=lambda item: item.login)
         self.change_line(self.current_line)
 
     def filter_addchar(self, c):
@@ -67,68 +148,22 @@ class UserListScreen:
     def update(self, c):
         global current_screen
         if c == curses.KEY_RESIZE:
-            self.page_size = max_height - 4
             return True
 
         if self.filtering:
             return self.filter_addchar(c)
-        if c == ord('q'):
-            current_screen = None
-        elif c == 27:
-            self.filter_string = ""
-            self.update_filter()
-            return True
-        elif c == ord('/'):
-            self.filtering = True
-            return True
-        elif c == ord('p'):
-            current_screen = precadastro_screen
-            return True
-        elif c == curses.KEY_DOWN or c == ord('2'):
-            self.change_line(self.current_line + 1)
-            return True
-        elif c == curses.KEY_UP or c == ord('1'):
-            self.change_line(self.current_line - 1)
-            return True
-        elif c == curses.KEY_RIGHT or c == curses.KEY_NPAGE: # Page Down
-            self.change_line(self.current_line + self.page_size)
-            return True
-        elif c == curses.KEY_LEFT or c == curses.KEY_PPAGE: # Page Up
-            self.change_line(self.current_line - self.page_size)
-            return True
-        elif c == curses.KEY_END:
-            return True
-        elif c == curses.KEY_HOME:
-            return True
-        elif c == ord('\n'):
-            if len(self.users) > 0:
-                current_screen = userinfo_screen
-                userinfo_screen.current_user = self.users[self.current_line]
-            return True
-        return False
 
-    def draw(self, screen):
-        current_page = int(self.current_line / self.page_size)
-        num_pages = int(len(self.users) / self.page_size)
-        start, count, offset_y, offset_x = current_page * self.page_size, self.page_size, 2, 0
-        start = max(start, 0)
-        megazord_header(screen, "Lista de Usuários")
-        screen.addnstr("\n" + fill_with_spaces("Login", 20+2) + fill_with_spaces("Grupo", 9) + fill_with_spaces("Nome", max_width), max_width)
-        for i in range(start, min(start+count, len(self.users))):
-            screen.addnstr(offset_y + (i % self.page_size), offset_x,
-                fill_with_spaces(self.users[i].login, 20) + "  " + fill_with_spaces(self.users[i].group.name, 7) + "  " + 
-                fill_with_spaces(self.users[i].name, max_width),
-                max_width, colors.YELLOW if i == self.current_line else colors.WHITE)
-        screen.addnstr(offset_y + count, offset_x, " " * 15 + "Page " + str(current_page + 1) + "/" + str(num_pages + 1), max_width)
-        if self.filtering:
-            screen.addnstr(offset_y + count + 1, offset_x, "/" + self.filter_string, max_width)
-        else:
-            screen.addstr("\n")
-            def print_small_command_instruction(key, description):
-                screen.addch(ord(key), colors.GREEN)
-                screen.addstr(" - " + description + "; ")
-            print_small_command_instruction('/', "Busca")
-            print_small_command_instruction('p', "Pré-Cadastro")
+        result = BaseListScreen.update(self, c)
+        if result != None: return result
+
+        return False
+    
+    def draw_row(self, screen, user, y, x, selected):
+        screen.addnstr(y, x,
+            fill_with_spaces(user.login, 20) + "  " +
+            fill_with_spaces(user.group.name, 7) + "  " +
+            fill_with_spaces(user.name, max_width),
+            max_width, colors.YELLOW if selected else colors.WHITE)
 
 class UserInfoScreen:
     def __init__(self):
