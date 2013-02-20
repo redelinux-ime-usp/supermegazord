@@ -28,9 +28,10 @@ def fill_with_spaces(s, size, right_side = True):
     else:
         return (" " * size + s)[-size:]
 
-def megazord_header(screen, section):
-    screen.addstr(0, 0, " " * max_width, curses.color_pair(2))
-    screen.addnstr(0, 0, " " * 10 + "SUPERMEGAZORD - " + section, max_width, curses.color_pair(2))
+def convert_code(code):
+    if code < 256: return chr(code)
+    if code == curses.KEY_F5: return "F5"
+    return "{UNK}"
 
 def change_screen(newscreen):
     global current_screen
@@ -51,7 +52,8 @@ class BaseScreen:
             return True
 
     def draw(self, screen):
-        megazord_header(screen, self.screen_name)
+        screen.addstr(0, 0, " " * max_width, curses.color_pair(2))
+        screen.addnstr(0, 0, " " * 10 + "SUPERMEGAZORD - " + self.screen_name, max_width, curses.color_pair(2))
         screen.addnstr(1, 0, self.header + " " * max_width, max_width, colors.CYAN)
 
 class BaseListScreen(BaseScreen):
@@ -75,7 +77,9 @@ class BaseListScreen(BaseScreen):
         self.commands[ord('2')]         = self.commands[curses.KEY_DOWN]
         self.commands[curses.KEY_RIGHT] = self.commands[curses.KEY_NPAGE]
         self.commands[curses.KEY_LEFT]  = self.commands[curses.KEY_PPAGE]
+        self.commands[ord('q')] = { 'func': lambda c: change_screen(None) }
         self.commands[ord('/')]         = { 'func': lambda c: start_filtering(), "description": "Busca" }
+        self.commands[curses.KEY_F5]    = { 'func': lambda c: self.update_data(), 'description': "Refresh" }
     
     def change_line(self, newline):
         self.current_line = max(0, min(newline, len(self.data) - 1))
@@ -112,7 +116,8 @@ class BaseListScreen(BaseScreen):
             return self.filter_addchar(c)
         return BaseScreen.update(self, c)
    
-    def page_size(self): return 20
+    def page_size(self):
+        return max_height - 4
 
     def select(self, row): pass
 
@@ -134,7 +139,7 @@ class BaseListScreen(BaseScreen):
             screen.addstr("\n")
             def print_small_command_instruction(comm):
                 if not 'description' in self.commands[comm]: return
-                screen.addch(comm, colors.GREEN)
+                screen.addstr(convert_code(comm), colors.GREEN)
                 screen.addstr(" - " + self.commands[comm]["description"] + "; ")
             map(print_small_command_instruction, self.commands)
         
@@ -144,14 +149,9 @@ class UserListScreen(BaseListScreen):
         BaseListScreen.__init__(self)
         self.screen_name = "Lista de Usuários"
         self.header = fill_with_spaces("Login", 20) + "  " + fill_with_spaces("NID  ", 8, False) + "  Nome"
-
-        self.commands[ord('q')] = { 'func': lambda c: change_screen(None) }
         if precadastro_screen:
             self.commands[ord('p')] = { 'description': "Pré-Cadastro", 'func': lambda c: change_screen(precadastro_screen) }
 
-    def page_size(self):
-        return max_height - 4
-    
     def select(self, row):
         change_screen(UserInfoScreen(row))
         return True
@@ -172,12 +172,7 @@ class PrecadastroListScreen(BaseListScreen):
         BaseListScreen.__init__(self)
         self.screen_name = "Lista de Pré-Cadastros"
         self.header = fill_with_spaces("Login", 20) + "  " + fill_with_spaces("NID  ", 8, False) + "  Nome"
-        
-        self.commands[ord('q')] = { 'func': lambda c: change_screen(None) }
         self.commands[ord('p')] = { 'func': lambda c: change_screen(userlist_screen), "description": "Lista de Usuários" }
-
-    def page_size(self):
-        return max_height - 4
 
     def select(self, precadastro):
         change_screen(PrecadastroInfoScreen(precadastro))
@@ -216,7 +211,7 @@ class BaseInfoScreen(BaseScreen):
             if c == ord('\n') or c == KEY_ESCAPE or c == ord('n'):
                 self.command_output = self.queued_command = None
                 return True
-            elif c == ord('q'):
+            if c == ord('q') or self.current == None:
                 self.commands[ord('q')]['func'](c)
                 return True
             return False
@@ -298,13 +293,17 @@ class PrecadastroInfoScreen(BaseInfoScreen):
     def __init__(self, precadastro):
         BaseInfoScreen.__init__(self)
         self.current = precadastro
-        def nyi(c):
-            self.queued_command = { 'description': "Não Implementado" }
-            self.command_output = "Comando não implementado. Use a linha de comando."
-        #self.commands[ord('p')] = { 'description': "gerar uma nova senha", 'func': self.confirm, 'execute': newpassword }
-        #self.commands[ord('d')] = { 'description': "desativar a conta",    'func': nyi, 'execute': None }
-        #self.commands[ord('r')] = { 'description': "reativar a conta",     'func': nyi, 'execute': None }
-        #self.commands[ord('a')] = { 'description': "apagar a conta",       'func': nyi, 'execute': None }
+        def finaliza():
+            import supermegazord.lib.precadastro as libprecadastro
+            return "nope.avi"
+        def remover():
+            import supermegazord.lib.precadastro as libprecadastro
+            libprecadastro.remove(self.current['nid'])
+            self.current = None
+            precadastro_screen.update_data()
+            return "Pré-cadastro removido."
+        self.commands[ord('f')] = { 'description': "finalizar o pré-cadastro", 'func': self.confirm, 'execute': finaliza }
+        self.commands[ord('r')] = { 'description': "remover o pré-cadastro",   'func': self.confirm, 'execute': remover }
         self.commands[KEY_ESCAPE] = { 'func': lambda c: change_screen(precadastro_screen) }
         self.commands[ord('q')] = { 'description': "voltar à tela anterior", 'func': lambda c: change_screen(precadastro_screen) }
 
