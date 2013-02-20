@@ -134,8 +134,9 @@ class UserListScreen(BaseListScreen):
         self.header = fill_with_spaces("Login", 20) + "  " + fill_with_spaces("NID  ", 8, False) + "  Nome"
 
         self.commands[ord('q')] = lambda c: change_screen(None)
-        self.commands[ord('p')] = lambda c: change_screen(precadastro_screen)
-        self.command_list.append({ "hint": "p", "description": "Pré-Cadastro" })
+        if precadastro_screen:
+            self.commands[ord('p')] = lambda c: change_screen(precadastro_screen)
+            self.command_list.append({ "hint": "p", "description": "Pré-Cadastro" })
 
     def page_size(self):
         return max_height - 4
@@ -156,14 +157,49 @@ class UserListScreen(BaseListScreen):
             fill_with_spaces(user.name, max_width),
             max_width, colors.YELLOW if selected else colors.WHITE)
 
-class UserInfoScreen:
+class PrecadastroListScreen(BaseListScreen):
     def __init__(self):
-        self.current_user = None
+        BaseListScreen.__init__(self)
+        self.screen_name = "Lista de Pré-Cadastros"
+        self.header = fill_with_spaces("Login", 20) + "  " + fill_with_spaces("NID  ", 8, False) + "  Nome"
+        
+        self.commands[ord('q')] = lambda c: change_screen(None)
+        self.commands[ord('p')] = lambda c: change_screen(userlist_screen)
+        self.command_list.append({ "hint": "p", "description": "Lista de Usuários" })
 
+    def page_size(self):
+        return max_height - 4
+        
+    def update_data(self):
+        import supermegazord.lib.precadastro as precadastro
+        self.data = sorted(precadastro.list_all(), key=lambda item: item['login'])
+
+    def draw_row(self, screen, user, y, x, selected):
+        import supermegazord.lib.jupinfo as libjupinfo
+        jupinfo = libjupinfo.from_nid(user['nid'])
+        screen.addnstr(y, x,
+            fill_with_spaces(user['login'], 20) + "  " +
+            fill_with_spaces(user['nid'], 8, False) + "  " +
+            fill_with_spaces(jupinfo and jupinfo.nome or "n/a", max_width),
+            max_width, colors.YELLOW if selected else colors.WHITE)
+
+
+class BaseInfoScreen:
+    def __init__(self):
+        self.current = None
+
+    def update(self, c): pass
+
+    def draw(self, screen): pass
+
+
+class UserInfoScreen(BaseInfoScreen):
     def update(self, c):
-        global current_screen
+        result = BaseInfoScreen.update(self, c)
+        if result != None: return result
+        
         if c == ord('q') or c == 27:
-            current_screen = userlist_screen
+            change_screen(userlist_screen)
             return True
         return False
 
@@ -193,32 +229,6 @@ class UserInfoScreen:
         screen.addstr("\n")
         print_command_instruction('q', "voltar à tela anterior")
 
-class PrecadastroListScreen(BaseListScreen):
-    def __init__(self):
-        BaseListScreen.__init__(self)
-        self.screen_name = "Lista de Pré-Cadastros"
-        self.header = fill_with_spaces("Login", 20) + "  " + fill_with_spaces("NID  ", 8, False) + "  Nome"
-        
-        self.commands[ord('q')] = lambda c: change_screen(None)
-        self.commands[ord('p')] = lambda c: change_screen(userlist_screen)
-        self.command_list.append({ "hint": "p", "description": "Lista de Usuários" })
-
-    def page_size(self):
-        return max_height - 4
-        
-    def update_data(self):
-        import supermegazord.lib.precadastro as precadastro
-        self.data = sorted(precadastro.list_all(), key=lambda item: item['login'])
-
-    def draw_row(self, screen, user, y, x, selected):
-        import supermegazord.lib.jupinfo as libjupinfo
-        jupinfo = libjupinfo.from_nid(user['nid'])
-        screen.addnstr(y, x,
-            fill_with_spaces(user['login'], 20) + "  " +
-            fill_with_spaces(user['nid'], 8, False) + "  " +
-            fill_with_spaces(jupinfo and jupinfo.nome or "n/a", max_width),
-            max_width, colors.YELLOW if selected else colors.WHITE)
-
 #=======================
 # Lista de telas
 userlist_screen = None
@@ -238,7 +248,9 @@ def main(screen):
     global current_screen, userlist_screen, userinfo_screen, precadastro_screen
     current_screen = userlist_screen = UserListScreen()
     userinfo_screen = UserInfoScreen()
-    precadastro_screen = PrecadastroListScreen()
+    try:
+        precadastro_screen = PrecadastroListScreen()
+    except: pass
 
     redraw = True
     while current_screen:
