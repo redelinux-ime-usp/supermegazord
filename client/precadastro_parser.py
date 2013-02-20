@@ -36,8 +36,10 @@ def prepare_parser(precadastro_parse):
 				print 'livre'
 	
 	def adiciona_parser(args):
-		precadastrodb.insert(args.nid, args.login, args.password)
-		print "sucesso"
+		if precadastrodb.insert(args.nid, args.login, args.email, args.password):
+			print "sucesso"
+		else:
+			print "erro"
 	
 	def lista_parser(args):
 		import supermegazord.lib.jupinfo as jupinfo
@@ -67,6 +69,7 @@ def prepare_parser(precadastro_parse):
 	adiciona.set_defaults(func=adiciona_parser)
 	adiciona.add_argument('--nid', required=True)
 	adiciona.add_argument('--login', required=True)
+	adiciona.add_argument('--email', required=True)
 	adiciona.add_argument('--password', required=True)
 
 	lista = subparsers.add_parser('lista')

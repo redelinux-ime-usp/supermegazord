@@ -22,7 +22,7 @@ def setup_table():
 		c = conn.cursor()
 		c.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='precadastro'")
 		if not c.fetchone():
-			c.execute('''CREATE TABLE precadastro (nid, login, password, time)''')
+			c.execute('''CREATE TABLE precadastro (nid, login, email, password, time)''')
 			conn.commit()
 		conn.close()
 	except:
@@ -30,7 +30,7 @@ def setup_table():
 	
 setup_table()
 
-def insert(nid, login, password):
+def insert(nid, login, email, password):
 	import time
 	conn = _connect()
 	c = conn.cursor()
@@ -39,8 +39,8 @@ def insert(nid, login, password):
 		conn.close()
 		return False
 
-	c.execute("INSERT into precadastro VALUES (?, ?, ?, ?)",
-			  (nid, login, password, time.time()))
+	c.execute("INSERT into precadastro VALUES (?, ?, ?, ?, ?)",
+			  (nid, login, email, password, time.time()))
 	conn.commit()
 	conn.close()
 	return True
@@ -55,8 +55,9 @@ def search(field, value):
 	return {
 		'nid': data[0],
 		'login': data[1],
-		'password': data[2],
-		'time': data[3]
+		'email': data[2],
+		'password': data[3],
+		'time': data[4]
 	}
 
 def fetch(nid):
@@ -74,7 +75,7 @@ def list_all():
 	c = conn.cursor()
 	resp = []
 	for i in c.execute("SELECT * from precadastro"):
-		resp.append({ 'nid': i[0], 'login': i[1] })
+		resp.append({ 'nid': i[0], 'login': i[1], 'email': i[2] })
 	conn.close()
 	return resp
 	
