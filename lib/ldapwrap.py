@@ -82,6 +82,10 @@ def add_user(account):
 		return False
 	return True
 
+def delete_user(uid)
+	raise Exception("NYI")
+	return False
+
 def find_group_by_gid(gid):
 	try:
 		return query('ou=Group', 'gidNumber=%s' % gid)[0][1]
