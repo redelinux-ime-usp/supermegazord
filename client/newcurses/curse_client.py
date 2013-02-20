@@ -174,9 +174,9 @@ class UserInfoScreen:
         screen.addstr("\n")
         screen.addnstr("\nLogin:    " + self.current_user.login, max_width)
         screen.addnstr("\nNome:     " + self.current_user.name, max_width)
-        screen.addnstr("\nNID:      " + self.current_user.nid, max_width)
+        screen.addnstr("\nNID:      " + (self.current_user.nid or "n/a"), max_width)
         screen.addnstr("\nCurso:    " + self.current_user.group.name, max_width)
-        screen.addnstr("\nIngresso: " + (str(jupinfo.ingresso) if jupinfo else "n/a"), max_width)
+        screen.addnstr("\nIngresso: " + (jupinfo and jupinfo.ingresso or "n/a"), max_width)
         screen.addstr("\n")
         screen.addnstr("\n              Operações possíveis:", max_width)
         screen.addstr("\n")
@@ -186,10 +186,10 @@ class UserInfoScreen:
             screen.addch(ord(key), colors.GREEN)
             screen.addstr("' para " + description + ".")
             
-
         print_command_instruction('p', "gerar uma nova senha")
         print_command_instruction('d', "desativar a conta")
         print_command_instruction('r', "reativar a conta")
+        print_command_instruction('a', "apagar a conta")
         screen.addstr("\n")
         print_command_instruction('q', "voltar à tela anterior")
 
@@ -197,7 +197,7 @@ class PrecadastroListScreen(BaseListScreen):
     def __init__(self):
         BaseListScreen.__init__(self)
         self.screen_name = "Lista de Pré-Cadastros"
-        self.header = fill_with_spaces("Login", 20+2) + fill_with_spaces("NID", 9)
+        self.header = fill_with_spaces("Login", 20) + "  " + fill_with_spaces("NID  ", 8, False) + "  Nome"
         
         self.commands[ord('q')] = lambda c: change_screen(None)
         self.commands[ord('p')] = lambda c: change_screen(userlist_screen)
@@ -209,10 +209,14 @@ class PrecadastroListScreen(BaseListScreen):
     def update_data(self):
         import supermegazord.lib.precadastro as precadastro
         self.data = sorted(precadastro.list_all(), key=lambda item: item['login'])
-        
+
     def draw_row(self, screen, user, y, x, selected):
+        import supermegazord.lib.jupinfo as libjupinfo
+        jupinfo = libjupinfo.from_nid(user['nid'])
         screen.addnstr(y, x,
-            fill_with_spaces(user['login'], 12) + "  " + fill_with_spaces(user['nid'], 7),
+            fill_with_spaces(user['login'], 20) + "  " +
+            fill_with_spaces(user['nid'], 8, False) + "  " +
+            fill_with_spaces(jupinfo and jupinfo.nome or "n/a", max_width),
             max_width, colors.YELLOW if selected else colors.WHITE)
 
 #=======================
