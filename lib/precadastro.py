@@ -95,10 +95,6 @@ def finaliza_cadastro(nid):
 	data = fetch(nid)
 	if not data: return False
 
-	if datetime.timedelta(0, time.time() - int(data['time'])).days > PRECADASTRO_MAX_DAYS:
-		remove(nid)
-		return False
-
 	info  = jupinfo.from_nid(nid)
 	if not info: raise Exception("NID dado não possui Jupinfo.")
 
@@ -129,7 +125,4 @@ def finaliza_cadastro(nid):
 	# Remove o precadastro
 	remove(nid)
 
-	result = True
-	for x in status: result = result and status[x]
-
-	return result
+	return reduce(lambda a, b: a and b, status.values())
