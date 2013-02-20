@@ -28,6 +28,9 @@ def user_exists(user):
 
 def add_user(user, password):
 	return execute_command("addprinc -pw " + password + " " + user)
+	
+def delete_user(user):
+	return execute_command("delete_principal -force " + user)
 
 def change_password(user, password):
 	return execute_command("change_password -pw " + password + " " + user)

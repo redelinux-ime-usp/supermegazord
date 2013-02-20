@@ -61,7 +61,6 @@ class Account:
 	def reactivate(self):
 		if self.group.name != "exaluno": return True
 		import remote
-		import supermegazord.db.path as path
 		group = None
 		for g in megazordgroup.all():
 			if g.name != "olimpo" and g.name != "imortais" and self.login in g.members:
@@ -80,7 +79,6 @@ class Account:
 	def deactivate(self):
 		if self.group.name == "exaluno": return True
 		import remote
-		import supermegazord.db.path as path
 		command = "sudo /megazord/scripts/desativa_conta " + self.login + " " + self.group.name
 		results = remote.run_remote_batch(['mail', 'printer', 'nfs'], command, "megazord")
 		for s in results: results[s] = (results[s] == 0)
@@ -89,6 +87,20 @@ class Account:
 		for s in results: status = status and results[s]
 		self.log("Conta '{0}' desativada. Status: {1}".format(self.login, str(results)))
 		return status
+		
+	def remove(self):
+		import remote
+		import kerbwrap
+		import ldapwrap
+		command = "sudo /megazord/scripts/apaga_conta " + self.login + " " + self.group.name
+		results = remote.run_remote_batch(['mail', 'printer', 'nfs'], command, "megazord")
+		for s in results: results[s] = (results[s] == 0)
+		results['kerberos'] = kerbwrap.delete_user(self.login) == 0
+		results['ldap'] = ldapwrap.delete_user(self.login)
+		self.log("Conta '{0}' removida. Status: {1}".format(self.login, str(results)))
+		for s in results: 
+			if not s: return False
+		return True
 
 	def log(self, s):
 		import datetime

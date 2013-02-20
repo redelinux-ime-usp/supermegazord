@@ -61,6 +61,17 @@ def prepare_parser(account_parse):
 			ingresso = (str(ingresso) + " "*10)[:10]
 
 			print login + "|" + nid + " | " + curso + "|" + ingresso + "| " + nome
+			
+	def remove_parser(args):
+		import supermegazord.lib.account as account
+		acc = account.from_login(args.user)
+		if not acc:
+			print "Erro: usuário '{0}' não encontrado.".format(args.user)
+			return
+		if acc.remove():
+			print "Conta '{0}' removida com successo.".format(acc.login)
+		else:
+			print "Erro ao removida conta '{0}'.".format(acc.login)
 
 	def reactivate_parser(args):
 		import supermegazord.lib.account as account
@@ -103,6 +114,10 @@ def prepare_parser(account_parse):
 	search.add_argument('--type', choices=['nid', 'login', 'name', 'auto'], dest='type', default='auto')
 	search.add_argument('user', nargs='+')
 	search.set_defaults(func=search_parser)
+	
+	remove = subparsers.add_parser('remove')
+	remove.add_argument('user')
+	remove.set_defaults(func=reactivate_parser)
 
 	reactivate = subparsers.add_parser('reactivate')
 	reactivate.add_argument('user')
