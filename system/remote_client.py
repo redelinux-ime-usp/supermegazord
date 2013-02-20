@@ -44,10 +44,10 @@ def controller():
 		except: 
 			print "OH NOES, CRASH"
 		import re
-		if re.compile('^[a-z0-9\- \']+$').match(data):
+		if re.compile('^[a-zA-Z0-9\- \'\.@\+]+$').match(data):
 			clientsock.send(runMegazord(data))
 		else:
-			clientsock.send("Invalid command: '" + data + "'")
+			clientsock.send("Input has illegal chars. Command: '" + data + "'")
 		clientsock.close()
 	
 import sys
