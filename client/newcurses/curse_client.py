@@ -17,6 +17,7 @@ quit = False
 current_screen = None
 max_height = 24
 max_width = 80
+KEY_ESCAPE = 27
 
 import curses, curses.textpad
 import supermegazord.base.colors as colors
@@ -41,6 +42,7 @@ class BaseScreen:
         self.commands = collections.OrderedDict()
 
     def update(self, c):
+        if c == curses.KEY_RESIZE: return True
         if c in self.commands:
             result = self.commands[c]['func'](c)
             if result != None:
@@ -66,7 +68,7 @@ class BaseListScreen(BaseScreen):
         self.commands[curses.KEY_UP]    = { 'func': lambda c: self.change_line(self.current_line - 1) }
         self.commands[curses.KEY_NPAGE] = { 'func': lambda c: self.change_line(self.current_line + self.page_size()) }
         self.commands[curses.KEY_PPAGE] = { 'func': lambda c: self.change_line(self.current_line - self.page_size()) }
-        self.commands[27]               = { 'func': lambda c: self.change_filter("") }
+        self.commands[KEY_ESCAPE]       = { 'func': lambda c: self.change_filter("") }
         self.commands[ord('\n')]        = { 'func': lambda c: select() }
         self.commands[ord('1')]         = self.commands[curses.KEY_UP]
         self.commands[ord('2')]         = self.commands[curses.KEY_DOWN]
@@ -85,7 +87,7 @@ class BaseListScreen(BaseScreen):
     def update_data(self): pass
     
     def filter_addchar(self, c):
-        if c == 27:
+        if c == KEY_ESCAPE:
             self.filtering = False
             self.filter_string = ""
         elif c == ord('\n'):
@@ -195,7 +197,30 @@ class BaseInfoScreen(BaseScreen):
         BaseScreen.__init__(self)
         self.screen_name = "Informações de Usuário"
         self.current = None
+        self.queued_command = None
+        self.command_output = None
 
+    def update(self, c):
+        if c == curses.KEY_RESIZE: return True
+        
+        if self.command_output:
+            if c == ord('\n') or c == KEY_ESCAPE or c == ord('n'):
+                self.command_output = self.queued_command = None
+                return True
+            elif c == ord('q'):
+                self.commands[ord('q')]['func'](c)
+                return True
+            return False
+        elif self.queued_command:
+            if c == ord('y'):
+                self.command_output = self.queued_command['execute']()
+                return True
+            elif c == ord('\n') or c == ord('q') or c == KEY_ESCAPE or c == ord('n'):
+                self.queued_command = None
+                return True
+            return False
+        return BaseScreen.update(self, c)
+    
     def draw_current(self, screen): pass
 
     def draw(self, screen):
@@ -204,31 +229,46 @@ class BaseInfoScreen(BaseScreen):
             self.draw_current(screen)
 
         screen.addstr("\n")
-        screen.addnstr("\n              Operações possíveis:", max_width)
-        screen.addstr("\n")
-
-        def print_command_instruction(key, description):
-            screen.addstr("\n         '")
-            screen.addch(key, colors.GREEN)
-            screen.addstr("' para " + description + ".")
-
-        for key, comm in self.commands.items():
-            if 'description' in comm:
-                print_command_instruction(key, comm['description'])
+        if not self.queued_command:
+            screen.addnstr("\n              Operações possíveis:", max_width)
+            screen.addstr("\n")
+            def print_command_instruction(data):
+                key, comm = data
+                if 'description' in comm:
+                    screen.addstr("\n         '")
+                    screen.addch(key, colors.GREEN)
+                    screen.addstr("' para " + comm['description'] + ".")
+                else:
+                    screen.addstr("\n")
+            map(print_command_instruction, self.commands.items())
+        else:
+            desc = self.queued_command['description'].upper() 
+            screen.addnstr("\n              " + desc, max_width, colors.RED)
+            screen.addstr("\n\n")
+            if self.command_output:
+                for s in self.command_output.split("\n"):
+                    screen.addnstr(s, max_width)
             else:
-                screen.addstr("\n")
-
+                confirmstr = "Confirmar? (y/N)"
+                screen.addnstr("              " + " " * ((len(desc) - len(confirmstr)) / 2) + confirmstr, max_width)
 
 class UserInfoScreen(BaseInfoScreen):
     def __init__(self, user):
         BaseInfoScreen.__init__(self)
         self.current = user
-        def dummy(c): pass
-        self.commands[ord('p')] = { 'description': "gerar uma nova senha", 'func': dummy }
-        self.commands[ord('d')] = { 'description': "desativar a conta",    'func': dummy }
-        self.commands[ord('r')] = { 'description': "reativar a conta",     'func': dummy }
-        self.commands[ord('a')] = { 'description': "apagar a conta",       'func': dummy }
-        self.commands[27]       = { 'func': lambda c: change_screen(userlist_screen) }
+        def confirm(c):
+            self.queued_command = self.commands[c]
+            if 'execute' not in self.queued_command:
+                raise Exception("Command requesting confirmation has no execute attrib.")
+        def nyi(c):
+            self.queued_command = { 'description': "Não Implementado" }
+            self.command_output = "Comando não implementado. Use a CLI."
+        def nothing(): return "TMPSTRING"
+        self.commands[ord('p')] = { 'description': "gerar uma nova senha", 'func': confirm, 'execute': nothing }
+        self.commands[ord('d')] = { 'description': "desativar a conta",    'func': nyi, 'execute': nothing }
+        self.commands[ord('r')] = { 'description': "reativar a conta",     'func': nyi, 'execute': nothing }
+        self.commands[ord('a')] = { 'description': "apagar a conta",       'func': nyi, 'execute': nothing }
+        self.commands[KEY_ESCAPE] = { 'func': lambda c: change_screen(userlist_screen) }
         self.commands[ord('q')] = { 'description': "voltar à tela anterior", 'func': lambda c: change_screen(userlist_screen) }
 
     def draw_current(self, screen):
