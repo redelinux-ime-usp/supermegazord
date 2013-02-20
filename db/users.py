@@ -69,9 +69,12 @@ def add_nid_login(nid, login):
 
 def get_jupinfo_from_nid(nid):
 	for source in (jupinfofile, nojupinfofile):
-		for line in open(source):
-			if str(nid) == line.strip().split(':')[0]:
-				return jupinfo_from_raw(line)
+		try:
+			for line in open(source):
+				if str(nid) == line.strip().split(':')[0]:
+					return jupinfo_from_raw(line)
+		except IOError, e:
+			if e.errno != 13: raise e
 
 def get_jupinfo_from_login(login):
 	return get_jupinfo_from_nid(login_to_nid(login))
