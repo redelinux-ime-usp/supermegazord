@@ -10,6 +10,7 @@
 
 # Megazord global variables
 import functools
+import collections
 
 # Variaveis globais importantes
 quit = False
@@ -33,33 +34,45 @@ def change_screen(newscreen):
     global current_screen
     current_screen = newscreen
 
-class BaseListScreen:
+class BaseScreen:
     def __init__(self):
+        self.screen_name = "Tela Genérica"
+        self.header = ""
+        self.commands = collections.OrderedDict()
+
+    def update(self, c):
+        if c in self.commands:
+            result = self.commands[c]['func'](c)
+            if result != None:
+                return result
+            return True
+
+    def draw(self, screen):
+        megazord_header(screen, self.screen_name)
+        screen.addnstr("\n" + self.header + " " * max_width, max_width)
+
+class BaseListScreen(BaseScreen):
+    def __init__(self):
+        BaseScreen.__init__(self)
         self.current_line = 0
         self.data = list()
-        self.screen_name = "Lista Genérica"
-        self.header = ""
         self.filtering = False
         self.filter_string = ""
         self.update_data()
         
         def select(): return self.select(self.data[self.current_line]) if len(self.data) > 0 else False
         def start_filtering(): self.filtering = True
-        self.commands = {
-            curses.KEY_DOWN:  lambda c: self.change_line(self.current_line + 1),
-            curses.KEY_UP:    lambda c: self.change_line(self.current_line - 1),
-            curses.KEY_NPAGE: lambda c: self.change_line(self.current_line + self.page_size()),
-            curses.KEY_PPAGE: lambda c: self.change_line(self.current_line - self.page_size()),
-            27:               lambda c: self.change_filter(""),
-            ord('/'):         lambda c: start_filtering(),
-            ord('\n'):        lambda c: select()
-        }
-        self.commands[ord('1')] = self.commands[curses.KEY_UP]
-        self.commands[ord('2')] = self.commands[curses.KEY_DOWN]
+        self.commands[curses.KEY_DOWN]  = { 'func': lambda c: self.change_line(self.current_line + 1) }
+        self.commands[curses.KEY_UP]    = { 'func': lambda c: self.change_line(self.current_line - 1) }
+        self.commands[curses.KEY_NPAGE] = { 'func': lambda c: self.change_line(self.current_line + self.page_size()) }
+        self.commands[curses.KEY_PPAGE] = { 'func': lambda c: self.change_line(self.current_line - self.page_size()) }
+        self.commands[27]               = { 'func': lambda c: self.change_filter("") }
+        self.commands[ord('\n')]        = { 'func': lambda c: select() }
+        self.commands[ord('1')]         = self.commands[curses.KEY_UP]
+        self.commands[ord('2')]         = self.commands[curses.KEY_DOWN]
         self.commands[curses.KEY_RIGHT] = self.commands[curses.KEY_NPAGE]
         self.commands[curses.KEY_LEFT]  = self.commands[curses.KEY_PPAGE]
-        
-        self.command_list = [{ "hint": "/", "description": "Busca" }]
+        self.commands[ord('/')]         = { 'func': lambda c: start_filtering(), "description": "Busca" }
     
     def change_line(self, newline):
         self.current_line = max(0, min(newline, len(self.data) - 1))
@@ -94,11 +107,7 @@ class BaseListScreen:
         if c == curses.KEY_RESIZE: return True
         if self.filtering:
             return self.filter_addchar(c)
-        if c in self.commands:
-            result = self.commands[c](c)
-            if result != None:
-                return result
-            return True
+        return BaseScreen.update(self, c)
    
     def page_size(self): return 20
 
@@ -107,12 +116,11 @@ class BaseListScreen:
     def draw_row(self, screen, row_data, y, x, selected = False): pass
 
     def draw(self, screen):
+        BaseScreen.draw(self, screen)
         current_page = int(self.current_line / self.page_size())
         num_pages = int(len(self.data) / self.page_size())
         start, count, offset_y, offset_x = current_page * self.page_size(), self.page_size(), 2, 0
         start = max(start, 0)
-        megazord_header(screen, self.screen_name)
-        screen.addnstr("\n" + self.header + " " * max_width, max_width)
         for i in range(start, min(start+count, len(self.data))):
             self.draw_row(screen, self.data[i], offset_y + (i % self.page_size()), offset_x, i == self.current_line)
         screen.addnstr(offset_y + count, offset_x, 
@@ -121,10 +129,11 @@ class BaseListScreen:
             screen.addnstr(offset_y + count + 1, offset_x, "/" + self.filter_string, max_width)
         else:
             screen.addstr("\n")
-            def print_small_command_instruction(cl):
-                screen.addch(ord(cl["hint"]), colors.GREEN)
-                screen.addstr(" - " + cl["description"] + "; ")
-            map(print_small_command_instruction, self.command_list)
+            def print_small_command_instruction(comm):
+                if not 'description' in self.commands[comm]: return
+                screen.addch(comm, colors.GREEN)
+                screen.addstr(" - " + self.commands[comm]["description"] + "; ")
+            map(print_small_command_instruction, self.commands)
         
 
 class UserListScreen(BaseListScreen):
@@ -133,17 +142,15 @@ class UserListScreen(BaseListScreen):
         self.screen_name = "Lista de Usuários"
         self.header = fill_with_spaces("Login", 20) + "  " + fill_with_spaces("NID  ", 8, False) + "  Nome"
 
-        self.commands[ord('q')] = lambda c: change_screen(None)
+        self.commands[ord('q')] = { 'func': lambda c: change_screen(None) }
         if precadastro_screen:
-            self.commands[ord('p')] = lambda c: change_screen(precadastro_screen)
-            self.command_list.append({ "hint": "p", "description": "Pré-Cadastro" })
+            self.commands[ord('p')] = { 'description': "Pré-Cadastro", 'func': lambda c: change_screen(precadastro_screen) }
 
     def page_size(self):
         return max_height - 4
     
     def select(self, row):
-        userinfo_screen.current_user = row
-        change_screen(userinfo_screen)
+        change_screen(UserInfoScreen(row))
         return True
 
     def update_data(self):
@@ -163,9 +170,8 @@ class PrecadastroListScreen(BaseListScreen):
         self.screen_name = "Lista de Pré-Cadastros"
         self.header = fill_with_spaces("Login", 20) + "  " + fill_with_spaces("NID  ", 8, False) + "  Nome"
         
-        self.commands[ord('q')] = lambda c: change_screen(None)
-        self.commands[ord('p')] = lambda c: change_screen(userlist_screen)
-        self.command_list.append({ "hint": "p", "description": "Lista de Usuários" })
+        self.commands[ord('q')] = { 'func': lambda c: change_screen(None) }
+        self.commands[ord('p')] = { 'func': lambda c: change_screen(userlist_screen), "description": "Lista de Usuários" }
 
     def page_size(self):
         return max_height - 4
@@ -184,55 +190,59 @@ class PrecadastroListScreen(BaseListScreen):
             max_width, colors.YELLOW if selected else colors.WHITE)
 
 
-class BaseInfoScreen:
+class BaseInfoScreen(BaseScreen):
     def __init__(self):
+        BaseScreen.__init__(self)
+        self.screen_name = "Informações de Usuário"
         self.current = None
 
-    def update(self, c): pass
-
-    def draw(self, screen): pass
-
-
-class UserInfoScreen(BaseInfoScreen):
-    def update(self, c):
-        result = BaseInfoScreen.update(self, c)
-        if result != None: return result
-        
-        if c == ord('q') or c == 27:
-            change_screen(userlist_screen)
-            return True
-        return False
+    def draw_current(self, screen): pass
 
     def draw(self, screen):
-        import supermegazord.lib.jupinfo as libjupinfo
-        jupinfo = libjupinfo.from_nid(self.current_user.nid)
-        megazord_header(screen, "Informações de Usuário")
-        screen.addstr("\n")
-        screen.addnstr("\nLogin:    " + self.current_user.login, max_width)
-        screen.addnstr("\nNome:     " + self.current_user.name, max_width)
-        screen.addnstr("\nNID:      " + (self.current_user.nid or "n/a"), max_width)
-        screen.addnstr("\nCurso:    " + self.current_user.group.name, max_width)
-        screen.addnstr("\nIngresso: " + (jupinfo and jupinfo.ingresso or "n/a"), max_width)
+        BaseScreen.draw(self, screen)
+        if self.current:
+            self.draw_current(screen)
+
         screen.addstr("\n")
         screen.addnstr("\n              Operações possíveis:", max_width)
         screen.addstr("\n")
 
         def print_command_instruction(key, description):
             screen.addstr("\n         '")
-            screen.addch(ord(key), colors.GREEN)
+            screen.addch(key, colors.GREEN)
             screen.addstr("' para " + description + ".")
-            
-        print_command_instruction('p', "gerar uma nova senha")
-        print_command_instruction('d', "desativar a conta")
-        print_command_instruction('r', "reativar a conta")
-        print_command_instruction('a', "apagar a conta")
-        screen.addstr("\n")
-        print_command_instruction('q', "voltar à tela anterior")
+
+        for key, comm in self.commands.items():
+            if 'description' in comm:
+                print_command_instruction(key, comm['description'])
+            else:
+                screen.addstr("\n")
+
+
+class UserInfoScreen(BaseInfoScreen):
+    def __init__(self, user):
+        BaseInfoScreen.__init__(self)
+        self.current = user
+        def dummy(c): pass
+        self.commands[ord('p')] = { 'description': "gerar uma nova senha", 'func': dummy }
+        self.commands[ord('d')] = { 'description': "desativar a conta",    'func': dummy }
+        self.commands[ord('r')] = { 'description': "reativar a conta",     'func': dummy }
+        self.commands[ord('a')] = { 'description': "apagar a conta",       'func': dummy }
+        self.commands[27]       = { 'func': lambda c: change_screen(userlist_screen) }
+        self.commands[ord('q')] = { 'description': "voltar à tela anterior", 'func': lambda c: change_screen(userlist_screen) }
+
+    def draw_current(self, screen):
+        import supermegazord.lib.jupinfo as libjupinfo
+        jupinfo = libjupinfo.from_nid(self.current.nid)
+        screen.addnstr("\nLogin:    " + self.current.login, max_width)
+        screen.addnstr("\nNome:     " + self.current.name, max_width)
+        screen.addnstr("\nNID:      " + (self.current.nid or "n/a"), max_width)
+        screen.addnstr("\nCurso:    " + self.current.group.name, max_width)
+        screen.addnstr("\nIngresso: " + (jupinfo and jupinfo.ingresso or "n/a"), max_width)
 
 #=======================
 # Lista de telas
 userlist_screen = None
-userinfo_screen = None
 precadastro_screen = None
 
 def main(screen):
@@ -245,12 +255,10 @@ def main(screen):
 
     colors.init()
 
-    global current_screen, userlist_screen, userinfo_screen, precadastro_screen
+    global current_screen, userlist_screen, precadastro_screen
+    try: precadastro_screen = PrecadastroListScreen()
+    except Exception, e: pass
     current_screen = userlist_screen = UserListScreen()
-    userinfo_screen = UserInfoScreen()
-    try:
-        precadastro_screen = PrecadastroListScreen()
-    except: pass
 
     redraw = True
     while current_screen:
