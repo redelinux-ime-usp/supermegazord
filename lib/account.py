@@ -72,9 +72,8 @@ class Account:
 		results = remote.run_remote_batch(['mail', 'printer', 'nfs'], command, "megazord")
 		for s in results: results[s] = (results[s] == 0)
 		results['ldap'] = status
-		for s in results: status = status and results[s]
 		self.log("Conta '{0}' re-ativada. Status: {1}".format(self.login, str(results)))
-		return status
+		return reduce(lambda a, b: a and b, results.values())
 
 	def deactivate(self):
 		if self.group.name == "exaluno": return True
@@ -83,10 +82,8 @@ class Account:
 		results = remote.run_remote_batch(['mail', 'printer', 'nfs'], command, "megazord")
 		for s in results: results[s] = (results[s] == 0)
 		results['ldap'] = self.group.add_member(self) and self.change_group('exaluno') and self.change_home("/home/exaluno/" + self.login)
-		status = True
-		for s in results: status = status and results[s]
 		self.log("Conta '{0}' desativada. Status: {1}".format(self.login, str(results)))
-		return status
+		return reduce(lambda a, b: a and b, results.values())
 		
 	def remove(self):
 		import remote
@@ -98,9 +95,8 @@ class Account:
 		results['kerberos'] = kerbwrap.delete_user(self.login) == 0
 		results['ldap'] = ldapwrap.delete_user(self.login)
 		self.log("Conta '{0}' removida. Status: {1}".format(self.login, str(results)))
-		for s in results: 
-			if not s: return False
-		return True
+		del cache[self.uid]
+		return reduce(lambda a, b: a and b, results.values())
 
 	def log(self, s):
 		import datetime
