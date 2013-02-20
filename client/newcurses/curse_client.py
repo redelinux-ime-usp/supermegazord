@@ -41,6 +41,7 @@ class BaseListScreen:
         self.header = ""
         self.filtering = False
         self.filter_string = ""
+        self.update_data()
         
         def select(): return self.select(self.data[self.current_line]) if len(self.data) > 0 else False
         def start_filtering(): self.filtering = True
@@ -128,9 +129,6 @@ class BaseListScreen:
 class UserListScreen(BaseListScreen):
     def __init__(self):
         BaseListScreen.__init__(self)
-        self.filtering = False
-        self.filter_string = ""
-        self.update_data()
         self.screen_name = "Lista de Usuários"
         self.header = fill_with_spaces("Login", 20+2) + fill_with_spaces("Grupo", 9) + "Nome"
 
@@ -193,84 +191,25 @@ class UserInfoScreen:
         screen.addstr("\n")
         print_command_instruction('q', "voltar à tela anterior")
 
-class PrecadastroListScreen:
+class PrecadastroListScreen(BaseListScreen):
     def __init__(self):
-        self.current_line = 0
-        self.page_size = max_height - 4
-        self.filtering = False
-        self.filter_string = ""
-        self.update_filter()
-        pass
+        BaseListScreen.__init__(self)
+        self.screen_name = "Lista de Pré-Cadastros"
+        self.header = fill_with_spaces("Login", 20+2) + fill_with_spaces("NID", 9)
+        
+        self.commands[ord('q')] = lambda c: change_screen(None)
 
-    def change_line(self, newline):
-        self.current_line = max(0, min(newline, len(self.users) - 1))
-
-    def update_filter(self):
+    def page_size(self):
+        return max_height - 4
+        
+    def update_data(self):
         import supermegazord.lib.precadastro as precadastro
-        self.users = sorted(precadastro.list_all(), key=lambda item: item['login'])
-        self.change_line(self.current_line)
-
-    def filter_addchar(self, c):
-        self.filtering = False
-        self.update_filter()
-        return True
-
-    def update(self, c):
-        global current_screen
-        if c == curses.KEY_RESIZE:
-            self.page_size = max_height - 4
-            return True
-
-        if self.filtering:
-            return self.filter_addchar(c)
-        if c == ord('q'):
-            current_screen = None
-        elif c == 27:
-            self.filter_string = ""
-            self.update_filter()
-            return True
-        elif c == ord('/'):
-            self.filtering = True
-            return True
-        elif c == curses.KEY_DOWN or c == ord('2'):
-            self.change_line(self.current_line + 1)
-            return True
-        elif c == curses.KEY_UP or c == ord('1'):
-            self.change_line(self.current_line - 1)
-            return True
-        elif c == curses.KEY_RIGHT or c == curses.KEY_NPAGE: # Page Down
-            self.change_line(self.current_line + self.page_size)
-            return True
-        elif c == curses.KEY_LEFT or c == curses.KEY_PPAGE: # Page Up
-            self.change_line(self.current_line - self.page_size)
-            return True
-        elif c == ord('\n'):
-            if len(self.users) > 0:
-                current_screen = None
-            return True
-        return False
-
-    def draw(self, screen):
-        current_page = int(self.current_line / self.page_size)
-        num_pages = int(len(self.users) / self.page_size)
-        start, count, offset_y, offset_x = current_page * self.page_size, self.page_size, 2, 0
-        start = max(start, 0)
-        megazord_header(screen, "Lista de Pré-Cadastros")
-        screen.addnstr("\n" + fill_with_spaces("Login", 12+2) + fill_with_spaces("NID", 9), max_width)
-        for i in range(start, min(start+count, len(self.users))):
-            screen.addnstr(offset_y + (i % self.page_size), offset_x,
-                fill_with_spaces(self.users[i]['login'], 12) + "  " + fill_with_spaces(self.users[i]['nid'], 7),
-                max_width, colors.YELLOW if i == self.current_line else colors.WHITE)
-        screen.addnstr(offset_y + count, offset_x, " " * 15 + "Page " + str(current_page + 1) + "/" + str(num_pages + 1), max_width)
-        if self.filtering:
-            screen.addnstr(offset_y + count + 1, offset_x, "/" + self.filter_string, max_width)
-        else:
-            screen.addstr("\n")
-            def print_small_command_instruction(key, description):
-                screen.addch(ord(key), colors.GREEN)
-                screen.addstr(" - " + description + "; ")
-            print_small_command_instruction('/', "Busca")
-            print_small_command_instruction('p', "Usuários")
+        self.data = sorted(precadastro.list_all(), key=lambda item: item['login'])
+        
+    def draw_row(self, screen, user, y, x, selected):
+        screen.addnstr(y, x,
+            fill_with_spaces(user['login'], 12) + "  " + fill_with_spaces(user['nid'], 7),
+            max_width, colors.YELLOW if selected else colors.WHITE)
 
 #=======================
 # Lista de telas
