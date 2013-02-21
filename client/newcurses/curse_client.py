@@ -210,7 +210,7 @@ class BaseInfoScreen(BaseScreen):
         if self.command_output:
             if c == ord('\n') or c == KEY_ESCAPE or c == ord('n'):
                 self.command_output = self.queued_command = None
-            if c == ord('q'):
+            elif c == ord('q'):
                 self.commands[ord('q')]['func'](c)
             else:
                 return False
@@ -275,10 +275,22 @@ class UserInfoScreen(BaseInfoScreen):
                 return "Senha mudada com sucesso.\n   Nova senha: '" + password + "'"
             else:
                 return "Erro ao gerar senha."
+        def apagar():
+            result = ""
+            if self.current.remove():
+                result = "Conta removida com sucesso."
+            else:
+                import supermegazord.db.path as path
+                result = ("Ocorreu um erro ao apagar a conta.\n" + 
+                    "Verifique '{0}usuarios/historico/{1}' para maiores detalhes.".format(
+                        path.MEGAZORD_DB, self.current.nid))
+            self.current = None
+            userlist_screen.update_data()
+            return result
         self.commands[ord('p')] = { 'description': "gerar uma nova senha", 'func': self.confirm, 'execute': newpassword }
         self.commands[ord('d')] = { 'description': "desativar a conta",    'func': nyi, 'execute': None }
         self.commands[ord('r')] = { 'description': "reativar a conta",     'func': nyi, 'execute': None }
-        self.commands[ord('a')] = { 'description': "apagar a conta",       'func': nyi, 'execute': None }
+        self.commands[ord('a')] = { 'description': "apagar a conta",       'func': self.confirm, 'execute': apagar }
         self.commands[KEY_ESCAPE] = { 'func': lambda c: change_screen(userlist_screen) }
         self.commands[ord('q')] = { 'description': "voltar à tela anterior", 'func': lambda c: change_screen(userlist_screen) }
 
@@ -302,8 +314,9 @@ class PrecadastroInfoScreen(BaseInfoScreen):
                 result = "Conta criada com sucesso!\n\n   DEVOLVA A CARTEIRINHA PARA O USUÁRIO"
             else:
                 import supermegazord.db.path as path
-                result = "Ocorreu um erro no cadastro.\nVerifique '{0}usuarios/historico/{1}' para maiores detalhes.".format(
-                    path.MEGAZORD_DB, self.current['nid'])
+                result = ("Ocorreu um erro no cadastro.\n" + 
+                    "Verifique '{0}usuarios/historico/{1}' para maiores detalhes.".format(
+                        path.MEGAZORD_DB, self.current['nid']))
             self.current = None
             precadastro_screen.update_data()
             return result
