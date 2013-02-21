@@ -12,7 +12,7 @@ if __name__ != "__main__":
 import sys 
 
 if len(sys.argv) == 1:
-	import supermegazord.client.curse.curse_client as cursescli
+	import supermegazord.client.newcurses.curse_client as cursescli
 	cursescli.Run()
 	quit(0)
 
@@ -25,12 +25,6 @@ machine_parser.prepare_parser(subparsers.add_parser('machines'))
 account_parser.prepare_parser(subparsers.add_parser('accounts'))
 watchman_parser.prepare_parser(subparsers.add_parser('watchman'))
 precadastro_parser.prepare_parser(subparsers.add_parser('precadastro'))
-
-def curses_parser(args):
-	import supermegazord.client.newcurses.curse_client as cursescli
-	cursescli.Run()
-	quit(0)
-subparsers.add_parser('curses').set_defaults(func=curses_parser)
 
 args = parser.parse_args()
 args.func(args)
