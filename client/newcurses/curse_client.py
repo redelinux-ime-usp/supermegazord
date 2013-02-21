@@ -20,7 +20,7 @@ max_width = 80
 KEY_ESCAPE = 27
 
 import curses, curses.textpad
-import supermegazord.base.colors as colors
+import colors
 
 def fill_with_spaces(s, size, right_side = True):
     if right_side:
@@ -210,11 +210,13 @@ class BaseInfoScreen(BaseScreen):
         if self.command_output:
             if c == ord('\n') or c == KEY_ESCAPE or c == ord('n'):
                 self.command_output = self.queued_command = None
-                return True
-            if c == ord('q') or self.current == None:
+            if c == ord('q'):
                 self.commands[ord('q')]['func'](c)
-                return True
-            return False
+            else:
+                return False
+            if not self.current:
+                self.commands[ord('q')]['func'](c)
+            return True
         elif self.queued_command:
             if c == ord('y'):
                 self.command_output = self.queued_command['execute']()
@@ -295,7 +297,16 @@ class PrecadastroInfoScreen(BaseInfoScreen):
         self.current = precadastro
         def finaliza():
             import supermegazord.lib.precadastro as libprecadastro
-            return "nope.avi"
+            result = ""
+            if libprecadastro.finaliza_cadastro(self.current['nid']):
+                result = "Conta criada com sucesso!\n\n   DEVOLVA A CARTEIRINHA PARA O USUÁRIO"
+            else:
+                import supermegazord.db.path as path
+                result = "Ocorreu um erro no cadastro.\nVerifique '{0}usuarios/historico/{1}' para maiores detalhes.".format(
+                    path.MEGAZORD_DB, self.current['nid'])
+            self.current = None
+            precadastro_screen.update_data()
+            return result
         def remover():
             import supermegazord.lib.precadastro as libprecadastro
             libprecadastro.remove(self.current['nid'])
