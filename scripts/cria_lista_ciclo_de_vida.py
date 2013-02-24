@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import sys
-import supermegazord.lib.ldapwrap as ldapwrap
+import supermegazord.lib.account as account
 import supermegazord.lib.group as group
 import supermegazord.db.path as path
 
@@ -18,10 +18,9 @@ with open(path.MEGAZORD_DB + "usuarios/jupiter/nojup_info", "r") as nojupinfo:
 
 IMORTAIS = group.from_name('imortais')
 EXALUNO = group.from_name('exaluno')
-users = ldapwrap.query("ou=People", "uid=*")
+users = account.search("")
 
 for u in users:
-	if 'nid' in u[1]:
-		if u[1]['nid'][0] not in nidsok and u[1]['gidNumber'] != EXALUNO.gid and u[1]['uid'][0] not in IMORTAIS.members:
-			print u[1]['uid'][0]
+	if u.nid not in nidsok and u.group != EXALUNO.gid and u.login not in IMORTAIS.members:
+		print u.login
 
