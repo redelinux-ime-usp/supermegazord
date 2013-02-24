@@ -36,6 +36,9 @@ def prepare_parser(precadastro_parse):
 				print 'livre'
 	
 	def adiciona_parser(args):
+		if not args.password:
+			import getpass
+			args.password = getpass.getpass("Password: ")
 		if precadastrodb.insert(args.nid, args.login, args.email, args.password):
 			print "sucesso"
 		else:
@@ -70,7 +73,7 @@ def prepare_parser(precadastro_parse):
 	adiciona.add_argument('--nid', required=True)
 	adiciona.add_argument('--login', required=True)
 	adiciona.add_argument('--email', required=True)
-	adiciona.add_argument('--password', required=True)
+	adiciona.add_argument('--password')
 
 	lista = subparsers.add_parser('lista')
 	lista.set_defaults(func=lista_parser)

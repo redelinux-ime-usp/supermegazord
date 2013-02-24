@@ -31,6 +31,12 @@ def setup_table():
 setup_table()
 
 def insert(nid, login, email, password):
+	import supermegazord.lib.tools as tools
+	if not tools.valida_nid(nid) or not tools.valida_login(login) or type(password) != str:
+		return False
+	import supermegazord.lib.jupinfo as jupinfo
+	if not jupinfo.from_nid(nid) or len(password < 6):
+		return False
 	import time
 	conn = _connect()
 	c = conn.cursor()
