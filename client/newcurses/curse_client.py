@@ -282,7 +282,7 @@ class UserInfoScreen(BaseInfoScreen):
             else:
                 import supermegazord.db.path as path
                 result = ("Ocorreu um erro ao apagar a conta.\n" + 
-                    "Verifique '{0}usuarios/historico/{1}' para maiores detalhes.".format(
+                    "Verifique '{0}usuarios/historicos/{1}' para maiores detalhes.".format(
                         path.MEGAZORD_DB, self.current.nid))
             self.current = None
             userlist_screen.update_data()
@@ -315,7 +315,7 @@ class PrecadastroInfoScreen(BaseInfoScreen):
             else:
                 import supermegazord.db.path as path
                 result = ("Ocorreu um erro no cadastro.\n" + 
-                    "Verifique '{0}usuarios/historico/{1}' para maiores detalhes.".format(
+                    "Verifique '{0}usuarios/historicos/{1}' para maiores detalhes.".format(
                         path.MEGAZORD_DB, self.current['nid']))
             self.current = None
             precadastro_screen.update_data()
