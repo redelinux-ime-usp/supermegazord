@@ -6,8 +6,12 @@ import supermegazord.lib.account as account
 import supermegazord.lib.group as group
 import supermegazord.db.path as path
 
+juppath = path.MEGAZORD_DB + "usuarios/jupiter/jup_info"
+if len(sys.argv) > 1:
+	juppath = sys.argv[1]
+
 nidsok = {}
-with open(path.MEGAZORD_DB + "usuarios/jupiter/jup_info", "r") as jupinfo:
+with open(juppath, "r") as jupinfo:
 	for line in jupinfo:
 		nidsok[line.split(':')[0]] = True
 	
