@@ -35,7 +35,7 @@ def insert(nid, login, email, password):
 	if not tools.valida_nid(nid) or not tools.valida_login(login) or type(password) != str:
 		return False
 	import supermegazord.lib.jupinfo as jupinfo
-	if not jupinfo.from_nid(nid) or len(password < 6):
+	if not jupinfo.from_nid(nid) or len(password) < 6:
 		return False
 	import time
 	conn = _connect()
@@ -119,7 +119,7 @@ def finaliza_cadastro(nid):
 	status['home']     = remote.run_script_with_localpipe("nfs", 
 									"sudo /megazord/scripts/cria_conta " + newuser.login + " " + newuser.group.name,
 									"tar c -C " + path.MEGAZORD_DB + "usuarios skel/", "megazord") == 0
-	
+	status['email']    = remote.run_script("nfs",     "sudo /megazord/scripts/adiciona_forward " + newuser.login + " " + newuser.group.name + " " + data['email'], "megazord") == 0
 	status['print']    = remote.run_script("printer", "sudo /megazord/scripts/cria_conta " + newuser.login + " " + newuser.group.name, "megazord") == 0
 	status['listas']   = remote.run_script("mail",    "sudo /megazord/scripts/cria_conta " + newuser.login + " " + newuser.group.name, "megazord") == 0
 	
