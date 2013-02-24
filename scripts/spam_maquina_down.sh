@@ -1,9 +1,9 @@
 #!/bin/bash
 
 DOWN=$(/opt/bin/watchman --down clients)
-LISTA=batata
+LISTA=cebola
 
-if [ "$DOWN" != "" -a 1 == 2 ]; then
+if [ "$DOWN" != "" ]; then
 	telnet mail 25 <<EOF
 helo linux.ime.usp.br
 mail from: $LISTA@linux.ime.usp.br
