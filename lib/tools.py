@@ -7,13 +7,14 @@
 
 def valida_nid(nid):
 	import re
-	return re.compile('^[0-9]{4,}$').match(nid)
+	return re.compile('^[0-9]{4,}$').match(nid) != None
 
 logins_invalidos = ['admin', 'root']
 
 def valida_login(login):
 	import re
-	return re.compile('^[a-z]{2,12}$').match(login) and (login not in logins_invalidos)
+	return (re.compile('^[a-z]{2,12}$').match(login) != None) and (
+		login not in logins_invalidos)
 
 def get_next_uid():
 	import datetime
