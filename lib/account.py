@@ -77,6 +77,11 @@ class Account:
 
 	def deactivate(self):
 		if self.group.name == "exaluno": return True
+		self.mail("Conta Desativada", 
+			("Olá {0}, informamos que a sua conta na Rede Linux foi desativada.\n" +
+			"O seu e-mail continuará funcionando, mas você não poderá mais utilizar os " + 
+			"laborários, impressoras e o acesso remoto.\n\n" + 
+			"Se você acha que isso foi um engano, entre em contato com admin@linux.ime.usp.br").format(self.name))
 		import remote
 		command = "sudo /megazord/scripts/desativa_conta " + self.login + " " + self.group.name
 		results = remote.run_remote_batch(['mail', 'printer', 'nfs'], command, "megazord")
@@ -97,6 +102,21 @@ class Account:
 		self.log("Conta '{0}' removida. Status: {1}".format(self.login, str(results)))
 		del cache[self.uid]
 		return reduce(lambda a, b: a and b, results.values())
+
+	def mail(self, subject, message, source = "Rede Linux <admin@linux.ime.usp.br>"):
+		import smtplib
+		from email.mime.text import MIMEText
+		msg = MIMEText(message, "plain", "utf-8")
+		msg['Subject'] = subject
+		msg['From'] = source
+		msg['To'] = "{0} <{1}@linux.ime.usp.br>".format(self.name, self.login)
+		try:
+			s = smtplib.SMTP('mail')
+			s.sendmail("admin", [self.login], msg.as_string())
+			s.quit()
+			return True
+		except:
+			return False
 
 	def log(self, s):
 		import datetime
