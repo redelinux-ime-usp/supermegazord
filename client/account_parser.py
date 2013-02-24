@@ -1,7 +1,7 @@
 #!/usr/bin/env python2.7
 # -*- coding: utf-8 -*-
 
-# Users parser: Wrapper para o db.users para linha de comando. 
+# Accounts parser: Trabalha em cima do lib.account
 # Autor: Henrique Gemignani Passos Lima (henriquelima)
 # Escrito em: 2012-06-22
 
@@ -97,12 +97,12 @@ def prepare_parser(account_parse):
 
 	def newpassword_parser(args):
 		import supermegazord.lib.account as account
-		import supermegazord.db.users as users
+		import supermegazord.lib.tools   as tools
 		acc = account.from_login(args.user)
 		if not acc:
 			print "Erro: usuário '{0}' não encontrado.".format(args.user)
 			return
-		password = users.generate_password()
+		password = tools.generate_password()
 		if acc.change_password(password):
 			print "Nova senha para '{0}': {1}".format(acc.login, password)
 		else:

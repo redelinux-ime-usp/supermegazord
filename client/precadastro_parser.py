@@ -13,12 +13,14 @@ def prepare_parser(precadastro_parse):
 	import supermegazord.lib.precadastro as precadastrodb
 
 	def verifica_parser(args):
-		import supermegazord.db.users as userdata
+		import supermegazord.lib.account as account
+		import supermegazord.lib.jupinfo as jupinfo
+		import supermegazord.lib.tools as tools
 
 		if args.nid:
-			if not userdata.get_jupinfo_from_nid(args.nid):
+			if not jupinfo.from_nid(args.nid):
 				print 'inexistente'
-			elif userdata.nid_to_login(args.nid) != '':
+			elif account.from_nid(args.nid):
 				print 'usado'
 			elif precadastrodb.fetch(args.nid) != None:
 				print 'precadastro'
@@ -26,11 +28,11 @@ def prepare_parser(precadastro_parse):
 				print 'livre'
 		
 		if args.login:
-			if userdata.login_to_nid(args.login) != '':
+			if account.from_login(args.login):
 				print 'usado'
 			elif precadastrodb.search('login', args.login) != None:
 				print 'precadastro'
-			elif not userdata.valida_login(args.login):
+			elif not tools.valida_login(args.login):
 				print 'invalido'
 			else:
 				print 'livre'

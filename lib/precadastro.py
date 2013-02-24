@@ -88,7 +88,6 @@ def list_all():
 
 PRECADASTRO_MAX_DAYS = 30
 def finaliza_cadastro(nid):
-	import supermegazord.db.users        as users
 	import supermegazord.db.path         as path 
 	import supermegazord.lib.jupinfo     as jupinfo
 	import supermegazord.lib.precadastro as precadastro
@@ -96,6 +95,7 @@ def finaliza_cadastro(nid):
 	from   supermegazord.lib.account import Account
 	import supermegazord.lib.kerbwrap    as kerbwrap
 	import supermegazord.lib.remote      as remote
+	import supermegazord.lib.tools		 as tools
 	import time, datetime
 
 	data = fetch(nid)
@@ -104,7 +104,7 @@ def finaliza_cadastro(nid):
 	info  = jupinfo.from_nid(nid)
 	if not info: raise Exception("NID dado não possui Jupinfo.")
 
-	uid   = users.get_next_uid()
+	uid   = tools.get_next_uid()
 	group = megazordgroup.from_name(info.curso)
 	if not group: raise Exception("Jupinfo possui curso inválido: " + info.curso)
 	home  = "/home/" + group.name + "/" + data['login']
@@ -112,10 +112,9 @@ def finaliza_cadastro(nid):
 	newuser = Account(uid, group.gid, data['login'], info.nome, home, "/bin/bash", nid)
 
 	status = {}
-	status['limpeza']  = users.unban_login(newuser.login) # Step 1
+	status['limpeza']  = tools.unban_login(newuser.login) # Step 1
 	status['passwd']   = newuser.add_to_ldap()
 	status['kerberos'] = kerbwrap.add_user(newuser.login, data['password']) == 0
-
 	status['home']     = remote.run_script_with_localpipe("nfs", 
 									"sudo /megazord/scripts/cria_conta " + newuser.login + " " + newuser.group.name,
 									"tar c -C " + path.MEGAZORD_DB + "usuarios skel/", "megazord") == 0
@@ -123,10 +122,7 @@ def finaliza_cadastro(nid):
 	status['print']    = remote.run_script("printer", "sudo /megazord/scripts/cria_conta " + newuser.login + " " + newuser.group.name, "megazord") == 0
 	status['listas']   = remote.run_script("mail",    "sudo /megazord/scripts/cria_conta " + newuser.login + " " + newuser.group.name, "megazord") == 0
 	
-	msg = "Conta " + newuser.login + (" (%s) aberta\n" % newuser.group.name) + ("NID: %s;" % newuser.nid) + " Nome: %s\n" % newuser.name
-	status['historico'] = users.add_history_by_nid(newuser.nid, msg)
-
-	newuser.log("Conta '{0}' ({1}) aberta. Nome: {2}; Status: {3}".format(newuser.login, newuser.group.name, newuser.name, str(status)))
+	newuser.log("Conta '{0}' ({1}) aberta. Nome: {2}; NID: {3}; Status: {4}".format(newuser.login, newuser.group.name, newuser.name, newuser.nid, str(status)))
 	
 	# Remove o precadastro
 	remove(nid)
