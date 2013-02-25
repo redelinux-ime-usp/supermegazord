@@ -10,6 +10,8 @@ if __name__ != "__main__":
 	quit()
 
 import sys 
+import locale
+locale.setlocale(locale.LC_ALL, '')
 
 if len(sys.argv) == 1:
 	import supermegazord.client.newcurses.curse_client as cursescli

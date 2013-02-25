@@ -5,6 +5,12 @@
 # Autor: Henrique Gemignani Passos Lima (henriquelima)
 # Escrito em: 2013-02-18
 
+def log(filename, s):
+	import supermegazord.db.path as path
+	import datetime
+	with open(path.MEGAZORD_DB + "/log/" + filename, "a") as f:
+		f.write(str(datetime.datetime.now()) + " - " + s + "\n")
+
 def valida_nid(nid):
 	import re
 	return re.compile('^[0-9]{4,}$').match(nid) != None
@@ -43,41 +49,7 @@ def get_next_uid():
 	return uid
 
 def ban_login(login, motivo):
-	# TODO: fazer
 	return False
 
 def unban_login(login):
-	newsuspensoes = open(suspensoes + '.tmp', 'w')
-	if not newsuspensoes: return False
-	try:
-		for line in open(suspensoes):
-			if login not in line.strip().split(':')[0]:
-				newsuspensoes.write(line)
-	except:
-		return False
-	newsuspensoes.close()
-	import os
-	os.unlink(suspensoes)
-	try:
-		os.rename(suspensoes + '.tmp', suspensoes)
-		return True
-	except:
-		return False
-
-def add_history_by_nid(nid, msg):
-	if not nid: return False
-	import datetime
-	try:
-		open(historyfolder + nid, 'a').write(datetime.datetime.now().isoformat(" ") + " - " + msg + "\n")
-		return True
-	except:
-		return False
-
-def add_history_by_login(login, msg):
-	return add_history_by_nid(login_to_nid(login), msg)
-
-def generate_password(length = 10):
-	import string
-	from random import choice
-	chars = string.lowercase + string.digits
-	return choice(string.uppercase) + ''.join(choice(chars) for _ in xrange(length - 2)) + choice(string.digits)
+	return True

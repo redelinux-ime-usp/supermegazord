@@ -57,10 +57,10 @@ def prepare_parser(account_parse):
 			# Trata tamanhos
 			login = (str(login) + " "*20)[:20]
 			nid = (" "*8 + str(nid))[-8:]
-			curso = (str(curso) + " "*6)[:6]
+			curso = (str(curso) + " "*7)[:7]
 			ingresso = (str(ingresso) + " "*10)[:10]
 
-			print login + "|" + nid + " | " + curso + "|" + ingresso + "| " + nome
+			print login + "|" + nid + " |" + curso + "|" + ingresso + "| " + nome
 			
 	def remove_parser(args):
 		import supermegazord.lib.account as account

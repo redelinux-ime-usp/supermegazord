@@ -21,6 +21,8 @@ KEY_ESCAPE = 27
 
 import curses, curses.textpad
 import colors
+import locale
+locale.setlocale(locale.LC_ALL,"")
 
 def fill_with_spaces(s, size, right_side = True):
     if right_side:
@@ -161,7 +163,7 @@ class UserListScreen(BaseListScreen):
         self.data = sorted(account.search(self.filter_string), key=lambda item: item.login)
 
     def draw_row(self, screen, user, y, x, selected):
-        screen.addnstr(y, x,
+        screen.addnstr(y, x, 
             fill_with_spaces(user.login, 20) + "  " +
             fill_with_spaces(user.nid if user.nid else "n/a", 8, False) + "  " +
             fill_with_spaces(user.name, max_width),
@@ -184,10 +186,10 @@ class PrecadastroListScreen(BaseListScreen):
     def draw_row(self, screen, user, y, x, selected):
         import supermegazord.lib.jupinfo as libjupinfo
         jupinfo = libjupinfo.from_nid(user['nid'])
-        screen.addnstr(y, x,
+        screen.addnstr(y, x, (
             fill_with_spaces(user['login'], 20) + "  " +
             fill_with_spaces(user['nid'], 8, False) + "  " +
-            fill_with_spaces(jupinfo and jupinfo.nome or "n/a", max_width),
+            fill_with_spaces(jupinfo and jupinfo.nome.decode("UTF-8") or "n/a", max_width)).encode("UTF-8"),
             max_width, colors.YELLOW if selected else colors.WHITE)
 
 
@@ -335,7 +337,7 @@ class PrecadastroInfoScreen(BaseInfoScreen):
         import supermegazord.lib.jupinfo as libjupinfo
         jupinfo = libjupinfo.from_nid(self.current['nid'])
         screen.addnstr("\nLogin:    " + self.current['login'], max_width)
-        screen.addnstr("\nNome:     " + (jupinfo and jupinfo.nome or "NID não possui Jupinfo"), max_width)
+        screen.addnstr(("\nNome:     " + (jupinfo and jupinfo.nome.decode("utf-8") or "NID não possui Jupinfo")).encode("utf-8"), max_width)
         screen.addnstr("\nNID:      " + self.current['nid'], max_width)
         screen.addnstr("\nCurso:    " + (jupinfo and jupinfo.curso or "n/a"), max_width)
         screen.addnstr("\nIngresso: " + (jupinfo and jupinfo.ingresso or "n/a"), max_width)

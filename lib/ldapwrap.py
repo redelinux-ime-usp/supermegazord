@@ -27,6 +27,10 @@ except IOError:
 import ldap
 from ldap import modlist
 
+def _log(s):
+	import supermegazord.lib.tools as tools
+	tools.log("ldap", s)
+
 def is_admin():
 	return ROOTPW != None
 
@@ -123,38 +127,38 @@ def remove_password(login):
 		return False
 
 def change_user_field(login, field, newval):
+	_log("Changing field {1} of {0} to '{2}'".format(login, field, newval))
 	dn = "uid=" + str(login) + ",ou=People," + BASEDN
 	con = open_connection()
 	try:
-		con.modify_s( dn, [ (ldap.MOD_REPLACE, field, newval) ])
+		con.modify_s( dn, [ (ldap.MOD_REPLACE, field, str(newval)) ])
+		_log("Done: Success")
 		return True
-	except ldap.NO_SUCH_OBJECT:
+	except ldap.NO_SUCH_OBJECT, err:
+		_log("Erro: " + str(err))
 		return False
 
-def change_group(login, gid):
-	dn = "uid=" + str(login) + ",ou=People," + BASEDN
-	con = open_connection()
-	try:
-		con.modify_s( dn, [ (ldap.MOD_REPLACE, 'gidNumber', [str(gid)]) ] )
-		return True
-	except ldap.NO_SUCH_OBJECT:
-		return False
-	
 def group_add_member(gname, login):
+	_log("Adicionando '{1}' como membro do grupo {0}".format(gname, login))
 	dn = "cn=" + gname + ",ou=Group," + BASEDN
 	con = open_connection()
 	try:
 		con.modify_s(dn, [ (ldap.MOD_ADD, 'memberUid', str(login)) ] )
+		_log("Done: Success")
 		return True
-	except ldap.NO_SUCH_OBJECT:
+	except ldap.NO_SUCH_OBJECT, err:
+		_log("Erro: " + str(err))
 		return False
 
 def group_remove_member(gname, login):
+	_log("Removendo '{1}' como membro do grupo {0}".format(gname, login))
 	dn = "cn=" + gname + ",ou=Group," + BASEDN
 	con = open_connection()
 	try:
 		con.modify_s(dn, [ (ldap.MOD_DELETE, 'memberUid', str(login)) ] )
+		_log("Done: Success")
 		return True
-	except ldap.NO_SUCH_OBJECT:
+	except ldap.NO_SUCH_OBJECT, err:
+		_log("Erro: " + str(err))
 		return False
 	

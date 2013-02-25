@@ -34,7 +34,7 @@ class Account:
 		
 		if newgroup == None: return False
 		import ldapwrap
-		result = ldapwrap.change_group(self.login, newgroup.gid)
+		result = ldapwrap.change_user_field(self.login, 'gidNumber', newgroup.gid)
 		if result: self.group = newgroup
 		return result
 
@@ -47,6 +47,13 @@ class Account:
 		result = ldapwrap.change_user_field(self.login, 'homeDirectory', newhome)
 		if result:
 			self.home = newhome
+		return result
+
+	def change_shell(self, newshell):
+		import ldapwrap
+		result = ldapwrap.change_user_field(self.login, 'loginShell', newshell)
+		if result:
+			self.shell = newshell
 		return result
 
 	def change_password(self, password):
@@ -71,22 +78,25 @@ class Account:
 		command = "sudo /megazord/scripts/reativa_conta " + self.login + " " + self.group.name
 		results = remote.run_remote_batch(['mail', 'printer', 'nfs'], command, "megazord")
 		for s in results: results[s] = (results[s] == 0)
-		results['ldap'] = status
+		results['ldap'] = status and self.change_shell("/bin/bash")
 		self.log("Conta '{0}' re-ativada. Status: {1}".format(self.login, str(results)))
 		return reduce(lambda a, b: a and b, results.values())
 
 	def deactivate(self):
 		if self.group.name == "exaluno": return True
-		self.mail("Conta Desativada", 
-			("Olá {0}, informamos que a sua conta na Rede Linux foi desativada.\n" +
-			"O seu e-mail continuará funcionando, mas você não poderá mais utilizar os " + 
-			"laborários, impressoras e o acesso remoto.\n\n" + 
-			"Se você acha que isso foi um engano, entre em contato com admin@linux.ime.usp.br").format(self.name))
+		import supermegazord.db.path as path
+		try:
+			with open(path.MEGAZORD_DB + "/emails/account.deactivate") as f:
+				self.mail("Conta Desativada", f.read().format(**self.__dict__))
+		except: pass
 		import remote
 		command = "sudo /megazord/scripts/desativa_conta " + self.login + " " + self.group.name
 		results = remote.run_remote_batch(['mail', 'printer', 'nfs'], command, "megazord")
+		print "Terminou remote"
 		for s in results: results[s] = (results[s] == 0)
-		results['ldap'] = self.group.add_member(self) and self.change_group('exaluno') and self.change_home("/home/exaluno/" + self.login)
+		print "Corrigiu results"
+		results['ldap'] = self.group.add_member(self) and self.change_group('exaluno') and (
+			self.change_home("/home/exaluno/" + self.login) and self.change_shell("/bin/false"))
 		self.log("Conta '{0}' desativada. Status: {1}".format(self.login, str(results)))
 		return reduce(lambda a, b: a and b, results.values())
 		
@@ -157,6 +167,10 @@ def from_ldap(ldapdata):
 def from_login(login):
 	import ldapwrap
 	return from_ldap(ldapwrap.find_user_by_login(login))
+
+def from_nid(login):
+	import ldapwrap
+	return from_ldap(ldapwrap.find_user_by_nid(login))
 
 def search(value, field = 'login'):
 	if field == 'login':

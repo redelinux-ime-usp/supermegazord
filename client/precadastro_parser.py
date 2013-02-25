@@ -49,7 +49,7 @@ def prepare_parser(precadastro_parse):
 	def lista_parser(args):
 		import supermegazord.lib.jupinfo as jupinfo
 		for p in precadastrodb.list_all():
-			print str(jupinfo.from_nid(p['nid'])) + "; Login: " + p['login']
+			print jupinfo.from_nid(p['nid']).__str__() + "; Login: " + p['login']
 
 	def finaliza_parser(args):
 		if precadastrodb.finaliza_cadastro(args.nid):

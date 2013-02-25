@@ -25,6 +25,6 @@ EXALUNO = group.from_name('exaluno')
 users = account.search("")
 
 for u in users:
-	if u.nid not in nidsok and u.group != EXALUNO.gid and u.login not in IMORTAIS.members:
+	if u.nid not in nidsok and u.group != EXALUNO and u.login not in IMORTAIS.members:
 		print u.login
 

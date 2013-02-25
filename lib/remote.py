@@ -10,9 +10,12 @@ if __name__ == "__main__":
 
 import subprocess
 import supermegazord.db.path as path
-
-import paramiko
+import paramiko, socket
 import sys
+
+def _log(s):
+	import supermegazord.lib.tools as tools
+	tools.log("remote", s)
 
 def connect(destination, user = "megazord"):
 	ssh = paramiko.SSHClient()
@@ -24,24 +27,33 @@ def connect(destination, user = "megazord"):
 		print "Falha ao conectar em '" + destination + "':", sys.exc_info()[1]
 		return None
 
-def run_script(destination, script, user = "megazord"):
+def run_script(destination, script, user = "megazord", want_return = True):
 	ssh = connect(destination, user)
 	if not ssh: return -1
-	
+	_log("Start running at {0} as {1}: {2}".format(destination, user, script))
 	chan = ssh.get_transport().open_session()
+	chan.settimeout(60)
 	try:
 		chan.exec_command(script)
-	except:
+	except paramiko.SSHException:
 		return -1
-	ret = chan.recv_exit_status()
-	err = chan.recv_stderr(200)
-	if len(err) > 0: print err,
-	return ret
+	if want_return:
+		try:
+			err = chan.recv_stderr(200)
+			_log("Finished.")
+			if len(err) > 0:
+				print err
+			if chan.exit_status_ready():
+				return chan.recv_exit_status()
+			return len(err) == 0
+		except socket.timeout:
+			return False
+	_log("Finished.")
 
-def run_remote_batch(server_list, command, user = "megazord"):
+def run_remote_batch(server_list, command, user = "megazord", want_return = True):
 	results = {}
 	for server in server_list:
-		results[server] = run_script(server, command, user)
+		results[server] = run_script(server, command, user, want_return)
 	return results
 
 def run_script_with_localpipe(host, script_path, pipe, user = "root"):
