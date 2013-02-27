@@ -16,7 +16,9 @@ def runMegazord(cmd):
 	sp = cmd.split(' ')
 	if sp[0] not in valid_commands:
 		return "Permission denied."
-	p = subprocess.Popen("/opt/supermegazord/client/supermegazord.sh.py " + cmd.strip(), shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+	args = ["/opt/supermegazord/client/supermegazord.sh.py"]
+	args.extend(sp)
+	p = subprocess.Popen(args, shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 	out = p.stdout.read().strip() + p.stderr.read().strip()
 	return out  #This is the stdout+stderr from the shell command
 
@@ -41,13 +43,8 @@ def controller():
 		clientsock, addr = serversock.accept()
 		data = ""
 		try: data = clientsock.recv(BUFSIZ)
-		except: 
-			print "OH NOES, CRASH"
-		import re
-		if re.compile('^[a-zA-Z0-9\- \'\.@\+]+$').match(data):
-			clientsock.send(runMegazord(data))
-		else:
-			clientsock.send("Input has illegal chars. Command: '" + data + "'")
+		except: print "OH NOES, CRASH"
+		clientsock.send(runMegazord(data))
 		clientsock.close()
 	
 import sys
