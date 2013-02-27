@@ -48,6 +48,13 @@ def get_next_uid():
 	
 	return uid
 
+def generate_password(length = 10):
+	import string
+	from random import choice
+	chars = string.lowercase + string.digits
+	return choice(string.uppercase) + ''.join(choice(chars) for _ in xrange(length - 2)) + choice(string.digits)
+
+
 def ban_login(login, motivo):
 	return False
 
