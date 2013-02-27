@@ -180,7 +180,7 @@ def search(value, field = 'login'):
 	elif field == 'name':
 		restriction = 'cn=*' + value + ('*' if value != '' else '')
 	else:
-		raise Exception("Unknown restriction field: " + field)
+		raise Exception("Unknown restriction field: '{0}'".format(field))
 	resp = set()
 	import ldapwrap
 	data = ldapwrap.query("ou=People", restriction)

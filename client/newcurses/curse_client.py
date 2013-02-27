@@ -62,7 +62,6 @@ class BaseListScreen(BaseScreen):
     def __init__(self):
         BaseScreen.__init__(self)
         self.current_line = 0
-        self.data = list()
         self.filtering = False
         self.filter_string = ""
         self.update_data()
@@ -79,8 +78,8 @@ class BaseListScreen(BaseScreen):
         self.commands[ord('2')]         = self.commands[curses.KEY_DOWN]
         self.commands[curses.KEY_RIGHT] = self.commands[curses.KEY_NPAGE]
         self.commands[curses.KEY_LEFT]  = self.commands[curses.KEY_PPAGE]
-        self.commands[ord('q')] = { 'func': lambda c: change_screen(None) }
         self.commands[ord('/')]         = { 'func': lambda c: start_filtering(), "description": "Busca" }
+        self.commands[ord('q')]         = { 'func': lambda c: change_screen(None), "description": "Sair"  }
         self.commands[curses.KEY_F5]    = { 'func': lambda c: self.update_data(), 'description': "Refresh" }
     
     def change_line(self, newline):
@@ -88,10 +87,20 @@ class BaseListScreen(BaseScreen):
     
     def change_filter(self, filterstr):
         self.filter_string = filterstr
-        self.update_data()
+        self.filter_data()
         self.change_line(self.current_line)
 
-    def update_data(self): pass
+    def update_data(self):
+        self.fetch_data()
+        self.filter_data()
+        self.change_line(self.current_line)
+
+    def fetch_data(self): pass
+
+    def filter_item(self, item): return True
+
+    def filter_data(self):
+        self.data = filter(self.filter_item, self.original_data)
     
     def filter_addchar(self, c):
         if c == KEY_ESCAPE:
@@ -99,7 +108,7 @@ class BaseListScreen(BaseScreen):
             self.filter_string = ""
         elif c == ord('\n'):
             self.filtering = False
-        elif c >= ord('a') and c <= ord('z'):
+        elif (c >= ord('a') and c <= ord('z')) or (c >= ord('0') and c <= ord('9')) or c == ord(' '):
             self.filter_string += chr(c)
         elif c == curses.KEY_BACKSPACE:
             if len(self.filter_string) > 0:
@@ -108,7 +117,7 @@ class BaseListScreen(BaseScreen):
                 self.filtering = False
         else:
             return False
-        self.update_data()
+        self.filter_data()
         self.change_line(self.current_line)
         return True
 
@@ -158,9 +167,14 @@ class UserListScreen(BaseListScreen):
         change_screen(UserInfoScreen(row))
         return True
 
-    def update_data(self):
+    def fetch_data(self):
         import supermegazord.lib.account as account
-        self.data = sorted(account.search(self.filter_string), key=lambda item: item.login)
+        self.original_data = sorted(account.search(""), key=lambda item: item.login)
+
+    def filter_item(self, item):
+        import re
+        regexp = re.compile(self.filter_string, re.IGNORECASE)
+        return regexp.search(item.login) or regexp.search(item.nid) or regexp.search(item.name)
 
     def draw_row(self, screen, user, y, x, selected):
         screen.addnstr(y, x, 
@@ -179,9 +193,16 @@ class PrecadastroListScreen(BaseListScreen):
     def select(self, precadastro):
         change_screen(PrecadastroInfoScreen(precadastro))
         
-    def update_data(self):
+    def fetch_data(self):
         import supermegazord.lib.precadastro as precadastro
-        self.data = sorted(precadastro.list_all(), key=lambda item: item['login'])
+        self.original_data = sorted(precadastro.list_all(), key=lambda item: item['login'])
+    
+    def filter_item(self, item):
+        import re
+        import supermegazord.lib.jupinfo as libjupinfo
+        jupinfo = libjupinfo.from_nid(item['nid'])
+        regexp = re.compile(self.filter_string, re.IGNORECASE)
+        return regexp.search(item['login']) or regexp.search(item['nid']) or regexp.search(jupinfo.nome)
 
     def draw_row(self, screen, user, y, x, selected):
         import supermegazord.lib.jupinfo as libjupinfo
