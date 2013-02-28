@@ -33,15 +33,16 @@ with open(path.MEGAZORD_DB + "/maquinas/grupos.conf", "r") as f:
 	grupos_conf = json.load(f)
 
 for arq in grupos_conf['arquivos']:
-	machines[arq] = open_list(arq)
+	machines[arq.encode("UTF-8")] = open_list(arq)
 
 for nome, l in grupos_conf['conjuntos'].iteritems():
+	nome = nome.encode("UTF-8")
 	machines[nome] = list()
 	for membro in l:
-		machines[nome].extend(machines[membro])
+		machines[nome].extend(machines[membro.encode("UTF-8")])
 
 for apelido, nome in grupos_conf['apelidos'].iteritems():
-	machines[apelido] = machines[nome]
+	machines[apelido.encode("UTF-8")] = machines[nome.encode("UTF-8")]
 
 def list(group):
 	return machines[group]
