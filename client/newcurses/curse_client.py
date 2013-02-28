@@ -137,7 +137,7 @@ class BaseListScreen(BaseScreen):
     def draw(self, screen):
         BaseScreen.draw(self, screen)
         current_page = int(self.current_line / self.page_size())
-        num_pages = int(len(self.data) / self.page_size())
+        num_pages = int(max(0, len(self.data)-1) / self.page_size())
         start, count, offset_y, offset_x = current_page * self.page_size(), self.page_size(), 2, 0
         start = max(start, 0)
         for i in range(start, min(start+count, len(self.data))):
