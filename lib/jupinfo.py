@@ -26,10 +26,13 @@ def _load_cache():
 	if len(cache) > 0: return
 	import supermegazord.db.path as path
 	for source in "jup_info", "nojup_info":
-		with open(path.MEGAZORD_DB + "/usuarios/jupiter/" + source) as f:
-			for line in f:
-				info = _convert_row(line)
-				cache[info.nid] = info
+		try:
+			with open(path.MEGAZORD_DB + "/usuarios/jupiter/" + source) as f:
+				for line in f:
+					info = _convert_row(line)
+					cache[info.nid] = info
+		except IOError, e:
+			pass
 	
 def from_nid(nid):
 	_load_cache()
