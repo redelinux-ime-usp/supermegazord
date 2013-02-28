@@ -9,6 +9,7 @@ if __name__ == "__main__":
 	quit()
 	
 cache = {}
+scripts = {}
 import supermegazord.lib.group as megazordgroup
 
 class Account:
@@ -189,3 +190,16 @@ def search(value, field = 'login'):
 		if x: resp.add(x)
 	return resp
 
+def _search_scripts():
+	if len(scripts) > 0: return
+	import supermegazord, os, os.path
+	d = os.path.dirname(supermegazord.__file__) + "/scripts/account/"
+	for f in [ f for f in os.listdir(d) if os.path.isfile(os.path.join(d,f)) ]:
+		name, ext = os.path.splitext(f)
+		if name in scripts:
+			raise Exception("More than one script with name '{0}' detected.".format(name))
+		scripts[name] = f
+
+def list_scripts():
+	_search_scripts()
+	return scripts
