@@ -13,7 +13,7 @@ valid_commands = [ 'machines', 'watchman', 'precadastro' ]
 
 #This function takes Bash commands and returns them
 def runMegazord(cmd):
-	sp = cmd.split(' ')
+	sp = cmd.strip().split(' ')
 	if sp[0] not in valid_commands:
 		return "Permission denied."
 	args = ["/opt/supermegazord/client/supermegazord.sh.py"]
