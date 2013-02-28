@@ -15,7 +15,7 @@ valid_commands = [ 'machines', 'watchman', 'precadastro' ]
 def runMegazord(cmd):
 	sp = cmd.strip().split(' ')
 	if sp[0] not in valid_commands:
-		return "Permission denied."
+		return "Permission denied. Unknown command '{0}'.".format(sp[0])
 	args = ["/opt/supermegazord/client/supermegazord.sh.py"]
 	args.extend(sp)
 	p = subprocess.Popen(args, shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
