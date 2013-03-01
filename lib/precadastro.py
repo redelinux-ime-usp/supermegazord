@@ -92,7 +92,7 @@ def finaliza_cadastro(nid):
 	import supermegazord.lib.jupinfo     as jupinfo
 	import supermegazord.lib.precadastro as precadastro
 	import supermegazord.lib.group       as megazordgroup
-	from   supermegazord.lib.account import Account
+	import supermegazord.lib.account	 as account
 	import supermegazord.lib.kerbwrap    as kerbwrap
 	import supermegazord.lib.remote      as remote
 	import supermegazord.lib.tools		 as tools
@@ -104,12 +104,18 @@ def finaliza_cadastro(nid):
 	info  = jupinfo.from_nid(nid)
 	if not info: raise Exception("NID dado não possui Jupinfo.")
 
+	if account.from_login(data['login']) != None:
+		raise Exception("Login dado já existe.")
+	
+	if account.from_nid(nid) != None:
+		raise Exception("NID dado já foi utilizado.")
+
 	uid   = tools.get_next_uid()
 	group = megazordgroup.from_name(info.curso)
 	if not group: raise Exception("Jupinfo possui curso inválido: " + info.curso)
 	home  = "/home/" + group.name + "/" + data['login']
 
-	newuser = Account(uid, group.gid, data['login'], info.nome, home, "/bin/bash", nid)
+	newuser = account.Account(uid, group.gid, data['login'], info.nome, home, "/bin/bash", nid)
 
 	status = {}
 	status['limpeza']  = tools.unban_login(newuser.login) # Step 1
