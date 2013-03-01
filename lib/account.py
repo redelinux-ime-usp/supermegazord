@@ -62,54 +62,6 @@ class Account:
 		if group.gid == self.group.gid: return True
 		return self.login in group.members
 
-	def reactivate(self):
-		if self.group.name != "exaluno": return True
-		import remote
-		group = None
-		for g in megazordgroup.all():
-			if g.name != "olimpo" and g.name != "imortais" and self.login in g.members:
-				group = g
-		if not group:
-			raise Exception("Nenhum grupo válido no qual é membro secundário")
-		status = group.remove_member(self) and self.change_group(group) and self.change_home("/home/" + group.name + "/" + self.login)
-		command = "sudo /megazord/scripts/reativa_conta " + self.login + " " + self.group.name
-		results = remote.run_remote_batch(['mail', 'printer', 'nfs'], command, "megazord")
-		for s in results: results[s] = (results[s] == 0)
-		results['ldap'] = status and self.change_shell("/bin/bash")
-		self.log("Conta '{0}' re-ativada. Status: {1}".format(self.login, str(results)))
-		return reduce(lambda a, b: a and b, results.values())
-
-	def deactivate(self):
-		if self.group.name == "exaluno": return True
-		import supermegazord.db.path as path
-		try:
-			with open(path.MEGAZORD_DB + "/emails/account.deactivate") as f:
-				self.mail("Conta Desativada", f.read().format(**self.__dict__))
-		except: pass
-		import remote
-		command = "sudo /megazord/scripts/desativa_conta " + self.login + " " + self.group.name
-		results = remote.run_remote_batch(['mail', 'printer', 'nfs'], command, "megazord")
-		print "Terminou remote"
-		for s in results: results[s] = (results[s] == 0)
-		print "Corrigiu results"
-		results['ldap'] = self.group.add_member(self) and self.change_group('exaluno') and (
-			self.change_home("/home/exaluno/" + self.login) and self.change_shell("/bin/false"))
-		self.log("Conta '{0}' desativada. Status: {1}".format(self.login, str(results)))
-		return reduce(lambda a, b: a and b, results.values())
-		
-	def remove(self):
-		import remote
-		import kerbwrap
-		import ldapwrap
-		command = "sudo /megazord/scripts/apaga_conta " + self.login + " " + self.group.name
-		results = remote.run_remote_batch(['mail', 'printer', 'nfs'], command, "megazord")
-		for s in results: results[s] = (results[s] == 0)
-		results['kerberos'] = kerbwrap.delete_user(self.login) == 0
-		results['ldap'] = ldapwrap.delete_user(self.login)
-		self.log("Conta '{0}' removida. Status: {1}".format(self.login, str(results)))
-		del cache[self.uid]
-		return reduce(lambda a, b: a and b, results.values())
-
 	def mail(self, subject, message, source = "Rede Linux <admin@linux.ime.usp.br>"):
 		import smtplib
 		from email.mime.text import MIMEText
