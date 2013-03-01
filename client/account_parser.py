@@ -132,20 +132,3 @@ def prepare_parser(account_parse):
 	script.add_argument('scriptname', choices=list(account.list_scripts()))
 	script.add_argument('user')
 	script.set_defaults(func=script_parser)
-	
-	remove = subparsers.add_parser('remove')
-	remove.add_argument('user')
-	remove.set_defaults(func=remove_parser)
-
-	reactivate = subparsers.add_parser('reactivate')
-	reactivate.add_argument('user')
-	reactivate.set_defaults(func=reactivate_parser)
-	
-	deactivate = subparsers.add_parser('deactivate')
-	deactivate.add_argument('user')
-	deactivate.set_defaults(func=deactivate_parser)
-
-	newpassword = subparsers.add_parser('newpassword')
-	newpassword.add_argument('user')
-	newpassword.set_defaults(func=newpassword_parser)
-
