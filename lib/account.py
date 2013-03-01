@@ -26,22 +26,18 @@ class Account:
 		if self.uid not in cache:
 			cache[self.uid] = self
 
+	def add_to_ldap(self):
+		import ldapwrap
+		return ldapwrap.add_user(self)
+
 	def change_group(self, newgroup):
 		if not isinstance(newgroup, megazordgroup.Group):
-			if isinstance(newgroup, int):
-				newgroup = megazordgroup.from_gid(newgroup)
-			else:
-				newgroup = megazordgroup.from_name(newgroup)
-		
+			newgroup = megazordgroup.from_name(newgroup)
 		if newgroup == None: return False
 		import ldapwrap
 		result = ldapwrap.change_user_field(self.login, 'gidNumber', newgroup.gid)
 		if result: self.group = newgroup
 		return result
-
-	def add_to_ldap(self):
-		import ldapwrap
-		return ldapwrap.add_user(self)
 
 	def change_home(self, newhome):
 		import ldapwrap
@@ -134,6 +130,20 @@ class Account:
 		import supermegazord.db.path as path
 		with open(path.MEGAZORD_DB + "usuarios/historicos/" + str(self.nid), "a") as f:
 			f.write(str(datetime.datetime.now()) + ": " + s + "\n")
+
+	def run_script(self, scriptname):
+		_search_scripts()
+		if scriptname not in scripts:
+			raise Exception("Script '{0}' doesn't exist.".format(scriptname))
+		script = scripts[scriptname]
+		if script.extension == ".py":
+			l = {}
+			execfile(script.path, {}, l)
+			assert ('main' in l) and hasattr(l['main'], '__call__'), (
+				"Script '{0}' don't have a callable main.".format(scriptname))
+			return l['main'](self)
+		else:
+			raise Exception("Unsupported script extension: {0}".format(script.extension))
 		
 	def __repr__(self):
 		return 'Account("{0}","{1}","{2}","{3}","{4}","{5}","{6}")'.format(self.uid, self.group.gid, self.login, self.name, self.home, self.shell, self.nid)
@@ -154,15 +164,9 @@ def from_ldap(ldapdata):
 
 	except KeyError:
 		return None
-
-	if 'nid' in ldapdata:
-		nid = ldapdata['nid'][0]
-	else:
-		nid = None
-	if 'gecos' in ldapdata:
-		name = ldapdata['gecos'][0]
-	else:
-		name = ldapdata['cn'][0]
+	
+	nid  = ('nid' in ldapdata)   and ldapdata['nid'][0] or None
+	name = ('gecos' in ldapdata) and ldapdata['gecos'][0] or ldapdata['cn'][0]
 	return Account(uid, gid, login, name, home, shell, nid)
 
 def from_login(login):
@@ -192,13 +196,14 @@ def search(value, field = 'login'):
 
 def _search_scripts():
 	if len(scripts) > 0: return
-	import supermegazord, os, os.path
+	import supermegazord, collections, os, os.path
+	Script = collections.namedtuple("Script", "path extension")
 	d = os.path.dirname(supermegazord.__file__) + "/scripts/account/"
 	for f in [ f for f in os.listdir(d) if os.path.isfile(os.path.join(d,f)) ]:
 		name, ext = os.path.splitext(f)
 		if name in scripts:
 			raise Exception("More than one script with name '{0}' detected.".format(name))
-		scripts[name] = f
+		scripts[name] = Script(os.path.join(d,f), ext)
 
 def list_scripts():
 	_search_scripts()
