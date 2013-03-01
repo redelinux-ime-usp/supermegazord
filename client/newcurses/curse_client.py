@@ -292,12 +292,7 @@ class UserInfoScreen(BaseInfoScreen):
             self.queued_command = { 'description': "Não Implementado" }
             self.command_output = "Comando não implementado. Use a linha de comando."
         def newpassword():
-            import supermegazord.lib.tools as tools
-            password = tools.generate_password()
-            if self.current.change_password(password):
-                return "Senha mudada com sucesso.\n   Nova senha: '" + password + "'"
-            else:
-                return "Erro ao gerar senha."
+            return self.current.run_script("newpassword")
         def apagar():
             result = ""
             if self.current.remove():
