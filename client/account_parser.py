@@ -62,52 +62,6 @@ def prepare_parser(account_parse):
 
 			print login + "|" + nid + " |" + curso + "|" + ingresso + "| " + nome
 			
-	def remove_parser(args):
-		import supermegazord.lib.account as account
-		acc = account.from_login(args.user)
-		if not acc:
-			print "Erro: usuário '{0}' não encontrado.".format(args.user)
-			return
-		if acc.remove():
-			print "Conta '{0}' removida com successo.".format(acc.login)
-		else:
-			print "Erro ao removida conta '{0}'.".format(acc.login)
-
-	def reactivate_parser(args):
-		import supermegazord.lib.account as account
-		acc = account.from_login(args.user)
-		if not acc:
-			print "Erro: usuário '{0}' não encontrado.".format(args.user)
-			return
-		if acc.reactivate():
-			print "Conta '{0}' re-ativada com successo.".format(acc.login)
-		else:
-			print "Erro ao re-ativar conta '{0}'.".format(acc.login)
-	
-	def deactivate_parser(args):
-		import supermegazord.lib.account as account
-		acc = account.from_login(args.user)
-		if not acc:
-			print "Erro: usuário '{0}' não encontrado.".format(args.user)
-			return
-		if acc.deactivate():
-			print "Conta '{0}' desativada com successo.".format(acc.login)
-		else:
-			print "Erro ao desativar conta '{0}'.".format(acc.login)
-
-	def newpassword_parser(args):
-		import supermegazord.lib.account as account
-		import supermegazord.lib.tools   as tools
-		acc = account.from_login(args.user)
-		if not acc:
-			print "Erro: usuário '{0}' não encontrado.".format(args.user)
-			return
-		password = tools.generate_password()
-		if acc.change_password(password):
-			print "Nova senha para '{0}': {1}".format(acc.login, password)
-		else:
-			print "Erro ao renovar senha da conta '{0}'.".format(acc.login)
-
 	def script_parser(args):
 		import supermegazord.lib.account as account
 		acc = account.from_login(args.user)
