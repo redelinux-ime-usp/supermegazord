@@ -294,10 +294,8 @@ class UserInfoScreen(BaseInfoScreen):
         def newpassword():
             return self.current.run_script("newpassword")
         def apagar():
-            result = ""
-            if self.current.remove():
-                result = "Conta removida com sucesso."
-            else:
+            result = self.run_script("remove")
+            if not result:
                 import supermegazord.db.path as path
                 result = ("Ocorreu um erro ao apagar a conta.\n" + 
                     "Verifique '{0}usuarios/historicos/{1}' para maiores detalhes.".format(
