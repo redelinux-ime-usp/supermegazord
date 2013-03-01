@@ -16,4 +16,7 @@ def main(self):
 	results['ldap'] = self.group.add_member(self) and self.change_group('exaluno') and (
 		self.change_home("/home/exaluno/" + self.login) and self.change_shell("/bin/false"))
 	self.log("Conta '{0}' desativada. Status: {1}".format(self.login, str(results)))
-	return reduce(lambda a, b: a and b, results.values())
+	if not reduce(lambda a, b: a and b, results.values()):
+		return False
+	else:
+		return "Conta '{0}' desativada com sucesso.".format(self.login)

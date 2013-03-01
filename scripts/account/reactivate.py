@@ -16,4 +16,7 @@ def main(self):
 	for s in results: results[s] = (results[s] == 0)
 	results['ldap'] = status and self.change_shell("/bin/bash")
 	self.log("Conta '{0}' re-ativada. Status: {1}".format(self.login, str(results)))
-	return reduce(lambda a, b: a and b, results.values())
+	if not reduce(lambda a, b: a and b, results.values()):
+		return False
+	else:
+		return "Conta '{0}' re-ativada com sucesso.".format(self.login)

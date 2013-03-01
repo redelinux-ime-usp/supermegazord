@@ -108,12 +108,30 @@ def prepare_parser(account_parse):
 		else:
 			print "Erro ao renovar senha da conta '{0}'.".format(acc.login)
 
+	def script_parser(args):
+		import supermegazord.lib.account as account
+		acc = account.from_login(args.user)
+		if not acc:
+			print "Erro: usuário '{0}' não encontrado.".format(args.user)
+			return
+		resp = acc.run_script(args.scriptname)
+		if not resp:
+			print "Erro ao rodar script '{0}' na conta '{1}'.".format(args.scriptname, args.user)
+		else:
+			print resp
+
 	subparsers = account_parse.add_subparsers()
 
 	search = subparsers.add_parser('search')
 	search.add_argument('--type', choices=['nid', 'login', 'name', 'auto'], dest='type', default='auto')
 	search.add_argument('user', nargs='+')
 	search.set_defaults(func=search_parser)
+
+	import supermegazord.lib.account as account
+	script = subparsers.add_parser('script')
+	script.add_argument('scriptname', choices=list(account.list_scripts()))
+	script.add_argument('user')
+	script.set_defaults(func=script_parser)
 	
 	remove = subparsers.add_parser('remove')
 	remove.add_argument('user')
