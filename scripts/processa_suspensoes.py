@@ -41,7 +41,7 @@ for acc in users:
 	userstart = time.time()
 	print "> User: {0}".format(acc.login)
 	try:
-		result = acc.deactivate()
+		result = acc.run_script("deactivate")
 		if not result:
 			raise Exception("Deactivate devolveu non-True: " + str(result))
 	except Exception, err:
