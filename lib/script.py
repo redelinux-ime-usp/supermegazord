@@ -9,7 +9,7 @@ if __name__ == "__main__":
 	quit()
 
 import collections
-Script = collections.namedtuple("Script", "path extension run description")
+Script = collections.namedtuple("Script", "name path extension run description")
 
 def get_data_from_script(fullpath, ext):
 	if ext == '.py':
@@ -37,5 +37,5 @@ def search_scripts(module):
 		if not description:
 			description = "Missing description for '{0}': {1}".format(name,
 				"Add a function 'description'" if (ext == '.py') else "Add a --description argument")
-		scripts[name] = Script(fullpath, ext, main, description)
+		scripts[name] = Script(name, fullpath, ext, main, description)
 	return scripts

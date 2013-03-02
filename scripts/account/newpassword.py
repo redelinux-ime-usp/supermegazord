@@ -18,3 +18,6 @@ def main(self):
 				"Nova senha: '" + password + "'\n" +
 				"\nDEVOLVA A CARTEIRINHA DO USUÁRIO.")
 
+def description():
+	return "Gera uma senha nova para a conta."
+

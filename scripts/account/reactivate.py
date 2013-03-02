@@ -20,3 +20,6 @@ def main(self):
 		return False
 	else:
 		return "Conta '{0}' re-ativada com sucesso.".format(self.login)
+
+def description():
+	return "Reativa uma conta recentemente desativada."

@@ -14,3 +14,6 @@ def main(self):
 		return False
 	else:
 		return "Conta '{0}' removida com sucesso.".format(self.login)
+
+def description():
+	return "Remove a conta completamente."

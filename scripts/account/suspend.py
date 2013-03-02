@@ -2,4 +2,7 @@
 # -*- coding: utf-8 -*-
 
 def main(acc):
-	return False
+	return "Not yet implemented."
+
+def description():
+	return "Suspende a conta."

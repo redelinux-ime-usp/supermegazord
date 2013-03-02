@@ -219,13 +219,20 @@ class BaseInfoScreen(BaseScreen):
         BaseScreen.__init__(self)
         self.screen_name = "Informações de Usuário"
         self.current = None
+        self.scripts = []
+        self.current_line = 0
         self.queued_command = None
         self.command_output = None
+        self.commands[curses.KEY_DOWN]  = { 'func': lambda c: self.change_line(self.current_line + 1) }
+        self.commands[curses.KEY_UP]    = { 'func': lambda c: self.change_line(self.current_line - 1) }
 
     def confirm(self, c):
         self.queued_command = self.commands[c]
         if 'execute' not in self.queued_command:
             raise Exception("Command requesting confirmation has no execute attrib.")
+    
+    def change_line(self, newline):
+        self.current_line = max(0, min(newline, len(self.scripts) - 1))
     
     def update(self, c):
         if c == curses.KEY_RESIZE: return True
@@ -264,14 +271,16 @@ class BaseInfoScreen(BaseScreen):
         if not self.queued_command:
             screen.addnstr("\n              Operações possíveis:", max_width)
             screen.addstr("\n")
+            for i in range(len(self.scripts)):
+                screen.addnstr("\n" + fill_with_spaces(self.scripts[i].name, 15, False) + ": " + self.scripts[i].description,
+                        max_width, colors.YELLOW if (i == self.current_line) else colors.WHITE)
+            screen.addstr("\n")
             def print_command_instruction(data):
                 key, comm = data
                 if 'description' in comm:
-                    screen.addstr("\n         '")
+                    screen.addstr("\n            '")
                     screen.addch(key, colors.GREEN)
                     screen.addstr("' para " + comm['description'] + ".")
-                else:
-                    screen.addstr("\n")
             map(print_command_instruction, self.commands.items())
         else:
             desc = self.queued_command['description'].upper() 
@@ -288,27 +297,38 @@ class UserInfoScreen(BaseInfoScreen):
     def __init__(self, user):
         BaseInfoScreen.__init__(self)
         self.current = user
-        def nyi(c):
-            self.queued_command = { 'description': "Não Implementado" }
-            self.command_output = "Comando não implementado. Use a linha de comando."
-        def newpassword():
-            return self.current.run_script("newpassword")
-        def apagar():
-            result = self.run_script("remove")
-            if not result:
-                import supermegazord.db.path as path
-                result = ("Ocorreu um erro ao apagar a conta.\n" + 
-                    "Verifique '{0}usuarios/historicos/{1}' para maiores detalhes.".format(
-                        path.MEGAZORD_DB, self.current.nid))
-            self.current = None
-            userlist_screen.update_data()
-            return result
-        self.commands[ord('p')] = { 'description': "gerar uma nova senha", 'func': self.confirm, 'execute': newpassword }
-        self.commands[ord('d')] = { 'description': "desativar a conta",    'func': nyi, 'execute': None }
-        self.commands[ord('r')] = { 'description': "reativar a conta",     'func': nyi, 'execute': None }
-        self.commands[ord('a')] = { 'description': "apagar a conta",       'func': self.confirm, 'execute': apagar }
+        import supermegazord.lib.account as account
+        self.scripts.extend(account.list_scripts().values())
+
+        #def nyi(c):
+        #    self.queued_command = { 'description': "Não Implementado" }
+        #    self.command_output = "Comando não implementado. Use a linha de comando."
+        #def newpassword():
+        #    return self.current.run_script("newpassword")
+        #def apagar():
+        #    result = self.run_script("remove")
+        #    if not result:
+        #        import supermegazord.db.path as path
+        #        result = ("Ocorreu um erro ao apagar a conta.\n" + 
+        #            "Verifique '{0}usuarios/historicos/{1}' para maiores detalhes.".format(
+        #                path.MEGAZORD_DB, self.current.nid))
+        #    self.current = None
+        #    userlist_screen.update_data()
+        #    return result
+        #self.commands[ord('p')] = { 'description': "gerar uma nova senha", 'func': self.confirm, 'execute': newpassword }
+        #self.commands[ord('d')] = { 'description': "desativar a conta",    'func': nyi, 'execute': None }
+        #self.commands[ord('r')] = { 'description': "reativar a conta",     'func': nyi, 'execute': None }
+        #self.commands[ord('a')] = { 'description': "apagar a conta",       'func': self.confirm, 'execute': apagar }
+        self.commands[ord('\n')]  = { 'func': lambda c: self.confirm_script() }
         self.commands[KEY_ESCAPE] = { 'func': lambda c: change_screen(userlist_screen) }
-        self.commands[ord('q')] = { 'description': "voltar à tela anterior", 'func': lambda c: change_screen(userlist_screen) }
+        self.commands[ord('q')]   = { 'description': "voltar à tela anterior", 'func': lambda c: change_screen(userlist_screen) }
+
+    def confirm_script(self):
+        script = self.scripts[self.current_line]
+        self.queued_command = {
+            'description': script.description,
+            'execute': lambda: script.run(self.current)
+        }
 
     def draw_current(self, screen):
         import supermegazord.lib.jupinfo as libjupinfo

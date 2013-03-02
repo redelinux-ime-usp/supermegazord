@@ -20,3 +20,6 @@ def main(self):
 		return False
 	else:
 		return "Conta '{0}' desativada com sucesso.".format(self.login)
+
+def description():
+	return "Desativa uma conta, mantendo apenas o e-mail."
