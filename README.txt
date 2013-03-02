@@ -1,5 +1,8 @@
-Dependencias:
+Dependencias (pacotes do debian wheezy)
  - python2.7
+ - python-ldap
+ - python-paramiko
+ - krb5-user
 
 Configurações:
  - Um arquivo supermegazord.pth dentro do site-packages cujo conteúdo é um diretório acima
