@@ -24,15 +24,17 @@ if len(sys.argv) == 1:
 import argparse, machine_parser, account_parser, watchman_parser, precadastro_parser
 
 parser = argparse.ArgumentParser(description='Main executable for the Supermegazord.')
-subparsers = parser.add_subparsers(help="Possible submodules to execute. Defaults to 'curses'.")
+subparsers = parser.add_subparsers(
+	help="Possible submodules to execute. Defaults to 'curses'.", metavar="subsystem")
 
-machine_parser.prepare_parser(subparsers.add_parser('machines'))
-account_parser.prepare_parser(subparsers.add_parser('accounts'))
-watchman_parser.prepare_parser(subparsers.add_parser('watchman'))
-precadastro_parser.prepare_parser(subparsers.add_parser('precadastro'))
+machine_parser.prepare_parser(subparsers)
+account_parser.prepare_parser(subparsers)
+watchman_parser.prepare_parser(subparsers)
+precadastro_parser.prepare_parser(subparsers)
 
-subparsers.add_parser('curses', description="An interactive interface to search and " + 
-	"operate on functions of the Supermegazord system.").set_defaults(func=call_curses_interface)
+subparsers.add_parser('curses', help="An interactive interface.", 
+	description="An interactive interface to search and operate on functions " +
+	"of the Supermegazord system.").set_defaults(func=call_curses_interface)
 
 args = parser.parse_args()
 args.func(args)

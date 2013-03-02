@@ -5,7 +5,11 @@
 # Autor: Henrique Gemignani Passos Lima (henriquelima)
 # Escrito em: 2013-01-19
 
-def prepare_parser(watch_parse):
+def prepare_parser(megazordparser):
+	watch_parse = megazordparser.add_parser("watchman",	help="Check the status of the system's machines.")
+	setup_parser(watch_parse)
+
+def setup_parser(watch_parse):
 	import supermegazord.db.machines as machines 
 	def watchman_parser(args):
 		import supermegazord.lib.ping as ping
@@ -26,15 +30,19 @@ def prepare_parser(watch_parse):
 						print user,
 				print
 
-	import argparse
+	watch_parse.description="List the system's machines according to their reachable status and more."
 	check_arg = watch_parse.add_mutually_exclusive_group(required=False)
-	check_arg.add_argument('--up'  , '-u', action='store_const', dest='checkfor', const=1)
-	check_arg.add_argument('--down', '-d', action='store_const', dest='checkfor', const=0)
+	check_arg.add_argument('--up'  , '-u', action='store_const', dest='checkfor', 
+		const=1, help="Report reachable machines.")
+	check_arg.add_argument('--down', '-d', action='store_const', dest='checkfor',
+		const=0, help="Report unreachable machines. This is the default operation.")
 	check_arg.set_defaults(checkfor=0)
 	
 	stats_arg = watch_parse.add_mutually_exclusive_group(required=False)
-	stats_arg.add_argument('--unknown',    action='store_const', dest='stats', const=2)
-	stats_arg.add_argument('--who',  '-w', action='store_const', dest='stats', const=1)
+	stats_arg.add_argument('--unknown',    action='store_const', dest='stats',
+		const=2, help="Skip machines with unknown status.")
+	stats_arg.add_argument('--who',  '-w', action='store_const', dest='stats',
+		const=1, help="List logged in users along with the machine name.")
 	stats_arg.set_defaults(stats=0)
 
 	watch_parse.add_argument('group', choices=machines.groups(), default='all', nargs='?', metavar='group', 

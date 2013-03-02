@@ -270,6 +270,6 @@ if __name__ == "__main__":
 		import supermegazord.client.watchman_parser as watchman_parser
 		import argparse
 		parser = argparse.ArgumentParser(description='Watchman')
-		watchman_parser.prepare_parser(parser)
+		watchman_parser.setup_parser(parser)
 		args = parser.parse_args()
 		args.func(args)

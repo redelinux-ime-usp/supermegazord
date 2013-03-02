@@ -9,7 +9,7 @@ if __name__ == "__main__":
 	print "Esse arquivo é um módulo."
 	quit()
 
-def prepare_parser(precadastro_parse):
+def prepare_parser(megazordparser):
 	import supermegazord.lib.precadastro as precadastrodb
 
 	def verifica_parser(args):
@@ -62,6 +62,7 @@ def prepare_parser(precadastro_parse):
 	def remove_parser(args):
 		precadastrodb.remove(args.nid)
 
+	precadastro_parse = megazordparser.add_parser("precadastro", help="Manipula os pré-cadastros.")
 	subparsers = precadastro_parse.add_subparsers()
 
 	verifica = subparsers.add_parser('status')
@@ -77,7 +78,7 @@ def prepare_parser(precadastro_parse):
 	adiciona.add_argument('--email', required=True)
 	adiciona.add_argument('--password')
 
-	lista = subparsers.add_parser('lista')
+	lista = subparsers.add_parser('lista', help="Lista todos os pré-cadastros.")
 	lista.set_defaults(func=lista_parser)
 
 	finaliza = subparsers.add_parser('finaliza')

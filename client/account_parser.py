@@ -40,7 +40,7 @@ def get_data(acc):
 
 	return login, nid, curso, ingresso, nome
 
-def prepare_parser(account_parse):
+def prepare_parser(megazordparser):
 
 	def search_parser(args):
 		print "   Login            |   NID   | Curso | Ingresso |   Nome"
@@ -71,10 +71,15 @@ def prepare_parser(account_parse):
 		else:
 			print resp
 
-	account_parse.description = "Manipulates the system's accounts."
-	subparsers = account_parse.add_subparsers(help="The account manipulation subsystem to run.")
+	account_parse = megazordparser.add_parser("accounts",
+		help="Manipulates the system's accounts.",
+		description="Manipulates the system's accounts.")
+	subparsers = account_parse.add_subparsers(metavar="subsystem",
+		help="The account manipulation subsystem to run.")
 
-	search = subparsers.add_parser('search', 
+
+	search = subparsers.add_parser('search',
+		help="Search and list accounts.",
 		description="Searches for accounts in the system. Lists the accounts' login, nid, group, ingresso and name.")
 	search.add_argument('--type', choices=['nid', 'login', 'name', 'all'], dest='type', default='all',
 		help="How to parse the query. All means all the others at the same time. Defaults to 'all'.")
@@ -83,7 +88,9 @@ def prepare_parser(account_parse):
 	search.set_defaults(func=search_parser)
 
 	import supermegazord.lib.account as account
-	script = subparsers.add_parser('script', description="Executes external scripts on the given account.")
+	script = subparsers.add_parser('script',
+		help="Manipulation through external scripts.",
+		description="Executes external scripts on the given account.")
 	script.add_argument('scriptname', choices=list(account.list_scripts()), help="The name of the script to run.")
-	script.add_argument('user', help="Login used to find the account to execute the script on.")
+	script.add_argument('user', metavar="login", help="Login used to find the account to execute the script on.")
 	script.set_defaults(func=script_parser)

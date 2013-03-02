@@ -9,7 +9,7 @@ if __name__ == "__main__":
 	print "Esse arquivo é um módulo."
 	quit()
 
-def prepare_parser(mach_parse):
+def prepare_parser(megazordparser):
 	import supermegazord.db.machines as machines
 	def machines_parser(args):
 		if not isinstance(args.group, list): args.group = [args.group]
@@ -20,7 +20,8 @@ def prepare_parser(mach_parse):
 				else:
 					print m.__dict__[args.print_value]
 
-	mach_parse.description = "List machines as defined by the 'DB/maquinas/grupos.conf' file."
+	mach_parse = megazordparser.add_parser('machines', help="Lists the system's machines.")
+	mach_parse.description = "Lists machines as defined by the 'DB/maquinas/grupos.conf' file."
 	print_val = mach_parse.add_mutually_exclusive_group(required=False)
 	print_val.add_argument('--ip', action='store_const', dest='print_value', const='ip', help="List IPs instead of the hostnames")
 	print_val.add_argument('--mac', action='store_const', dest='print_value', const='mac', help="List MAC Addresses instead of the hostnames")
