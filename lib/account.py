@@ -87,15 +87,7 @@ class Account:
 		_search_scripts()
 		if scriptname not in scripts:
 			raise Exception("Script '{0}' doesn't exist.".format(scriptname))
-		script = scripts[scriptname]
-		if script.extension == ".py":
-			l = {}
-			execfile(script.path, {}, l)
-			assert ('main' in l) and hasattr(l['main'], '__call__'), (
-				"Script '{0}' don't have a callable main.".format(scriptname))
-			return l['main'](self)
-		else:
-			raise Exception("Unsupported script extension: {0}".format(script.extension))
+		return scripts[scriptname].run(self)
 		
 	def __repr__(self):
 		return 'Account("{0}","{1}","{2}","{3}","{4}","{5}","{6}")'.format(self.uid, self.group.gid, self.login, self.name, self.home, self.shell, self.nid)
@@ -148,14 +140,9 @@ def search(value, field = 'login'):
 
 def _search_scripts():
 	if len(scripts) > 0: return
-	import supermegazord, collections, os, os.path
-	Script = collections.namedtuple("Script", "path extension")
-	d = os.path.dirname(supermegazord.__file__) + "/scripts/account/"
-	for f in [ f for f in os.listdir(d) if os.path.isfile(os.path.join(d,f)) ]:
-		name, ext = os.path.splitext(f)
-		if name in scripts:
-			raise Exception("More than one script with name '{0}' detected.".format(name))
-		scripts[name] = Script(os.path.join(d,f), ext)
+	import supermegazord.lib.script as libscript
+	global scripts
+	scripts = libscript.search_scripts("account")
 
 def list_scripts():
 	_search_scripts()
