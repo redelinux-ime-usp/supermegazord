@@ -37,5 +37,6 @@ def prepare_parser(watch_parse):
 	stats_arg.add_argument('--who',  '-w', action='store_const', dest='stats', const=1)
 	stats_arg.set_defaults(stats=0)
 
-	watch_parse.add_argument('group', choices=machines.groups(), default='all', nargs='?')
+	watch_parse.add_argument('group', choices=machines.groups(), default='all', nargs='?', metavar='group', 
+							help="Machine to group to operate on. Defaults to 'all'.")
 	watch_parse.set_defaults(func=watchman_parser)

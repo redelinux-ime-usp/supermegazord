@@ -20,12 +20,14 @@ def prepare_parser(mach_parse):
 				else:
 					print m.__dict__[args.print_value]
 
-	import argparse
+	mach_parse.description = "List machines as defined by the 'DB/maquinas/grupos.conf' file."
 	print_val = mach_parse.add_mutually_exclusive_group(required=False)
-	print_val.add_argument('--ip', action='store_const', dest='print_value', const='ip')
-	print_val.add_argument('--mac', action='store_const', dest='print_value', const='mac')
-	print_val.add_argument('--all', action='store_const', dest='print_value', const='all')
+	print_val.add_argument('--ip', action='store_const', dest='print_value', const='ip', help="List IPs instead of the hostnames")
+	print_val.add_argument('--mac', action='store_const', dest='print_value', const='mac', help="List MAC Addresses instead of the hostnames")
+	print_val.add_argument('--all', action='store_const', dest='print_value', const='all', 
+						   help="List hostname, ip and mac address, separated by a '?'")
 	print_val.set_defaults(print_value='hostname')
-	mach_parse.add_argument('group', choices=machines.groups(), default='all', nargs='*')
+	mach_parse.add_argument('group', choices=machines.groups(), default='all', nargs='*', metavar='group',
+							help="Groups to list the machines off. Defaults to 'all'.")
 	mach_parse.set_defaults(func=machines_parser)
 

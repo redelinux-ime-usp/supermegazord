@@ -73,9 +73,11 @@ def prepare_parser(account_parse):
 
 	subparsers = account_parse.add_subparsers()
 
-	search = subparsers.add_parser('search')
-	search.add_argument('--type', choices=['nid', 'login', 'name', 'all'], dest='type', default='all')
-	search.add_argument('user', nargs='+', help="The search query. Multiple arguments means more results.")
+	search = subparsers.add_parser('search', 
+		description="Searches for accounts in the system. Lists the accounts' login, nid, group, ingresso and name.")
+	search.add_argument('--type', choices=['nid', 'login', 'name', 'all'], dest='type', default='all',
+		help="How to parse the query. All means all the others at the same time. Defaults to 'all'.")
+	search.add_argument('user', metavar='query', nargs='+', help="The search query. Multiple arguments means more results.")
 	search.set_defaults(func=search_parser)
 
 	import supermegazord.lib.account as account
