@@ -12,11 +12,8 @@ if __name__ == "__main__":
 def search_accounts(atype, u):
 	import supermegazord.lib.account as account
 	import supermegazord.lib.tools as tools
-	if atype == 'auto':
-		if tools.valida_nid(u):
-			atype = 'nid'
-		else:
-			atype = 'login'
+	if atype == 'all':
+		return account.search(u, 'nid') | account.search(u, 'login') | account.search(u, 'name')
 	return account.search(u, atype)
 
 def get_data(acc):
@@ -77,8 +74,8 @@ def prepare_parser(account_parse):
 	subparsers = account_parse.add_subparsers()
 
 	search = subparsers.add_parser('search')
-	search.add_argument('--type', choices=['nid', 'login', 'name', 'auto'], dest='type', default='auto')
-	search.add_argument('user', nargs='+')
+	search.add_argument('--type', choices=['nid', 'login', 'name', 'all'], dest='type', default='all')
+	search.add_argument('user', nargs='+', help="The search query. Multiple arguments means more results.")
 	search.set_defaults(func=search_parser)
 
 	import supermegazord.lib.account as account
