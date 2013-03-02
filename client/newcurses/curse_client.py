@@ -250,9 +250,11 @@ class BaseInfoScreen(BaseScreen):
         elif self.queued_command:
             if c == ord('y'):
                 self.command_output = self.queued_command['execute']()
-                if not self.command_output: 
+                if self.command_output == None:
                     raise Exception("Command '" + str(self.queued_command['description'])
                                     + "' did not give any output.")
+                else:
+                    self.command_output = str(self.command_output)
                 return True
             elif c == ord('\n') or c == ord('q') or c == KEY_ESCAPE or c == ord('n'):
                 self.queued_command = None

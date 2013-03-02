@@ -67,21 +67,23 @@ def prepare_parser(account_parse):
 			return
 		resp = acc.run_script(args.scriptname)
 		if not resp:
-			print "Erro ao rodar script '{0}' na conta '{1}'.".format(args.scriptname, args.user)
+			print "Erro ao rodar script '{0}' na conta '{1}':\n>> {2}".format(args.scriptname, args.user, str(resp))
 		else:
 			print resp
 
-	subparsers = account_parse.add_subparsers()
+	account_parse.description = "Manipulates the system's accounts."
+	subparsers = account_parse.add_subparsers(help="The account manipulation subsystem to run.")
 
 	search = subparsers.add_parser('search', 
 		description="Searches for accounts in the system. Lists the accounts' login, nid, group, ingresso and name.")
 	search.add_argument('--type', choices=['nid', 'login', 'name', 'all'], dest='type', default='all',
 		help="How to parse the query. All means all the others at the same time. Defaults to 'all'.")
-	search.add_argument('user', metavar='query', nargs='+', help="The search query. Multiple arguments means more results.")
+	search.add_argument('user', metavar='query', nargs='+',
+		help="The search query. Multiple arguments means more results.")
 	search.set_defaults(func=search_parser)
 
 	import supermegazord.lib.account as account
-	script = subparsers.add_parser('script')
-	script.add_argument('scriptname', choices=list(account.list_scripts()))
-	script.add_argument('user')
+	script = subparsers.add_parser('script', description="Executes external scripts on the given account.")
+	script.add_argument('scriptname', choices=list(account.list_scripts()), help="The name of the script to run.")
+	script.add_argument('user', help="Login used to find the account to execute the script on.")
 	script.set_defaults(func=script_parser)

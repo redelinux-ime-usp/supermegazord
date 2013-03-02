@@ -5,6 +5,15 @@
 # Autor: Henrique Gemignani Passos Lima (henriquelima)
 # Escrito em: 2013-02-18
 
+class ErrorString:
+	def __init__(self, message):
+		self.message = message
+	def __bool__(self):
+		return False
+	__nonzero__ = __bool__
+	def __repr__(self):
+		return "Error: " + self.message
+
 def log(filename, s):
 	import supermegazord.db.path as path
 	import datetime

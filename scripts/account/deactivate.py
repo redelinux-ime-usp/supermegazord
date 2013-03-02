@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 
 def main(self):
-	if self.group.name == "exaluno": return True
+	if self.group.name == "exaluno": return "Conta já inativa."
+	from supermegazord.lib.tools import ErrorString
 	import supermegazord.db.path as path
 	try:
 		with open(path.MEGAZORD_DB + "/emails/account.deactivate") as f:
@@ -17,7 +18,7 @@ def main(self):
 		self.change_home("/home/exaluno/" + self.login) and self.change_shell("/bin/false"))
 	self.log("Conta '{0}' desativada. Status: {1}".format(self.login, str(results)))
 	if not reduce(lambda a, b: a and b, results.values()):
-		return False
+		return ErrorString("Erro ao desativar conta. Verifique 'DB/usuarios/historicos/{0}' para detalhes.".format(self.nid))
 	else:
 		return "Conta '{0}' desativada com sucesso.".format(self.login)
 

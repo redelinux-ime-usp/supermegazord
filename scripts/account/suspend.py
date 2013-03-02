@@ -2,7 +2,8 @@
 # -*- coding: utf-8 -*-
 
 def main(acc):
-	return "Not yet implemented."
+	from supermegazord.lib.tools import ErrorString
+	return ErrorString("Not yet implemented.")
 
 def description():
 	return "Suspende a conta."
