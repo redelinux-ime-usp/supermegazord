@@ -6,261 +6,221 @@
 # Escrito em: 2011-08-05 
 # Modificado em: 2011-08-05 por henriquelima
 
-import curses, time, sys, signal
+import curses, time, sys, signal, collections
 from threading import Thread
 from supermegazord.lib import ping, busy
 from supermegazord.lib.machine import Machine
-from supermegazord.base import colors
 
-status_colors = []
-groups = []
-subtitle = None
-num_unk = 0
-num_up = 0
-num_down = 0
-num_busy = 0
+max_height = 24
+max_width  = 80
+max_namesize = 12
 
-class Screen:
-	def __init__(self, screen):
-		self.screen = screen
+sections = []
+statuses = {}
+colors = None
+counts = {
+	'unknown': 0,
+	'up': 0,
+	'down': 0,
+	'busy': 0
+}
 
-	def Width(self):
-		height, width = self.screen.getmaxyx()
-		return width
+def mark_redraw():
+	global redraw
+	redraw = True
 
-	def Clear(self):
-		self.screen.clear()
+class ColorHolder:
+	def __init__(self):
+		curses.init_pair(1, curses.COLOR_GREEN,   curses.COLOR_BLACK)
+		curses.init_pair(2, curses.COLOR_YELLOW,  curses.COLOR_BLACK)
+		curses.init_pair(3, curses.COLOR_MAGENTA, curses.COLOR_BLACK)
+		curses.init_pair(4, curses.COLOR_WHITE,   curses.COLOR_BLACK)
+		curses.init_pair(5, curses.COLOR_RED,     curses.COLOR_BLACK)
+		curses.init_pair(6, curses.COLOR_RED,     curses.COLOR_WHITE)
 
-	def Draw(self):
-		self.screen.refresh()
-	
-	def Screen(self):
-		return self.screen
+		self.GREEN   =      curses.color_pair(1)
+		self.YELLOW  =      curses.color_pair(2)
+		self.MAGENTA =      curses.color_pair(3)
+		self.WHITE   =      curses.color_pair(4)
+		self.RED     =      curses.color_pair(5)
+		self.RED_ON_WHITE = curses.color_pair(6)
 
-class Group:
-	def __init__(self, name, offset, parent):
-		self.name = name
-		self.height = 0
-		self.offset = offset
-		self.parent = parent
-		self.members = []
+PORT = 10
+BUFSIZ = 1024
+class Status:
+	machine = None
+	usage_known = False
+	usage_avaible = True
+	network_known = False
+	users = set()
+	down = False
+	def __init__(self, m):
+		counts['unknown'] += 1
+		self.machine = m
 
-	def ColumnSize(self):
-		return 13
+	def name_color(self):
+		if not self.network_known:
+			return colors.WHITE
+		if self.usage_known and len(self.users) > 0:
+			return colors.YELLOW
+		return colors.RED_ON_WHITE if self.down else colors.GREEN
 
-	def NumColumns(self):
-		return max(min(len(self.members),(self.parent.Width()-1) / self.ColumnSize()), 1)
+	def query_network(self):
+		import subprocess
+		val = subprocess.call("ping -c 1 -W 2 %s" % self.machine.hostname,
+							  shell=True, stdout=open('/dev/null', 'w'),
+							  stderr=subprocess.STDOUT)
+		if self.network_known:
+			counts['down' if self.down else 'up'] -= 1
+		else:
+			counts['unknown'] -= 1
+		self.network_known = True
+		self.down = (val != 0)
+		counts['down' if self.down else 'up'] += 1
+		mark_redraw()
 
-	def Height(self):
-		return self.height + 1
-
-	def Width(self):
-		return self.ColumnSize() * self.NumColumns()
-
-	def Add(self, machine):
-		self.members.append(machine)
-		self.height = len(self.members) / self.NumColumns() + 1
-
-	def Reposition(self):
-		self.height = len(self.members) / self.NumColumns()
-		if len(self.members) % self.NumColumns() != 0:
-			self.height += 1
-		
-	def Offset(self):
-		return self.offset + 1
-
-	def Draw(self):
-		screen = self.parent.Screen()
-		width = self.NumColumns() * self.ColumnSize()
-		for x in range(1, width):
-			try: screen.addstr(self.offset, x, '═')
-			except curses.error: pass
-
-			try: screen.addstr(self.offset + self.height + 1, x, '═')
-			except curses.error: pass
-
-			for y in range(1, self.height + 1):
-				for x in [0, self.NumColumns()]:
-					try: screen.addstr(self.offset + y, x * self.ColumnSize(), '║')
-					except curses.error: pass
-		
-		try: screen.addstr(self.offset, 0, '╔')
-		except curses.error: pass
-
-		try: screen.addstr(self.offset + self.height + 1, 0, '╚')
-		except curses.error: pass
-
-		try: screen.addstr(self.offset, width, '╗')
-		except curses.error: pass
-
-		try: screen.addstr(self.offset + self.height + 1, width, '╝')
-		except curses.error: pass
-
-		try: screen.addstr(self.offset, 4, self.name)
-		except curses.error: pass
-			
-		index = 0
-		for member in self.members:
-			try:
-				y = index / self.NumColumns() + 1 # A linha onde esse membro está
-				x = 1 + self.ColumnSize() * (index % self.NumColumns()) # 1 da borda esquerda
-
-				screen.addnstr(y + self.offset, x + 1, member.Name(), self.ColumnSize()-1, member.Color())
-													# 1 caraceter é reservado para a possível '?'
-				if member.StatsAvaiable() == False:
-					screen.addstr(y + self.offset, x, '?', colors.MAGENTA)
-				index += 1
-			except curses.error:
-				pass
-
-	def Screen(self):
-		return self.parent.Screen()
-
-	def Colors(self, num):
-		return status_colors[num]
-
-	def Sort(self):
-		self.members = sorted(self.members, key=lambda m: m.hostname)
-
-class Subtitle:
-	def __init__(self, offset, parent):
-		self.height = 0
-		self.offset = offset
-		self.parent = parent
-
-	def Draw(self):
-		screen = self.parent.Screen()
+	def query_usage(self):
+		import socket
+		sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		try:
-			screen.move(self.offset, 0)
-			screen.addstr("UNK:", colors.WHITE)
-			screen.addstr(("  " + str(num_unk) + ";")[len(str(num_unk)):], colors.WHITE)
-			screen.addstr(" UP: ", colors.GREEN)
-			screen.addstr(("  " + str(num_up) + ";")[len(str(num_up)):], colors.GREEN)
-			screen.addstr(" DOWN:", colors.RED)
-			screen.addstr(("  " + str(num_down) + ";")[len(str(num_down)):], colors.RED)
-			screen.addstr(" BUSY:", colors.YELLOW)
-			screen.addstr(("  " + str(num_busy) + ";")[len(str(num_busy)):], colors.YELLOW)
-		except curses.error:
-			pass
+			sock.connect((self.machine.hostname, PORT))
+			sock.send("who")
+			data = sock.recv(BUFSIZ)
+			sock.close()
+		except socket.error:
+			data = None
+			self.usage_avaible = False
+		self.usage_known = True
+		if data:
+			if len(self.users) > 0: counts['busy'] -= 1
+			self.users = set()
+			for userinfo in data.split('\n'):
+				self.users.add(userinfo.split(' ')[0])
+			if len(self.users) > 0: counts['busy'] += 1
+		mark_redraw()
 
-def DrawGroups():
-	while True:
-		global num_unk, num_up, num_down, num_busy
-		num_unk, num_up, num_down, num_busy = 0, 0, 0,0
-		for group in groups:
-			group.Draw()
-			for machine in group.members:
-				if machine.Power() == True:
-					num_up += 1
-				elif machine.Power() == False:
-					num_down += 1
-				elif machine.QueryFinished() == False:
-					num_unk += 1
-				if machine.UserList() != []:
-					num_busy += 1
-					
-		subtitle.Draw()
-		time.sleep(0.5)
+class Section(collections.namedtuple("Section", "name machines")):
+	def draw(self, screen):
+		num_per_line = (max_width - 2) / (max_namesize + 1)
+		num_lines    = 1 + (max(len(self.machines) - 1, 0)) / num_per_line
+		total_width = min(num_per_line, len(self.machines)) * (max_namesize + 1)
+		y, _ = screen.getyx()
+		screen.addstr("╔═══" + self.name + ("═" * (total_width - len(self.name) - 3)) + "╗")
+		ny, _ = screen.getyx()
+		if y == ny: screen.addstr("\n")
+		for line in range(num_lines):
+			y, _ = screen.getyx()
+			screen.addstr("║")
+			count = 0
+			for i in range(line * num_per_line, min((line+1)*num_per_line, len(self.machines))):
+				status = statuses[self.machines[i].hostname]
+				screen.addstr(" " if status.usage_avaible else "?", colors.MAGENTA)
+				screen.addnstr(self.machines[i].hostname, max_namesize, status.name_color())
+				rest = max_namesize - len(self.machines[i].hostname)
+				if rest > 0:
+					screen.addstr(" " * rest)
+				count += 1
+			if count * (max_namesize + 1) < total_width:
+				screen.addstr(" " * (total_width - count * (max_namesize + 1)))
+			screen.addstr("║")
+			ny, _ = screen.getyx()
+			if y == ny: screen.addstr("\n")
+		y, _ = screen.getyx()
+		screen.addstr("╚" + ("═" * total_width) + "╝")
+		ny, _ = screen.getyx()
+		if y == ny: screen.addstr("\n")
+			
 
+current_update = None
+class UpdateJob:
+	queue = None
+	threads = []
+	def __init__(self, data, num_threads = 32):
+		from Queue import Queue
+		from threading import Thread
+		self.queue = Queue()
+		for status in data.values():
+			self.queue.put(status.query_network)
+			self.queue.put(status.query_usage)
+		for i in range(num_threads):
+			worker = Thread(target=self.process)
+			worker.daemon = True
+			self.threads.append(worker)
 
-def Reposition():
-	global groups
-	offset = 0
-	for group in groups:
-		group.Reposition()
-		group.offset = offset
-		offset += group.Height() + 1
-	subtitle.offset = offset
+	def start(self):
+		for worker in self.threads:
+			worker.start()
 
-def Resize(screenobj):
-	Reposition()
-	global groups
-	for group in groups:
-		group.Draw()
-	subtitle.Draw()
-	screenobj.Draw()
-
-def AddList(l, name, screen):
-	global groups
-	group = Group(name, 0, screen)
-	for machine in l:
-		group.Add(machine)
-		machine.parent = group
-	group.Sort()
-	groups.append(group)
-
-def Init(screen):
-	from supermegazord.db import machines
-	AddList(machines.list('servidores'), "Servidores", screen)
-	AddList(machines.list('122'), "122", screen)
-	AddList(machines.list('125a'), "125a", screen)
-	AddList(machines.list('125b'), "125b", screen)
-	AddList(machines.list('126'), "126", screen)
-	AddList(machines.list('258'), "258", screen)
-	AddList(machines.list('impressoras'), "Impressoras", screen)
-	global subtitle
-	subtitle = Subtitle(0, screen)
-	Reposition()
-
-def CursesRun():
-	global groups
-	curses.curs_set(0)
-	colors.init()
-	global status_colors
-	status_colors.insert(0, colors.WHITE)
-	status_colors.insert(1, colors.GREEN)
-	status_colors.insert(2, curses.color_pair(4))
-	status_colors.insert(3, colors.YELLOW)
-	Update()
-	worker = Thread(target=DrawGroups)
-	worker.setDaemon(True)
-	worker.start()
-
-def Update():
-	if num_unk > 0: return
-	machines = []
-	for group in groups:
-		machines.extend(group.members)
-	for machine in machines:
-		machine.ResetStatus()
-	ping.Run(machines)
-	busy.Run(machines)
-
-def Close():
-	#Wait until worker threads are done to exit
-	ping.Wait()
-	busy.Wait()
-
+	def process(self):
+		import Queue
+		while True:
+			try: value = self.queue.get()
+			except Queue.Empty: return
+			value()
+			self.queue.task_done()
 
 userquit = False
 def signal_int(signalnum, handler):
 	global userquit
 	userquit = True
 
-# O wrapper impede que o terminal fique zuado caso de alguma merda no script
-def main(stdscr):
-	stdscr.nodelay(True)
-	screenobj = Screen(stdscr)
+def fill_with_spaces(s, size, right_side = True):
+    if right_side:
+        return (str(s) + " " * size)[:size]
+    else:
+        return (" " * size + str(s))[-size:]
 
-	Init(screenobj)
-	CursesRun()
-	
-	global userquit
+redraw = True
+def draw(screen):
+	screen.clear()
+	for section in sections:
+		section.draw(screen)
+	screen.addstr("UNK:"   + fill_with_spaces(counts['unknown'], 2, False), colors.WHITE)
+	screen.addstr(" UP: "  + fill_with_spaces(counts['up']     , 2, False), colors.GREEN)
+	screen.addstr(" DOWN:" + fill_with_spaces(counts['down']   , 2, False), colors.RED)
+	screen.addstr(" BUSY:" + fill_with_spaces(counts['busy']   , 2, False), colors.YELLOW)
+
+# O wrapper impede que o terminal fique zuado caso de alguma merda no script
+def main(screen):
+	global userquit, redraw, max_height, max_width, colors, current_update
+	curses.curs_set(0)
+	screen.timeout(1)
+	screen.notimeout(0)
+	max_height, max_width = screen.getmaxyx()
+	colors = ColorHolder()
+
+	import supermegazord.db.machines as machines
+
+	sections.append(Section("Servidores", machines.list("servidores")))
+	sections.append(Section("122", machines.list("122")))
+	sections.append(Section("125a", machines.list('125a')))
+	sections.append(Section("125b", machines.list('125b')))
+	sections.append(Section("126", machines.list('126')))
+	sections.append(Section("258", machines.list('258')))
+	sections.append(Section("Impressoras", machines.list('impressoras')))
+	for section in sections:
+		for m in section.machines:
+			statuses[m.hostname] = Status(m)
+
+	current_update = UpdateJob(statuses)
+	current_update.start()
+
 	userquit = False
 	while not userquit:
-		c = stdscr.getch()
+		c = screen.getch()
 		if c == curses.KEY_RESIZE:
-			screenobj.Clear()
-			Resize(screenobj)
+			max_height, max_width = screen.getmaxyx()
+			mark_redraw()
 		elif c == ord('q'):
 			userquit = True
-		elif c == ord('u'):
-			Update()
+		if redraw:
+			redraw = False
+			draw(screen)
+		screen.refresh()
 
 def Run():
 	signal.signal(signal.SIGINT, signal_int)
 	curses.wrapper(main)
-	Close()
 
 if __name__ == "__main__":
 	if len(sys.argv) == 1:
