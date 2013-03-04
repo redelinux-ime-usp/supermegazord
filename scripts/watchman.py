@@ -184,13 +184,13 @@ def main(screen):
 	colors = ColorHolder()
 
 	import supermegazord.db.machines as machines
-	sections.append(Section("Servidores", machines.list("servidores")))
-	sections.append(Section("122", machines.list("122")))
-	sections.append(Section("125a", machines.list('125a')))
-	sections.append(Section("125b", machines.list('125b')))
-	sections.append(Section("126", machines.list('126')))
-	sections.append(Section("258", machines.list('258')))
-	sections.append(Section("Impressoras", machines.list('impressoras')))
+	sections.append(Section("Servidores", sorted(machines.list("servidores"), key=lambda m: m.hostname)))
+	sections.append(Section("122" , sorted(machines.list("122" ), key=lambda m: m.hostname)))
+	sections.append(Section("125a", sorted(machines.list('125a'), key=lambda m: m.hostname)))
+	sections.append(Section("125b", sorted(machines.list('125b'), key=lambda m: m.hostname)))
+	sections.append(Section("126" , sorted(machines.list('126' ), key=lambda m: m.hostname)))
+	sections.append(Section("258" , sorted(machines.list('258' ), key=lambda m: m.hostname)))
+	sections.append(Section("Impressoras", sorted(machines.list('impressoras'), key=lambda m: m.hostname)))
 	for section in sections:
 		for m in section.machines:
 			statuses[m.hostname] = Status(m)
