@@ -6,10 +6,9 @@
 # Escrito em: 2011-08-05 
 # Modificado em: 2011-08-05 por henriquelima
 
-import curses, time, sys, signal, collections
-from threading import Thread
-from supermegazord.lib import ping, busy
-from supermegazord.lib.machine import Machine
+import curses, sys, collections
+import locale
+locale.setlocale(locale.LC_ALL, '')
 
 max_height = 24
 max_width  = 80
@@ -159,11 +158,6 @@ class UpdateJob:
 			value()
 			self.queue.task_done()
 
-userquit = False
-def signal_int(signalnum, handler):
-	global userquit
-	userquit = True
-
 def fill_with_spaces(s, size, right_side = True):
     if right_side:
         return (str(s) + " " * size)[:size]
@@ -182,7 +176,7 @@ def draw(screen):
 
 # O wrapper impede que o terminal fique zuado caso de alguma merda no script
 def main(screen):
-	global userquit, redraw, max_height, max_width, colors, current_update
+	global redraw, max_height, max_width, colors, current_update
 	curses.curs_set(0)
 	screen.timeout(1)
 	screen.notimeout(0)
@@ -190,7 +184,6 @@ def main(screen):
 	colors = ColorHolder()
 
 	import supermegazord.db.machines as machines
-
 	sections.append(Section("Servidores", machines.list("servidores")))
 	sections.append(Section("122", machines.list("122")))
 	sections.append(Section("125a", machines.list('125a')))
@@ -207,7 +200,10 @@ def main(screen):
 
 	userquit = False
 	while not userquit:
-		c = screen.getch()
+		try:
+			c = screen.getch()
+		except KeyboardInterrupt:
+			c = ord('q')
 		if c == curses.KEY_RESIZE:
 			max_height, max_width = screen.getmaxyx()
 			mark_redraw()
@@ -219,7 +215,6 @@ def main(screen):
 		screen.refresh()
 
 def Run():
-	signal.signal(signal.SIGINT, signal_int)
 	curses.wrapper(main)
 
 if __name__ == "__main__":
