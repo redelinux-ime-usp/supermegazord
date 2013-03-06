@@ -20,7 +20,6 @@ class Machine:
 		self.user_list = []
 		self.ResetStatus()
 
-
 	def Draw(self):
 		self.parent.Draw()
 
@@ -70,3 +69,38 @@ class Machine:
 		self.power = True
 		self.stats_avaiable = True
 		self.user_list = []
+	
+	def __repr__(self):
+		return "Machine[hostname={0}]".format(self.hostname)
+
+class Status:
+	machine = None
+	usage_known = False
+	usage_avaible = True
+	network_known = False
+	users = set()
+	down = False
+	def __init__(self, m):
+		self.machine = m
+
+	def query_network(self):
+		import subprocess
+		val = subprocess.call("ping -c 1 -W 2 %s" % self.machine.hostname,
+							  shell=True, stdout=open('/dev/null', 'w'),
+							  stderr=subprocess.STDOUT)
+		self.network_known = True
+		self.down = (val != 0)
+
+	def query_usage(self):
+		import supermegazord.lib.stats as stats
+		data = stats.query(self.machine, "who")
+		self.users = set()
+		self.usage_known = True
+		if data == False:
+			self.usage_avaible = False
+		else:
+			for userinfo in data.strip().split('\n'):
+				x = userinfo.split(' ')[0]
+				if len(x) > 0:
+					self.users.add(x)
+

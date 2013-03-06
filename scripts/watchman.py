@@ -28,6 +28,14 @@ def mark_redraw():
 	global redraw
 	redraw = True
 
+def status_color(status):
+	if not status.network_known:
+		return colors.WHITE
+	if status.usage_known and len(status.users) > 0:
+		return colors.YELLOW
+	return colors.RED_ON_WHITE if status.down else colors.GREEN
+	
+
 class ColorHolder:
 	def __init__(self):
 		curses.init_pair(1, curses.COLOR_GREEN,   curses.COLOR_BLACK)
@@ -43,44 +51,6 @@ class ColorHolder:
 		self.WHITE   =      curses.color_pair(4)
 		self.RED     =      curses.color_pair(5)
 		self.RED_ON_WHITE = curses.color_pair(6)
-
-class Status:
-	machine = None
-	usage_known = False
-	usage_avaible = True
-	network_known = False
-	users = set()
-	down = False
-	def __init__(self, m):
-		self.machine = m
-
-	def name_color(self):
-		if not self.network_known:
-			return colors.WHITE
-		if self.usage_known and len(self.users) > 0:
-			return colors.YELLOW
-		return colors.RED_ON_WHITE if self.down else colors.GREEN
-
-	def query_network(self):
-		import subprocess
-		val = subprocess.call("ping -c 1 -W 2 %s" % self.machine.hostname,
-							  shell=True, stdout=open('/dev/null', 'w'),
-							  stderr=subprocess.STDOUT)
-		self.network_known = True
-		self.down = (val != 0)
-
-	def query_usage(self):
-		import supermegazord.lib.stats as stats
-		data = stats.query(self.machine, "who")
-		self.users = set()
-		self.usage_known = True
-		if data == False:
-			self.usage_avaible = False
-		else:
-			for userinfo in data.strip().split('\n'):
-				x = userinfo.split(' ')[0]
-				if len(x) > 0:
-					self.users.add(x)
 
 class Section(collections.namedtuple("Section", "name machines")):
 	def draw(self, screen):
@@ -98,7 +68,7 @@ class Section(collections.namedtuple("Section", "name machines")):
 			for i in range(line * num_per_line, min((line+1)*num_per_line, len(self.machines))):
 				status = statuses[self.machines[i].hostname]
 				screen.addstr(" " if status.usage_avaible else "?", colors.MAGENTA)
-				screen.addnstr(self.machines[i].hostname, max_namesize, status.name_color())
+				screen.addnstr(self.machines[i].hostname, max_namesize, status_color(status))
 				rest = max_namesize - len(self.machines[i].hostname)
 				if rest > 0:
 					screen.addstr(" " * rest)
@@ -183,6 +153,7 @@ def main(screen):
 	colors = ColorHolder()
 
 	import supermegazord.db.machines as machines
+	import supermegazord.lib.machine as machine
 	sections.append(Section("Servidores", sorted(machines.list("servidores"), key=lambda m: m.hostname)))
 	sections.append(Section("122" , sorted(machines.list("122" ), key=lambda m: m.hostname)))
 	sections.append(Section("125a", sorted(machines.list('125a'), key=lambda m: m.hostname)))
@@ -192,7 +163,7 @@ def main(screen):
 	sections.append(Section("Impressoras", sorted(machines.list('impressoras'), key=lambda m: m.hostname)))
 	for section in sections:
 		for m in section.machines:
-			statuses[m.hostname] = Status(m)
+			statuses[m.hostname] = machine.Status(m)
 			counts['unknown'] += 1
 
 	current_update = UpdateJob(statuses)
