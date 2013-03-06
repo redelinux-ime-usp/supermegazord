@@ -174,7 +174,7 @@ class UserListScreen(BaseListScreen):
     def filter_item(self, item):
         import re
         regexp = re.compile(self.filter_string, re.IGNORECASE)
-        return regexp.search(item.login) or regexp.search(item.nid) or regexp.search(item.name)
+        return regexp.search(item.login) or regexp.search(item.name) or (regexp.search(item.nid) if item.nid else False)
 
     def draw_row(self, screen, user, y, x, selected):
         screen.addnstr(y, x, 
