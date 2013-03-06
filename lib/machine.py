@@ -84,9 +84,9 @@ class Status:
 		self.machine = m
 
 	def query_network(self):
-		import subprocess
+		import subprocess, os
 		val = subprocess.call("ping -c 1 -W 2 %s" % self.machine.hostname,
-							  shell=True, stdout=open('/dev/null', 'w'),
+							  shell=True, stdout=open(os.devnull, 'w'),
 							  stderr=subprocess.STDOUT)
 		self.network_known = True
 		self.down = (val != 0)
@@ -103,4 +103,5 @@ class Status:
 				x = userinfo.split(' ')[0]
 				if len(x) > 0:
 					self.users.add(x)
+
 
