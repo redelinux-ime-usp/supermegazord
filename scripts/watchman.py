@@ -79,15 +79,9 @@ class Status:
 		mark_redraw()
 
 	def query_usage(self):
-		import socket
-		sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-		try:
-			sock.connect((self.machine.hostname, PORT))
-			sock.send("who")
-			data = sock.recv(BUFSIZ)
-			sock.close()
-		except socket.error:
-			data = None
+		import supermegazord.lib.stats as stats
+		data = stats.query(self.machine, "who")
+		if data == False:
 			self.usage_avaible = False
 		self.usage_known = True
 		if data:
