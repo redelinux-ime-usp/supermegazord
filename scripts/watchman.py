@@ -44,8 +44,6 @@ class ColorHolder:
 		self.RED     =      curses.color_pair(5)
 		self.RED_ON_WHITE = curses.color_pair(6)
 
-PORT = 10
-BUFSIZ = 1024
 class Status:
 	machine = None
 	usage_known = False
@@ -54,7 +52,6 @@ class Status:
 	users = set()
 	down = False
 	def __init__(self, m):
-		counts['unknown'] += 1
 		self.machine = m
 
 	def name_color(self):
@@ -69,28 +66,21 @@ class Status:
 		val = subprocess.call("ping -c 1 -W 2 %s" % self.machine.hostname,
 							  shell=True, stdout=open('/dev/null', 'w'),
 							  stderr=subprocess.STDOUT)
-		if self.network_known:
-			counts['down' if self.down else 'up'] -= 1
-		else:
-			counts['unknown'] -= 1
 		self.network_known = True
 		self.down = (val != 0)
-		counts['down' if self.down else 'up'] += 1
-		mark_redraw()
 
 	def query_usage(self):
 		import supermegazord.lib.stats as stats
 		data = stats.query(self.machine, "who")
+		self.users = set()
+		self.usage_known = True
 		if data == False:
 			self.usage_avaible = False
-		self.usage_known = True
-		if data:
-			if len(self.users) > 0: counts['busy'] -= 1
-			self.users = set()
-			for userinfo in data.split('\n'):
-				self.users.add(userinfo.split(' ')[0])
-			if len(self.users) > 0: counts['busy'] += 1
-		mark_redraw()
+		else:
+			for userinfo in data.strip().split('\n'):
+				x = userinfo.split(' ')[0]
+				if len(x) > 0:
+					self.users.add(x)
 
 class Section(collections.namedtuple("Section", "name machines")):
 	def draw(self, screen):
@@ -132,9 +122,24 @@ class UpdateJob:
 		from Queue import Queue
 		from threading import Thread
 		self.queue = Queue()
+		def network(status):
+			if status.network_known:
+				counts['down' if status.down else 'up'] -= 1
+			else:
+				counts['unknown'] -= 1
+			status.query_network()
+			counts['down' if status.down else 'up'] += 1
+			mark_redraw()
+		def usage(status):
+			counts['busy'] -= min(len(status.users), 1)
+			status.query_usage()
+			counts['busy'] += min(len(status.users), 1)
+			mark_redraw()
+
 		for status in data.values():
-			self.queue.put(status.query_network)
-			self.queue.put(status.query_usage)
+			self.queue.put((network, status))
+			self.queue.put((usage, status))
+
 		for i in range(num_threads):
 			worker = Thread(target=self.process)
 			worker.daemon = True
@@ -149,7 +154,7 @@ class UpdateJob:
 		while True:
 			try: value = self.queue.get()
 			except Queue.Empty: return
-			value()
+			value[0](value[1])
 			self.queue.task_done()
 
 def fill_with_spaces(s, size, right_side = True):
@@ -188,6 +193,7 @@ def main(screen):
 	for section in sections:
 		for m in section.machines:
 			statuses[m.hostname] = Status(m)
+			counts['unknown'] += 1
 
 	current_update = UpdateJob(statuses)
 	current_update.start()
