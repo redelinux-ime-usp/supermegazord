@@ -23,6 +23,9 @@ class Processor:
 		for worker in self.threads:
 			worker.start()
 
+	def join(self):
+		self.queue.join()
+
 	def process(self):
 		import Queue
 		while True:
