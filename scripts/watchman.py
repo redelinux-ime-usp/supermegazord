@@ -84,49 +84,6 @@ class Section(collections.namedtuple("Section", "name machines")):
 		if y == ny: screen.addstr("\n")
 			
 
-current_update = None
-class UpdateJob:
-	queue = None
-	threads = []
-	def __init__(self, data, num_threads = 32):
-		from Queue import Queue
-		from threading import Thread
-		self.queue = Queue()
-		def network(status):
-			if status.network_known:
-				counts['down' if status.down else 'up'] -= 1
-			else:
-				counts['unknown'] -= 1
-			status.query_network()
-			counts['down' if status.down else 'up'] += 1
-			mark_redraw()
-		def usage(status):
-			counts['busy'] -= min(len(status.users), 1)
-			status.query_usage()
-			counts['busy'] += min(len(status.users), 1)
-			mark_redraw()
-
-		for status in data.values():
-			self.queue.put((network, status))
-			self.queue.put((usage, status))
-
-		for i in range(num_threads):
-			worker = Thread(target=self.process)
-			worker.daemon = True
-			self.threads.append(worker)
-
-	def start(self):
-		for worker in self.threads:
-			worker.start()
-
-	def process(self):
-		import Queue
-		while True:
-			try: value = self.queue.get()
-			except Queue.Empty: return
-			value[0](value[1])
-			self.queue.task_done()
-
 def fill_with_spaces(s, size, right_side = True):
     if right_side:
         return (str(s) + " " * size)[:size]
@@ -144,6 +101,7 @@ def draw(screen):
 	screen.addstr(" BUSY:" + fill_with_spaces(counts['busy']   , 2, False), colors.YELLOW)
 
 # O wrapper impede que o terminal fique zuado caso de alguma merda no script
+current_update = None
 def main(screen):
 	global redraw, max_height, max_width, colors, current_update
 	curses.curs_set(0)
@@ -166,7 +124,24 @@ def main(screen):
 			statuses[m.hostname] = machine.Status(m)
 			counts['unknown'] += 1
 
-	current_update = UpdateJob(statuses)
+	import supermegazord.lib.worker as worker
+	current_update = worker.Processor()
+	def network(status):
+		if status.network_known:
+			counts['down' if status.down else 'up'] -= 1
+		else:
+			counts['unknown'] -= 1
+		status.query_network()
+		counts['down' if status.down else 'up'] += 1
+		mark_redraw()
+	def usage(status):
+		counts['busy'] -= min(len(status.users), 1)
+		status.query_usage()
+		counts['busy'] += min(len(status.users), 1)
+		mark_redraw()
+	for status in statuses.values():
+		current_update.add_job((network, status))
+		current_update.add_job((usage, status))
 	current_update.start()
 
 	userquit = False
