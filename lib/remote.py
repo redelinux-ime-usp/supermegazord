@@ -36,7 +36,7 @@ def run_script(destination, script, user = "megazord", want_return = True):
 	try:
 		chan.exec_command(script)
 	except paramiko.SSHException:
-		return -1
+		return False
 	if want_return:
 		try:
 			err = chan.recv_stderr(200)
@@ -44,7 +44,7 @@ def run_script(destination, script, user = "megazord", want_return = True):
 			if len(err) > 0:
 				print err
 			if chan.exit_status_ready():
-				return chan.recv_exit_status()
+				return chan.recv_exit_status() == 0
 			return len(err) == 0
 		except socket.timeout:
 			return False

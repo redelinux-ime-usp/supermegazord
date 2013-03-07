@@ -123,10 +123,10 @@ def finaliza_cadastro(nid):
 	status['kerberos'] = kerbwrap.add_user(newuser.login, data['password']) == 0
 	status['home']     = remote.run_script_with_localpipe("nfs", 
 									"sudo /megazord/scripts/cria_conta " + newuser.login + " " + newuser.group.name,
-									"tar c -C " + path.MEGAZORD_DB + "usuarios skel/", "megazord") == 0
-	status['email']    = remote.run_script("nfs",     "sudo /megazord/scripts/adiciona_forward " + newuser.login + " " + newuser.group.name + " " + data['email'], "megazord") == 0
-	status['print']    = remote.run_script("printer", "sudo /megazord/scripts/cria_conta " + newuser.login + " " + newuser.group.name, "megazord") == 0
-	status['listas']   = remote.run_script("mail",    "sudo /megazord/scripts/cria_conta " + newuser.login + " " + newuser.group.name, "megazord") == 0
+									"tar c -C " + path.MEGAZORD_DB + "usuarios skel/", "megazord")
+	status['email']    = remote.run_script("nfs",     "sudo /megazord/scripts/adiciona_forward " + newuser.login + " " + newuser.group.name + " " + data['email'], "megazord")
+	status['print']    = remote.run_script("printer", "sudo /megazord/scripts/cria_conta " + newuser.login + " " + newuser.group.name, "megazord")
+	status['listas']   = remote.run_script("mail",    "sudo /megazord/scripts/cria_conta " + newuser.login + " " + newuser.group.name, "megazord")
 	
 	newuser.log("Conta '{0}' ({1}) aberta. Nome: {2}; NID: {3}; Status: {4}".format(newuser.login, newuser.group.name, newuser.name, newuser.nid, str(status)))
 	

@@ -15,7 +15,6 @@ def main(self):
 	status = group.remove_member(self) and self.change_group(group) and self.change_home("/home/%s/%s" % (group.name, self.login))
 	command = "sudo /megazord/scripts/reativa_conta %s %s" % (self.login, self.group.name)
 	results = remote.run_remote_batch(['mail', 'printer', 'nfs'], command, "megazord")
-	for s in results: results[s] = (results[s] == 0)
 	results['ldap'] = status and self.change_shell("/bin/bash")
 	self.log("Conta '{0}' re-ativada. Status: {1}".format(self.login, str(results)))
 	if not reduce(lambda a, b: a and b, results.values()):
