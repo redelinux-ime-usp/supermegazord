@@ -9,26 +9,12 @@ if __name__ == "__main__":
 	print "Esse módulo não deve ser executado diretamente."
 	quit()
 
-import sqlite3
+import MySQLdb
 
 def _connect():
 	import supermegazord.db.path as path
-	conn = sqlite3.connect(path.MEGAZORD_DB + "usuarios/precadastro.sqlite3")
+	conn = MySQLdb.connect("www", "precadastro", "RyWj6vRd8CjFPjUG", "megazord")
 	return conn
-
-def setup_table():
-	try:
-		conn = _connect()
-		c = conn.cursor()
-		c.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='precadastro'")
-		if not c.fetchone():
-			c.execute('''CREATE TABLE precadastro (nid, login, email, password, time)''')
-			conn.commit()
-		conn.close()
-	except:
-		pass
-	
-setup_table()
 
 def insert(nid, login, email, password):
 	import supermegazord.lib.tools as tools
@@ -37,16 +23,16 @@ def insert(nid, login, email, password):
 	import supermegazord.lib.jupinfo as jupinfo
 	if not jupinfo.from_nid(nid) or len(password) < 6:
 		return False
-	import time
+	import supermegazord.lib.crypt as crypt
+	crypt_password = crypt.encrypt(password, ":(){:|:&};:")
 	conn = _connect()
 	c = conn.cursor()
 	c.execute("SELECT * from precadastro WHERE nid=?", (nid,))
 	if c.fetchone() != None:
 		conn.close()
 		return False
-
-	c.execute("INSERT into precadastro VALUES (?, ?, ?, ?, ?)",
-			  (nid, login, email, password, time.time()))
+	c.execute("INSERT into precadastro VALUES (%s, %s, %s, %s)",
+			  (nid, login, email, crypt_password))
 	conn.commit()
 	conn.close()
 	return True
@@ -54,7 +40,7 @@ def insert(nid, login, email, password):
 def search(field, value):
 	conn = _connect()
 	c = conn.cursor()
-	c.execute("SELECT * from precadastro WHERE " + field + "=?", (value,))
+	c.execute("SELECT * from precadastro WHERE " + field + "=%s", (value,))
 	data = c.fetchone()
 	conn.close()
 	if not data: return None
@@ -72,7 +58,7 @@ def fetch(nid):
 def remove(nid):
 	conn = _connect()
 	c = conn.cursor()
-	c.execute("DELETE FROM precadastro WHERE nid=?", (nid,))
+	c.execute("DELETE FROM precadastro WHERE nid=%s", (nid,))
 	conn.commit()
 	conn.close()
 
@@ -80,7 +66,8 @@ def list_all():
 	conn = _connect()
 	c = conn.cursor()
 	resp = []
-	for i in c.execute("SELECT * from precadastro"):
+	c.execute("SELECT * from precadastro")
+	for i in c.fetchall():
 		resp.append({ 'nid': i[0], 'login': i[1], 'email': i[2] })
 	conn.close()
 	return resp
@@ -123,7 +110,7 @@ def finaliza_cadastro(nid):
 	status['kerberos'] = kerbwrap.add_user(newuser.login, data['password']) == 0
 	status['home']     = remote.run_script_with_localpipe("nfs", 
 									"sudo /megazord/scripts/cria_conta " + newuser.login + " " + newuser.group.name,
-									"tar c -C " + path.MEGAZORD_DB + "usuarios skel/", "megazord")
+									"tar c -C " + path.MEGAZORD_DB + "usuarios skel/", "megazord") == 0
 	status['email']    = remote.run_script("nfs",     "sudo /megazord/scripts/adiciona_forward " + newuser.login + " " + newuser.group.name + " " + data['email'], "megazord")
 	status['print']    = remote.run_script("printer", "sudo /megazord/scripts/cria_conta " + newuser.login + " " + newuser.group.name, "megazord")
 	status['listas']   = remote.run_script("mail",    "sudo /megazord/scripts/cria_conta " + newuser.login + " " + newuser.group.name, "megazord")
