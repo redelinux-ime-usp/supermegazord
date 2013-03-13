@@ -27,11 +27,11 @@ def insert(nid, login, email, password):
 	crypt_password = crypt.encrypt(password, ":(){:|:&};:")
 	conn = _connect()
 	c = conn.cursor()
-	c.execute("SELECT * from precadastro WHERE nid=?", (nid,))
+	c.execute("SELECT * from precadastro WHERE nid=%s", (nid,))
 	if c.fetchone() != None:
 		conn.close()
 		return False
-	c.execute("INSERT into precadastro VALUES (%s, %s, %s, %s)",
+	c.execute("INSERT INTO precadastro (nid, login, email, password) VALUES (%s, %s, %s, %s)",
 			  (nid, login, email, crypt_password))
 	conn.commit()
 	conn.close()

@@ -9,7 +9,11 @@ if __name__ == "__main__":
 	quit()
 
 import collections
-Script = collections.namedtuple("Script", "name path extension run description")
+class Script(collections.namedtuple("Script", "name path extension run_fun description")):
+	def run(self, arg):
+		import tools
+		tools.log("system", "Running script '{0}' with arg '{1}'".format(self.path, str(arg)))
+		return self.run_fun(arg)
 
 def get_data_from_script(fullpath, ext):
 	if ext == '.py':
