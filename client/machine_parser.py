@@ -12,13 +12,25 @@ if __name__ == "__main__":
 def prepare_parser(megazordparser):
 	import supermegazord.db.machines as machines
 	def machines_parser(args):
-		if not isinstance(args.group, list): args.group = [args.group]
-		for group in args.group:
-			for m in machines.list(group):
-				if args.print_value == "all":
-					print m.hostname + "?" + m.ip + "?" + m.mac
-				else:
-					print m.__dict__[args.print_value]
+		if not isinstance(args.group, list):
+			args.group = [args.group]
+
+		if args.machine_name is not None:
+			all_groups = machines.groups()
+			machine_groups = []
+			for group in all_groups:
+				if args.machine_name in (machine.hostname for machine
+				                         in machines.list(group)):
+					machine_groups.append(group)
+
+			print ','.join(machine_groups)
+		else:
+			for group in args.group:
+				for m in machines.list(group):
+					if args.print_value == "all":
+						print m.hostname + "?" + m.ip + "?" + m.mac
+					else:
+						print m.__dict__[args.print_value]
 
 	mach_parse = megazordparser.add_parser('machines', help="Lists the system's machines.")
 	mach_parse.description = "Lists machines as defined by the 'DB/maquinas/grupos.conf' file."
@@ -26,9 +38,11 @@ def prepare_parser(megazordparser):
 	print_val.add_argument('--ip', action='store_const', dest='print_value', const='ip', help="List IPs instead of the hostnames")
 	print_val.add_argument('--mac', action='store_const', dest='print_value', const='mac', help="List MAC Addresses instead of the hostnames")
 	print_val.add_argument('--all', action='store_const', dest='print_value', const='all', 
-						   help="List hostname, ip and mac address, separated by a '?'")
-	print_val.set_defaults(print_value='hostname')
+	                       help="List hostname, ip and mac address, separated by a '?'")
+	print_val.add_argument('--machine-groups', action='store', dest='machine_name', 
+	                       help="List groups a machine belongs to, comma-separated")
+	print_val.set_defaults(print_value='hostname',machine_name=None)
 	mach_parse.add_argument('group', choices=machines.groups(), default='all', nargs='*', metavar='group',
-							help="Groups to list the machines off. Defaults to 'all'.")
+	                        help="Groups to list the machines off. Defaults to 'all'.")
 	mach_parse.set_defaults(func=machines_parser)
 
