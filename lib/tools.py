@@ -17,8 +17,12 @@ class ErrorString:
 def log(filename, s):
 	import supermegazord.db.path as path
 	import datetime
-	with open(path.MEGAZORD_DB + "/log/" + filename, "a") as f:
-		f.write(str(datetime.datetime.now()) + " - " + s + "\n")
+	logs = str(datetime.datetime.now()) + " - " + s + "\n"
+	try:
+		with open(path.MEGAZORD_DB + "/log/" + filename, "a") as f:
+			f.write(logs)
+	except IOError:
+		print logs,
 
 def valida_nid(nid):
 	import re
