@@ -13,7 +13,11 @@ import MySQLdb
 
 def _connect():
 	import supermegazord.db.path as path
-	conn = MySQLdb.connect("www", "precadastro", "RyWj6vRd8CjFPjUG", "megazord")
+	import json
+	conf = json.load(open(path.MEGAZORD_DB + "conf/mysql-preregister.json"))
+	dbpassword = open(path.MEGAZORD_DB + "secrets/mysql-preregister").read()
+	# Check if the password file has a trailing line end!
+	conn = MySQLdb.connect(conf["HOST"], conf["USER"], dbpassword, conf["DB"])
 	return conn
 
 def insert(nid, login, email, password):
@@ -83,6 +87,7 @@ def finaliza_cadastro(nid):
 	import supermegazord.lib.kerbwrap    as kerbwrap
 	import supermegazord.lib.remote      as remote
 	import supermegazord.lib.tools		 as tools
+	import supermegazord.lib.crypt       as crypt
 	import time, datetime
 
 	data = fetch(nid)
