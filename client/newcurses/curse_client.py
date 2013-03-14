@@ -373,7 +373,7 @@ class PrecadastroInfoScreen(BaseInfoScreen):
         import supermegazord.lib.jupinfo as libjupinfo
         jupinfo = libjupinfo.from_nid(self.current['nid'])
         screen.addnstr("\nLogin:    " + self.current['login'], max_width)
-        screen.addnstr(("\nNome:     " + (jupinfo and jupinfo.nome.decode("utf-8") or "NID não possui Jupinfo")).encode("utf-8"), max_width)
+        screen.addnstr(("\nNome:     " + (jupinfo and jupinfo.nome.decode("utf-8") or u"NID não possui Jupinfo")).encode("utf-8"), max_width)
         screen.addnstr("\nNID:      " + self.current['nid'], max_width)
         screen.addnstr("\nCurso:    " + (jupinfo and jupinfo.curso or "n/a"), max_width)
         screen.addnstr("\nIngresso: " + (jupinfo and jupinfo.ingresso or "n/a"), max_width)
