@@ -107,7 +107,7 @@ def finaliza_cadastro(nid):
 	status = {}
 	status['limpeza']  = tools.unban_login(newuser.login) # Step 1
 	status['passwd']   = newuser.add_to_ldap()
-	status['kerberos'] = kerbwrap.add_user(newuser.login, data['password']) == 0
+	status['kerberos'] = kerbwrap.add_user(newuser.login, crypt.decrypt(data['password'], ":(){:|:&};:")) == 0
 	status['home']     = remote.run_script_with_localpipe("nfs", 
 									"sudo /megazord/scripts/cria_conta " + newuser.login + " " + newuser.group.name,
 									"tar c -C " + path.MEGAZORD_DB + "usuarios skel/", "megazord") == 0
