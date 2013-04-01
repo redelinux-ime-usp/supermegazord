@@ -7,6 +7,7 @@
 # Modificado em: 2012-01-13 por henriquelima
 
 import json
+from collections import defaultdict
 from supermegazord.db import path
 from supermegazord.lib.machine import Machine
 
@@ -24,6 +25,9 @@ def open_list(source):
 		mac = data['mac']
 		ip = data['ip']
 		machine = Machine(hostname, ip, mac, None)
+		machine.flags = {}
+		if 'flags' in data:
+			machine.flags.update(data['flags'])
 		if 'aliases' in data:
 			machine.aliases.extend(data['aliases'])
 		result.append(machine)
@@ -41,7 +45,11 @@ for nome, l in grupos_conf['conjuntos'].iteritems():
 	for membro in l:
 		machines[nome].extend(machines[membro.encode("UTF-8")])
 
+_group_aliases = defaultdict(set)
 for apelido, nome in grupos_conf['apelidos'].iteritems():
+	aliases = _group_aliases[nome]
+	aliases.add(apelido)
+	
 	machines[apelido.encode("UTF-8")] = machines[nome.encode("UTF-8")]
 
 def list(group):
@@ -49,6 +57,9 @@ def list(group):
 
 def groups():
 	return machines.keys()
+
+def group_aliases():
+	return _group_aliases
 
 def files():
 	return grupos_conf['arquivos']
