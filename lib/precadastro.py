@@ -72,7 +72,7 @@ def list_all():
 	resp = []
 	c.execute("SELECT * from precadastro")
 	for i in c.fetchall():
-		resp.append({ 'nid': i[0], 'login': i[1], 'email': i[2] })
+		resp.append({ 'nid': i[0], 'login': i[1], 'email': i[2], 'time': i[4] })
 	conn.close()
 	return resp
 	
