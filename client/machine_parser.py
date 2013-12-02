@@ -27,11 +27,10 @@ def prepare_parser(megazordparser):
 		else:
 			for group in args.group:
 				for m in machines.list(group):
-					if 'dead' not in m.flags or not m.flags['dead']:
-						if args.print_value == "all":
-							print m.hostname + "?" + m.ip + "?" + m.mac
-						else:
-							print m.__dict__[args.print_value]
+					if args.print_value == "all":
+						print m.hostname + "?" + m.ip + "?" + m.mac
+					else:
+						print m.__dict__[args.print_value]
 
 	mach_parse = megazordparser.add_parser('machines', help="Lists the system's machines.")
 	mach_parse.description = "Lists machines as defined by the 'DB/maquinas/grupos.conf' file."
