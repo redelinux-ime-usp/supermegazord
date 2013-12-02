@@ -187,7 +187,7 @@ class PrecadastroListScreen(BaseListScreen):
     def __init__(self):
         BaseListScreen.__init__(self)
         self.screen_name = "Lista de Pré-Cadastros"
-        self.header = fill_with_spaces("Login", 20) + "  " + fill_with_spaces("NID  ", 8, False) + "  Nome"
+        self.header = fill_with_spaces("Data", 10) + "  " + fill_with_spaces("Login", 14) + "  " + fill_with_spaces("NID  ", 8, False) + "  Nome"
         self.commands[ord('p')] = { 'func': lambda c: change_screen(userlist_screen), "description": "Lista de Usuários" }
 
     def select(self, precadastro):
@@ -195,7 +195,7 @@ class PrecadastroListScreen(BaseListScreen):
         
     def fetch_data(self):
         import supermegazord.lib.precadastro as precadastro
-        self.original_data = sorted(precadastro.list_all(), key=lambda item: item['login'])
+        self.original_data = sorted(precadastro.list_all(), key=lambda item: item['time'], reverse=True)
     
     def filter_item(self, item):
         import re
@@ -208,7 +208,8 @@ class PrecadastroListScreen(BaseListScreen):
         import supermegazord.lib.jupinfo as libjupinfo
         jupinfo = libjupinfo.from_nid(user['nid'])
         screen.addnstr(y, x, (
-            fill_with_spaces(user['login'], 20) + "  " +
+			fill_with_spaces(str(user['time']), 10) + "  " +
+            fill_with_spaces(user['login'], 14) + "  " +
             fill_with_spaces(user['nid'], 8, False) + "  " +
             fill_with_spaces(jupinfo and jupinfo.nome.decode("UTF-8") or "n/a", max_width)).encode("UTF-8"),
             max_width, colors.YELLOW if selected else colors.WHITE)
