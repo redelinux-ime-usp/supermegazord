@@ -31,6 +31,8 @@ class Account:
 		return ldapwrap.add_user(self)
 
 	def change_group(self, newgroup):
+		"""Change the group for this account.
+			@arg newgroup An lib.Group or a string with the name of the group."""
 		if not isinstance(newgroup, megazordgroup.Group):
 			newgroup = megazordgroup.from_name(newgroup)
 		if newgroup == None: return False
