@@ -16,7 +16,7 @@ MEGAZORD_DB:
     secrets/
         keys/           - Cada arquivo $M nesse diretório é uma chave privada de SSH que loga em 
                            $M, com o usuário 'megazord'. Essa chave não deve possuir senha.
-        ldap            - Senha para o usuário cn=admin,dc=linux,dc=ime,dc=usp,dc=br do LDAP.
+        ldap            - Senha para o ROOTDN do LDAP.
         kerberos        - Senha para o principal "root/admin" do Kerberos.
     maquinas/
         grupos.conf     - Define os grupos de máquinas do módulo supermegazord.db.machines.
