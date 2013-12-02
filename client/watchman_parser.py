@@ -31,6 +31,9 @@ def setup_parser(watch_parse):
 		worker.join()
 
 		for status in statuses:
+			if 'dead' in status.machine.flags and status.machine.flags['dead']:
+				# Não acuse maquinas marcadas como 'dead' como down.
+				continue
 			if status.down == args.check_network:
 				if args.stats == 2 and status.usage_avaible:
 					continue
